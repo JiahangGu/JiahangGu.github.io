@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Google File System是面向大规模数据密集型应用、可扩展的分布式文件系统 特性 将组件失效认为是常态而不是意外，几百台设备出现任意损坏的几率非常高，所以GFS集成了持续的监控、错误检测、容错以及自动恢复 文件规模巨大且快速增长，如果出现数亿个小文件，普通的文件系统是笨拙的，需要根据应用特点做对应优化，例如IO操作和Block的大小重新考虑 大部分文件的修改是在文件尾部追加，而不是覆盖">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GFS阅读笔记">
+<meta property="og:url" content="http://example.com/2022/02/16/GFS%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:site_name" content="菜汤里的咸鱼要翻身">
+<meta property="og:description" content="Google File System是面向大规模数据密集型应用、可扩展的分布式文件系统 特性 将组件失效认为是常态而不是意外，几百台设备出现任意损坏的几率非常高，所以GFS集成了持续的监控、错误检测、容错以及自动恢复 文件规模巨大且快速增长，如果出现数亿个小文件，普通的文件系统是笨拙的，需要根据应用特点做对应优化，例如IO操作和Block的大小重新考虑 大部分文件的修改是在文件尾部追加，而不是覆盖">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/JiahangGu/JiahangGu.github.io/48d5911b3cda7b297d000e87f5ecaecc7e2f7523/images/gfs/GFS_arch.jpg">
+<meta property="og:image" content="https://github.com/JiahangGu/blog/blob/main/images/gfsNotes/%E7%A7%9F%E7%BA%A6%E5%86%99%E5%85%A5%E8%BF%87%E7%A8%8B.png">
+<meta property="article:published_time" content="2022-02-16T15:47:47.000Z">
+<meta property="article:modified_time" content="2022-02-16T15:53:18.562Z">
+<meta property="article:author" content="Jiahang Gu">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/JiahangGu/JiahangGu.github.io/48d5911b3cda7b297d000e87f5ecaecc7e2f7523/images/gfs/GFS_arch.jpg">
+
+<link rel="canonical" href="http://example.com/2022/02/16/GFS%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>GFS阅读笔记 | 菜汤里的咸鱼要翻身</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">菜汤里的咸鱼要翻身</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/16/GFS%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          GFS阅读笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-16 23:47:47 / 修改时间：23:53:18" itemprop="dateCreated datePublished" datetime="2022-02-16T23:47:47+08:00">2022-02-16</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/course-notes/" itemprop="url" rel="index"><span itemprop="name">课程笔记</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Google File System是面向大规模数据密集型应用、可扩展的分布式文件系统</p>
+<h3 id="特性"><a href="#特性" class="headerlink" title="特性"></a>特性</h3><ol>
+<li>将组件失效认为是常态而不是意外，几百台设备出现任意损坏的几率非常高，所以GFS集成了持续的监控、错误检测、容错以及自动恢复</li>
+<li>文件规模巨大且快速增长，如果出现数亿个小文件，普通的文件系统是笨拙的，需要根据应用特点做对应优化，例如IO操作和Block的大小重新考虑</li>
+<li>大部分文件的修改是在文件尾部追加，而不是覆盖原有数据。首先是应用特点决定大部分文件写入后只需要按顺序读，几乎不存在随机写，所以采用追加的方式更贴合场景</li>
+<li>GFS没有遵守POSIX的文件系统规范，而是放松了要求，提高系统的灵活性。引入原子性的记录追加操作，保证多个客户端同时进行追加，而不需要额外的同步操作保证数据的一致性</li>
+</ol>
+<h3 id="设计的出发点"><a href="#设计的出发点" class="headerlink" title="设计的出发点"></a>设计的出发点</h3><ol>
+<li>系统在许多廉价机器上运行，机器故障是常态，系统要能快速检测、做冗余和恢复</li>
+<li>系统存储的多为大文件，针对这正特点进行优化，也必须支持小文件</li>
+<li>工作负载主要为：大规模的流式读取和小规模的随机读取。如果比较关注性能，则将小规模的随机读取操作合并、排序，之后顺序批量读取，避免在文件中移动读取位置</li>
+<li>工作负载还包括写操作，通常是大规模的、顺序的、追加方式的</li>
+<li>系统必须高效的、明确的定义实现多客户端并行追加数据到同一个文件里的语意，文件通常被用于“生产者-消费者”队列，或多路文件合并</li>
+</ol>
+<h3 id="架构，如图所示"><a href="#架构，如图所示" class="headerlink" title="架构，如图所示"></a>架构，如图所示</h3><p><img src="https://raw.githubusercontent.com/JiahangGu/JiahangGu.github.io/48d5911b3cda7b297d000e87f5ecaecc7e2f7523/images/gfs/GFS_arch.jpg" alt="Architecture"></p>
+<ol>
+<li>一个集群有一个单独的Master节点，在逻辑上掌握全局</li>
+<li>有多台块服务器，每个文件被分割成固定大小的chunk，且在创建时由master服务器给chunk分配一个GUID，块服务器保存chunk在本地硬盘，每个chunk复制到多个块服务器上，默认为3个</li>
+<li>master节点管理所有文件系统元数据，包括命名空间、访问控制信息、文件到chunk的映射、当前chunk的位置信息。还有chunk租约管理、孤儿chunk回收和chunk在块服务器之间的迁移。使用心跳信息与每个块服务器通信，发送指令并接收块服务器你的状态信息</li>
+<li>为了避免master成为瓶颈，客户端与master通信只获得元数据，而数据操作由客户端直接与块服务器进行交互，master将客户端的目标文件对应的chunk信息发送给客户端进行缓存，后续同一文件的操作均通过缓存查询。块服务器不缓存文件数据，利用linux的文件系统缓存</li>
+</ol>
+<h3 id="读取流程："><a href="#读取流程：" class="headerlink" title="读取流程："></a>读取流程：</h3><ol>
+<li>客户端将文件名和程序指定的字节偏移，根据chunk大小，转换成文件的chunk索引，然后将文件名和chunk索引发送给master</li>
+<li>master将chunk标识和副本位置信息发给客户端</li>
+<li>客户端缓存文件名和chunk索引（不再和master通信，除非缓存元数据信息过期或文件被重新打开）</li>
+<li>客户端请求最近的一个chunk副本服务器，包含了chunk的标识和字节范围</li>
+<li>块服务器解析请求信息，进行对应的数据操作并将数据和结果返回给客户端</li>
+</ol>
+<h3 id="chunk大小，GFS选择64MB，并采用惰性空间分配策略"><a href="#chunk大小，GFS选择64MB，并采用惰性空间分配策略" class="headerlink" title="chunk大小，GFS选择64MB，并采用惰性空间分配策略"></a>chunk大小，GFS选择64MB，并采用惰性空间分配策略</h3><p>优点：</p>
+<ol>
+<li>减少了客户端和master结点通信的需求</li>
+<li>客户端对一个块进行多次操作，通过较长时间的TCP连接减少网络负载</li>
+<li>较大的chunk减少了master节点需要保存的元数据数量，降低了内存需求</li>
+</ol>
+<p>缺点：<br>有许多客户端对同一个小文件多次访问时，存储chunk的块服务器成为热点</p>
+<h3 id="元数据"><a href="#元数据" class="headerlink" title="元数据"></a>元数据</h3><ol>
+<li>文件和chunk的命名空间</li>
+<li>文件到chunk的映射</li>
+<li>每个chunk副本的存放地点</li>
+</ol>
+<p>保存在master的内存中，前两种还会记录到日志文件中，并复制到远程master备份节点。master启动时或有新的块服务器加入时，向每个块服务器轮询存储的chunk信息。master控制所有chunk位置的分配，通过周期性的心跳监控保证持有的chunk信息最新。<br>master服务器周期性扫描状态信息，用于chunk垃圾收集、块服务器失效时重新复制数据、迁移chunk实现负载均衡以及统计磁盘使用状况。64MB的chunk只需不到64个字节的元数据，占用内存少</p>
+<h3 id="操作日志：容灾"><a href="#操作日志：容灾" class="headerlink" title="操作日志：容灾"></a>操作日志：容灾</h3><p>操作日志包含关键的元数据变更的历史记录，是元数据唯一的持久化记录，确保复制到远程机器并写入后才响应客户端请求。在恢复时读取最近的checkpoint文件（压缩B树的形式保存元数据信息，读取较快）并重演checkpoint之后的日志文件即可恢复系统，日志写到一定规模后，master创建独立线程切换到新的日志文件并创建新的checkpoint文件，后续操作会写入到新的日志文件</p>
+<h3 id="一致性"><a href="#一致性" class="headerlink" title="一致性"></a>一致性</h3><table>
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center">写</th>
+<th align="center">记录追加</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">串行成功</td>
+<td align="center">已定义</td>
+<td align="center">已定义</td>
+</tr>
+<tr>
+<td align="center">并行成功</td>
+<td align="center">一致但未定义</td>
+<td align="center">部分不一致</td>
+</tr>
+<tr>
+<td align="center">失败</td>
+<td align="center">不一致</td>
+<td align="center">不一致</td>
+</tr>
+</tbody></table>
+<p>一致：所有客户端无论从哪个副本读到的数据都一样<br>已定义：如果对文件数据修改后，region是一致的，并且客户端能看到写入操作的全部内容</p>
+<p>数据修改操作分为写入和记录追加：写入是把数据写在应用程序指定的文件偏移位置上。记录追加操作可以保证在多个修改操作并行执行时至少把数据原子性地追加到文件一次，但偏移位置由GFS选择。客户端缓存的元数据可能过期，文件再次被打开后会清除与文件有关的所有chunk位置信息。</p>
+<p>Checksum：验证数据正确性。</p>
+<h3 id="系统交互"><a href="#系统交互" class="headerlink" title="系统交互"></a>系统交互</h3><p>一个重要的原则是最小化所有操作与master节点的交互</p>
+<h5 id="租约（lease）和变更顺序"><a href="#租约（lease）和变更顺序" class="headerlink" title="租约（lease）和变更顺序"></a>租约（lease）和变更顺序</h5><p>租约保持多副本间变更顺序的一致性。由master节点选chunk的一个副本作为主chunk并建立租约，主chunk对chunk的所有更改操作进行序列化，并要求所有副本都遵从。即修改操作全局的顺序由master节点选择租约的顺序决定，然后由租约中主chunk分配的序列号决定<br>租约机制的目的是最小化master节点的管理负担，主chunk可以申请更长的租期，通常得到master的确认并收到延长的时间，租约请求信息附加在心跳消息中。master也可以提取取消租约，此时副本无更改权限<br>写入步骤如图<br><img src="https://github.com/JiahangGu/blog/blob/main/images/gfsNotes/%E7%A7%9F%E7%BA%A6%E5%86%99%E5%85%A5%E8%BF%87%E7%A8%8B.png" alt="写入过程"></p>
+<ol>
+<li>客户端向master节点询问持有租约的块服务器位置和其他副本位置，如果没有租约则由master选择主副本并创建租约</li>
+<li>master节点将主副本和其余二级副本位置返回给客户端，由客户端缓存，只有主副本不可用或不持有租约时，才需要重新跟master节点联系</li>
+<li>客户端将数据以任意顺序推送数据，由块服务器保存在内部LRU缓存中，通过分离控制流和数据流，可以基于网络拓扑情况对数据流优化从而提高系统性能</li>
+<li>所有副本确认接收到数据，客户端发送写请求到主副本，由主副本为操作分配序列号，保证顺序执行</li>
+<li>主副本将写请求传递给所有二级副本，二级副本依照序列号以相同顺序执行操作</li>
+<li>所有二级副本回复主副本已完成</li>
+<li>主副本回复客户端。期间出现的任何错误都会传回客户端。出现错误可能导致主副本和部分二级副本执行成功，使得region处于不一致状态。客户端重复执行失败操作，但先从步骤3-7做尝试</li>
+</ol>
+<h5 id="数据流"><a href="#数据流" class="headerlink" title="数据流"></a>数据流</h5><p>数据流从客户端到主副本、再到所有二级副本的同时，数据以基于TCP连接的管道方式顺序地沿着一个精选的服务器链推送。每台机器尽量在网络拓扑中选择一个距离最近且没收到数据的机器作为目标。传送B字节的数据到R个副本的理想时间是B/T+RL，T是网络吞吐量，L是两台机器数据传输的延迟</p>
+<h5 id="原子的记录追加"><a href="#原子的记录追加" class="headerlink" title="原子的记录追加"></a>原子的记录追加</h5><p>region尾部可能包含多个不同客户机写入的数据片段，GFS保证至少一次原子的写入成功，数据追加到GFS指定的偏移位置，之后返回给客户端。<br>客户端将数据推送给文件最后一个chunk的所有副本，之后发送请求给主chunk，首先检查是否超过chunk最大容量，如果超过则填充至最大容量，回复客户端要求对下一个chunk重新进行记录追加操作，同时通知所有二级副本做同样操作。如果在一个副本失败，客户端要重新进行，可能导致同一chunk不同副本包含不同数据</p>
+<h5 id="快照"><a href="#快照" class="headerlink" title="快照"></a>快照</h5><p>快照几乎瞬间完成对一个文件或目录树的拷贝，且不会对进行的其他操作产生任何干扰。使用快照备份当前状态，后续可以轻松回滚到备份时的状态。<br>master节点收到快照请求，首先取消做快照的文件所有chunk租约，记录到操作日志中，然后master复制源文件或目录的元数据并保存到内存中。快照之后，客户端第一次想写入数据到C（被快照的chunk），master发现C的引用计数超过1（快照增加chunk的引用计数），此时选择一个新的chunk，并要求每个C的副本创建新的chunk，在创建租约后返回给客户端。客户端无需知道得到的chunk是克隆出来的</p>
+<h3 id="master节点的操作"><a href="#master节点的操作" class="headerlink" title="master节点的操作"></a>master节点的操作</h3><p>执行所有的名称空间操作，管理系统所有的chunk副本，决定chunk的存储位置，创建新的chunk和副本，协同系统活动保证chunk被完成复制，迁移chunk进行负载均衡，回收孤儿chunk</p>
+<h5 id="名称空间管理和锁"><a href="#名称空间管理和锁" class="headerlink" title="名称空间管理和锁"></a>名称空间管理和锁</h5><p>定义名称空间，并使用其上的锁保证多个操作执行的正确顺序。逻辑上GFS名称空间是全路径和元数据映射关系的查找表。并利用前缀压缩存储在内存中。master操作前都要获得锁，例如操作涉及/d1/d2/…/dn/leaf，需要得到/d1, /d1/d2, …, /d1/d2/…/dn的读锁以及/d1/d2/…/dn/leaf的读写锁<br>上述方案支持对同一目录的并行操作，例如可以在同一目录下同时创建多个文件</p>
+<h5 id="副本及操作"><a href="#副本及操作" class="headerlink" title="副本及操作"></a>副本及操作</h5><p>副本位置选择策略目标：最大化数据可靠性和可用性，最大化网络带宽利用率。通常在一个机架的2台不同机器上及不同机架的1台机器上存储3份副本，以确保最大化利用网络带宽且在机架失效时数据可用<br>chunk创建时master考虑的因素</p>
+<ol>
+<li>在低于平均硬盘使用率的块服务器上存储新的副本</li>
+<li>限制每个块服务器上最近的chunk创建次数，即将创建操作分散到不同的机器上，避免集中在一个，因为创建会导致大量写操作</li>
+<li>希望chunk的副本分布在多个机架之间</li>
+</ol>
+<p>chunk重新复制原因：有效副本数量少于用户指定的复制因数，原因</p>
+<ol>
+<li>块服务器不可用，例如磁盘损坏</li>
+<li>chunk副本的复制因数提高</li>
+</ol>
+<p>复制根据优先级排序，一个因素是现有副本数量和复制因数差多少，2是优先重新复制活跃的chunk。</p>
+<p>master周期性检查以重新负载均衡：检查当前副本分布情况，然后移动副本以更好利用磁盘空间。期间主键填满一个新的块服务器而不是短时间内以避免过载</p>
+<h5 id="垃圾回收"><a href="#垃圾回收" class="headerlink" title="垃圾回收"></a>垃圾回收</h5><p>GFS空间回收采用惰性策略，只在文件和chunk级的常规垃圾收集时进行。<br>一个文件被删除时，master将删除操作记录到日志文件，并不马上回收，而是把文件名改为一个包含删除时间戳的、隐藏的名字，在后续常规扫描时删除三天前的隐藏文件，并删除他们的元数据信息，通知块服务器可以删除chunk副本。所以在文件真正删除前可以通过改名恢复。<br>chunk的所有引用存储在master服务器上的文件到块的映射表中，以linux文件形式存储在指定目录下，所有master节点不能识别的副本都是垃圾。<br>延迟回收的主要问题是会阻碍用户存储空间的使用，尤其是资源紧缺时。因此允许用户设定不同的复制和回收策略，显式删除加快空间回收速度</p>
+<h5 id="过期失效检测"><a href="#过期失效检测" class="headerlink" title="过期失效检测"></a>过期失效检测</h5><p>master节点和chunk签订一个新的租约，会增加chunk版本号，然后通知最新的副本。如果master节点看到一个比记录的版本号更高的版本号，则认为和块服务器签订租约操作失败，因此选择更高的版本号作为当前版本号。</p>
+<h3 id="容错和诊断"><a href="#容错和诊断" class="headerlink" title="容错和诊断"></a>容错和诊断</h3><h5 id="master节点的复制"><a href="#master节点的复制" class="headerlink" title="master节点的复制"></a>master节点的复制</h5><p>master服务器存在多台备份服务器，将所有操作日志和checkpoint文件复制到备份，当master失效时外部监控进程会启动新的master进程，客户端只需通过规定的名字访问master节点，类似DNS别名<br>此外master还有影子服务器，在master服务器宕机时提供文件系统的只读访问，影子服务器数据可能比主服务器更新慢，通常不到一秒</p>
+<h5 id="数据完整性"><a href="#数据完整性" class="headerlink" title="数据完整性"></a>数据完整性</h5><p>GFS通过Checksum检查数据是否损坏，由于gfs并不保证副本完全相同，每个块服务器必须独立维护checksum校验自己数据，保存在内存和硬盘上。<br>读操作时块服务器会校验读取范围内的checksum，如果不正确，返回给请求者一个错误信息，并通知master服务器，然后请求者应当从其他副本读取数据，master服务器会从其他副本克隆数据进行恢复，就绪后块服务器删除错误副本</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/02/16/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/" rel="prev" title="代码整洁之道">
+      <i class="fa fa-chevron-left"></i> 代码整洁之道
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%89%B9%E6%80%A7"><span class="nav-number">1.</span> <span class="nav-text">特性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1%E7%9A%84%E5%87%BA%E5%8F%91%E7%82%B9"><span class="nav-number">2.</span> <span class="nav-text">设计的出发点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84%EF%BC%8C%E5%A6%82%E5%9B%BE%E6%89%80%E7%A4%BA"><span class="nav-number">3.</span> <span class="nav-text">架构，如图所示</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%BB%E5%8F%96%E6%B5%81%E7%A8%8B%EF%BC%9A"><span class="nav-number">4.</span> <span class="nav-text">读取流程：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#chunk%E5%A4%A7%E5%B0%8F%EF%BC%8CGFS%E9%80%89%E6%8B%A964MB%EF%BC%8C%E5%B9%B6%E9%87%87%E7%94%A8%E6%83%B0%E6%80%A7%E7%A9%BA%E9%97%B4%E5%88%86%E9%85%8D%E7%AD%96%E7%95%A5"><span class="nav-number">5.</span> <span class="nav-text">chunk大小，GFS选择64MB，并采用惰性空间分配策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%83%E6%95%B0%E6%8D%AE"><span class="nav-number">6.</span> <span class="nav-text">元数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%93%8D%E4%BD%9C%E6%97%A5%E5%BF%97%EF%BC%9A%E5%AE%B9%E7%81%BE"><span class="nav-number">7.</span> <span class="nav-text">操作日志：容灾</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-number">8.</span> <span class="nav-text">一致性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E4%BA%A4%E4%BA%92"><span class="nav-number">9.</span> <span class="nav-text">系统交互</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%A7%9F%E7%BA%A6%EF%BC%88lease%EF%BC%89%E5%92%8C%E5%8F%98%E6%9B%B4%E9%A1%BA%E5%BA%8F"><span class="nav-number">9.0.1.</span> <span class="nav-text">租约（lease）和变更顺序</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%B5%81"><span class="nav-number">9.0.2.</span> <span class="nav-text">数据流</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8E%9F%E5%AD%90%E7%9A%84%E8%AE%B0%E5%BD%95%E8%BF%BD%E5%8A%A0"><span class="nav-number">9.0.3.</span> <span class="nav-text">原子的记录追加</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%BF%AB%E7%85%A7"><span class="nav-number">9.0.4.</span> <span class="nav-text">快照</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#master%E8%8A%82%E7%82%B9%E7%9A%84%E6%93%8D%E4%BD%9C"><span class="nav-number">10.</span> <span class="nav-text">master节点的操作</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%90%8D%E7%A7%B0%E7%A9%BA%E9%97%B4%E7%AE%A1%E7%90%86%E5%92%8C%E9%94%81"><span class="nav-number">10.0.1.</span> <span class="nav-text">名称空间管理和锁</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%89%AF%E6%9C%AC%E5%8F%8A%E6%93%8D%E4%BD%9C"><span class="nav-number">10.0.2.</span> <span class="nav-text">副本及操作</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6"><span class="nav-number">10.0.3.</span> <span class="nav-text">垃圾回收</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%BF%87%E6%9C%9F%E5%A4%B1%E6%95%88%E6%A3%80%E6%B5%8B"><span class="nav-number">10.0.4.</span> <span class="nav-text">过期失效检测</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%B9%E9%94%99%E5%92%8C%E8%AF%8A%E6%96%AD"><span class="nav-number">11.</span> <span class="nav-text">容错和诊断</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#master%E8%8A%82%E7%82%B9%E7%9A%84%E5%A4%8D%E5%88%B6"><span class="nav-number">11.0.1.</span> <span class="nav-text">master节点的复制</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%AE%8C%E6%95%B4%E6%80%A7"><span class="nav-number">11.0.2.</span> <span class="nav-text">数据完整性</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Jiahang Gu</p>
+  <div class="site-description" itemprop="description">认真学习，享受生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JiahangGu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JiahangGu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/fengzhizi76506" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;fengzhizi76506" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jiahang Gu</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>
