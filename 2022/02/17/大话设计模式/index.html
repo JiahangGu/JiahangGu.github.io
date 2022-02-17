@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="第一章运用面向对象的思维方式设计软件时，最易犯的错误是开始分析时就想到了程序代码实现的细节，因此封装的类完全是基于程序实现逻辑，而不是基于解决问题的业务逻辑 第二章、接口型模式接口型有哪些模式 适配器模式 外观模式 合成模式 桥接模式">
+<meta property="og:type" content="article">
+<meta property="og:title" content="大话设计模式">
+<meta property="og:url" content="http://example.com/2022/02/17/%E5%A4%A7%E8%AF%9D%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/index.html">
+<meta property="og:site_name" content="菜汤里的咸鱼要翻身">
+<meta property="og:description" content="第一章运用面向对象的思维方式设计软件时，最易犯的错误是开始分析时就想到了程序代码实现的细节，因此封装的类完全是基于程序实现逻辑，而不是基于解决问题的业务逻辑 第二章、接口型模式接口型有哪些模式 适配器模式 外观模式 合成模式 桥接模式">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-02-17T11:40:28.000Z">
+<meta property="article:modified_time" content="2022-02-17T11:50:50.634Z">
+<meta property="article:author" content="Jiahang Gu">
+<meta property="article:tag" content="经典书籍">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2022/02/17/%E5%A4%A7%E8%AF%9D%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>大话设计模式 | 菜汤里的咸鱼要翻身</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">菜汤里的咸鱼要翻身</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/17/%E5%A4%A7%E8%AF%9D%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          大话设计模式
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-17 19:40:28 / 修改时间：19:50:50" itemprop="dateCreated datePublished" datetime="2022-02-17T19:40:28+08:00">2022-02-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ReadingNotes/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>18k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>17 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="第一章"><a href="#第一章" class="headerlink" title="第一章"></a>第一章</h2><p>运用面向对象的思维方式设计软件时，最易犯的错误是开始分析时就想到了程序代码实现的细节，因此封装的类完全是基于程序实现逻辑，而不是基于解决问题的业务逻辑</p>
+<h2 id="第二章、接口型模式"><a href="#第二章、接口型模式" class="headerlink" title="第二章、接口型模式"></a>第二章、接口型模式</h2><h3 id="接口型有哪些模式"><a href="#接口型有哪些模式" class="headerlink" title="接口型有哪些模式"></a>接口型有哪些模式</h3><ol>
+<li>适配器模式</li>
+<li>外观模式</li>
+<li>合成模式</li>
+<li>桥接模式</li>
+</ol>
+<h3 id="抽象类和接口的区别"><a href="#抽象类和接口的区别" class="headerlink" title="抽象类和接口的区别"></a>抽象类和接口的区别</h3><ol>
+<li>抽象类表示继承关系，Java中只能继承一次，但可以实现多个接口</li>
+<li>抽象类中可以有自己的数据成员，也可以有非abstract的成员方法，但在接口中只能够有静态的不能被修改的数据成员(public static final)，所有成员方法都是abstract</li>
+<li>抽象类表示的is-a关系，接口表示like-a关系</li>
+<li>实现抽象类和接口必须实现所有抽象方法，抽象类中可以有实现方法但接口中不能有</li>
+<li>接口定义变量默认是public static final，且必须赋初值，实现类中不能重新定义及修改</li>
+<li>抽象类的变量默认是friendly，可以在子类中重新定义和赋值</li>
+<li>接口方法默认为public abstract</li>
+</ol>
+<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><p>一个门具有打开和关闭的功能，如果需要报警功能，则应实现另一接口，因为报警器不属于门，而是一个外部的对象</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">abstract class Door &#123;</span><br><span class="line">    abstract void open();</span><br><span class="line">    abstract void close();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">interface Alarm &#123;</span><br><span class="line">    void alarm();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class AlarmDoor extends Door implements Alarm &#123;</span><br><span class="line">    void open();</span><br><span class="line">    void close();</span><br><span class="line">    void alarm();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="第三章、适配器模式"><a href="#第三章、适配器模式" class="headerlink" title="第三章、适配器模式"></a>第三章、适配器模式</h2><h3 id="示例-1"><a href="#示例-1" class="headerlink" title="示例"></a>示例</h3><p>把一个类的接口转换成客户端期待的另一种接口，从而使原接口不匹配而无法在一起工作的两个类可以一起工作，例如类A要读xml文件，类B有这个功能</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">interface XmlReader &#123;</span><br><span class="line">    InputStream xmlRead();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">interface ReaderXml &#123;</span><br><span class="line">    InputStream readXml();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 类适配器</span><br><span class="line">class Adapter extends B implements XmlReader &#123;</span><br><span class="line">    public InputStream xmlRead() &#123;</span><br><span class="line">        return readXml();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 对象适配器</span><br><span class="line">class Adapter implements XmlReader &#123;</span><br><span class="line">    ReaderXml b = new B();</span><br><span class="line"></span><br><span class="line">    public InputStream xmlRead() &#123;</span><br><span class="line">        return b.readXml();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="适配器模式四要素"><a href="#适配器模式四要素" class="headerlink" title="适配器模式四要素"></a>适配器模式四要素</h3><ol>
+<li>目标：客户端使用的特定接口</li>
+<li>客户：使用目标接口</li>
+<li>被适配者（Adaptee）：一个现存需要匹配的接口（适配器模式中真正调用的方法）</li>
+<li>适配器（Adapter）：将Adaptee的接口转换成Target的接口，是一个具体的类</li>
+</ol>
+<h3 id="何时使用适配器"><a href="#何时使用适配器" class="headerlink" title="何时使用适配器"></a>何时使用适配器</h3><p>当双方都不太容易修改的时候。如果是公司内部则可以统一规定接口定义规范，而不是优先使用适配器</p>
+<h3 id="适配器分类"><a href="#适配器分类" class="headerlink" title="适配器分类"></a>适配器分类</h3><ol>
+<li>类适配器：继承被适配者类Adaptee，并实现目标接口</li>
+<li>对象适配器：适配器类包含被适配者类的引用，并实现目标接口</li>
+</ol>
+<h2 id="第四章、外观模式"><a href="#第四章、外观模式" class="headerlink" title="第四章、外观模式"></a>第四章、外观模式</h2><h3 id="什么是外观模式"><a href="#什么是外观模式" class="headerlink" title="什么是外观模式"></a>什么是外观模式</h3><p>定义一个将子系统的一组接口集成在一起的高层接口，提供一个一致的界面，通过此界面其他系统可以方便地调用子系统的功能，而忽略子系统内部的变化。举例买基金是把钱交给基金公司管理，而不关心公司如何运作，只需要关注基金的变化</p>
+<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><ol>
+<li>设计外观时不要增加额外的功能</li>
+<li>不要从外观方法中返回子系统中的组件给客户</li>
+<li>应用外观的目的是提供一个高层次的接口</li>
+</ol>
+<h2 id="第五章、组合模式"><a href="#第五章、组合模式" class="headerlink" title="第五章、组合模式"></a>第五章、组合模式</h2><h3 id="什么是组合模式"><a href="#什么是组合模式" class="headerlink" title="什么是组合模式"></a>什么是组合模式</h3><p>将对象组合成<strong>树形结构</strong>表示“部分-整体”的层次结构，使得用户对单个对象和组合对象的使用具有一致性。屏蔽了容器对象与单个对象在使用时的差异，为客户端提供统一的操作接口，降低客户代码与被调用对象的耦合性。例如要求买一件礼物，可能是单个物品，也可能是多个物品组合成一个大礼物</p>
+<h3 id="适用场景"><a href="#适用场景" class="headerlink" title="适用场景"></a>适用场景</h3><p>需求要体现部分与整体层次的结构，且希望用户忽略组合对象和单个对象的不同，统一地使用组合结构中的所有对象。这样用户不需要判断对象类型，使用一致的处理方式</p>
+<h2 id="第六章、桥接模式"><a href="#第六章、桥接模式" class="headerlink" title="第六章、桥接模式"></a>第六章、桥接模式</h2><h3 id="什么是桥接模式"><a href="#什么是桥接模式" class="headerlink" title="什么是桥接模式"></a>什么是桥接模式</h3><p>用意是实现抽象部分与实现部分解耦，使他们各自可以独立变化。开发时遇到两个维度且变化剧烈，导致纵横交错的结果，此时可以将维度拆分，并通过组合的方式结合。比如蜡笔本身包含颜色，要使用大中小三号画12种颜色需要36支，而拆分成毛笔和颜料则只需3支笔加12种颜料。</p>
+<h3 id="主要特点"><a href="#主要特点" class="headerlink" title="主要特点"></a>主要特点</h3><ol>
+<li>分离接口及实现部分，降低对实现部分的依赖性，产生更好的结构化系统</li>
+<li>提高了可扩充性，可独立对接口层和实现层结构进行扩充</li>
+</ol>
+<h3 id="与适配器的区别"><a href="#与适配器的区别" class="headerlink" title="与适配器的区别"></a>与适配器的区别</h3><p>共同点：都是让两个东西配合工作<br>不同点：适配器改变已有的两个接口，让他们相容；桥接器分离抽象和实现，接口可以不同目的是分离。</p>
+<h3 id="适用场景-1"><a href="#适用场景-1" class="headerlink" title="适用场景"></a>适用场景</h3><ol>
+<li>一个系统需要在抽象化角色和具体化角色之间增加更多灵活性，避免在两个层次之间建立静态的联系</li>
+<li>设计要求实现化角色的改变不影响客户端，对客户端透明</li>
+<li>一个构件有多于一个的抽象化角色和实现化角色，系统需要它们之间动态耦合</li>
+</ol>
+<h2 id="第七章、责任型模式"><a href="#第七章、责任型模式" class="headerlink" title="第七章、责任型模式"></a>第七章、责任型模式</h2><h3 id="什么是责任型模式"><a href="#什么是责任型模式" class="headerlink" title="什么是责任型模式"></a>什么是责任型模式</h3><p>很多对象由每一个对象对下家的引用联接起来形成一条链，请求在链上传递，直到链上某一个对象决定处理此请求。发送请求的客户端不知道也不必在意处理的对象是谁，系统可以在不影响客户端的情况下动态调整链和分配责任。比如击鼓传花游戏，每个人有两个动作：喝酒或者传给下家</p>
+<h3 id="角色"><a href="#角色" class="headerlink" title="角色"></a>角色</h3><ol>
+<li>抽象处理者：定义一个处理请求的接口，也可定义一个方法返回对下家的引用</li>
+<li>具体处理者：接到请求后，可以选择将请求处理掉，或者传给下家</li>
+</ol>
+<h3 id="适用场景-2"><a href="#适用场景-2" class="headerlink" title="适用场景"></a>适用场景</h3><ol>
+<li>系统已有一个由处理者对象组成的链，可能由复合模式给出</li>
+<li>当有多于一个的处理者对象处理请求时，且事先不知道谁来处理，而是动态确定的</li>
+<li>系统想发出一个请求给多个处理者对象的一个，但不明确指定</li>
+<li>处理一个请求的处理者对象集合需要动态地指定时</li>
+</ol>
+<h3 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h3><p>降低了发出命令的对象和处理命令的对象之间的耦合，允许多于一个的处理者根据自己逻辑决定哪一个处理者最终处理命令，从而带给系统更大的灵活性</p>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>由系统的其他部分完成。可以是一条线、一棵树或一个环，并且不指定具体的拓扑结构，但是要求同一时间里，命令只可以传给一个下家</p>
+<h2 id="第八章、单体模式"><a href="#第八章、单体模式" class="headerlink" title="第八章、单体模式"></a>第八章、单体模式</h2><h3 id="什么是单例模式"><a href="#什么是单例模式" class="headerlink" title="什么是单例模式"></a>什么是单例模式</h3><p>对象利用自己的属性完成任务，除了维持自身一致性外无需承担其他任何责任。目的是将类的责任集中到唯一的单例对象中，确保该类只有一个实例，并且为该类提供一个全局访问点，难点在于识别单例和保证单例的唯一性</p>
+<h3 id="实现方式"><a href="#实现方式" class="headerlink" title="实现方式"></a>实现方式</h3><ol>
+<li>懒汉式-线程不安全<br>私有静态变量被延迟实例化，好处是如果没有用到该类，就不会实例化，从而节约资源。这个实现多线程环境下不安全，如果多个线程同时进入if条件，那么会有多个线程执行实例化语句，导致多次实例化<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">public class Singleton &#123;</span><br><span class="line"></span><br><span class="line">    private static Singleton uniqueInstance;</span><br><span class="line"></span><br><span class="line">    private Singleton() &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static singleton getUniqueInstance() &#123;</span><br><span class="line">        if (uniqueInstance == null) &#123;</span><br><span class="line">            uniqueInstance = new Singleton();</span><br><span class="line">        &#125;</span><br><span class="line">        return uniqueInstance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>饿汉式-线程安全<br>线程不安全问题是由于被实例化多次，采取直接实例化的方式不会产生线程不安全问题，但直接实例化也丢失了延迟实例化带来的节约资源的好处<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">private static Singleton uniqueInstance = new Singleton();</span><br></pre></td></tr></table></figure></li>
+<li>懒汉式-线程安全<br>对getUniqueInstance方法加锁，在一个时间点只能有一个线程能够进入该方法，避免实例化多次，当一个线程进入该方法后，其他试图进入的线程必须等待，即使已经实例化。会让线程阻塞很久，有性能问题，不推荐使用<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">public static synchronized Singleton getUniqueInstance() &#123;</span><br><span class="line">    if (uniqueInstance == null) &#123;</span><br><span class="line">        uniqueInstance = new Singleton();</span><br><span class="line">    &#125;</span><br><span class="line">    return uniqueInstance;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>双重校验锁-线程安全<br>只需要被实例化一次，之后可以直接使用，加锁操作只需要对实例化那部分代码进行，只有没有被实例化时才需要进行加锁。<br>双重校验锁先判断是否被实例化，如果没有被实例化，才对实例化语句加锁<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">public class Singleton &#123;</span><br><span class="line"></span><br><span class="line">    private volatile static Singleton uniqueInstance;</span><br><span class="line"></span><br><span class="line">    private Singleton()&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static Singleton getUniqueInstance() &#123;</span><br><span class="line">        if (uniqueInstance == null) &#123;</span><br><span class="line">            synchronized (Singleton.class) &#123;</span><br><span class="line">                if (uniqueInstance == null) &#123;</span><br><span class="line">                    uniqueInstance = new Singleton();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        return uniqueInstance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+如果不加第二个if，则两个线程都进入第一个if语句，虽然有加锁，但是会先后实例化。所以需要两个if：第一个if避免uniqueInstance已经实例化之后的加锁，第二个if语句保证不会有多个线程同时进入第一个if后得到锁之后顺序实例化。<br>volatile关键字的作用：1）Java编写的程序有时为了提高运行效率，编译器会自动优化，把经常访问的变量缓存起来，程序在读变量时可能直接从缓存读取，而不会去内存读。当多线程编程时，变量的值可能因为别的线程改变了，而该缓存的值不会相应的改变，造成读取的值与变量实际值不一致。volatile被设计用来修饰不同线程访问和修改的变量。被volatile类型定义的变量，系统每次用到时都直接从对应内存提取而不会利用缓存，这样线程在任何时候拿到的变量的值都相同。2）可以禁止JVM指令重排，保证在多线程环境下正常运行。例如实例化uniqueInstance = new Singleton();时分三步执行：（1）为uniqueInstance分配内存空间；（2）初始化uniqieInstance；（3）将uniqueInstance指向分配的内存地址。JVM可能重排为1,3,2，例如T1执行了1,3，T2判断if调用时发现不为空，直接返回uniqueInstance，但此时uniqueInstance只是不为null，还未被初始化</li>
+<li>静态内部类实现<br>Singleton类被加载时，静态内部类SingletonHolder没有被加载进内存，只有调用getUniqueInstance方法触发SingletonHolder.INSTANCE时才会被加载，并且实例化，可以确保只实例化一次。既具有延迟初始化的好处，JVM也提供了线程安全的支持<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">public class Singleton &#123;</span><br><span class="line">    private Singleton() &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private static class SingletonHolder &#123;</span><br><span class="line">        private static final Singleton INSTANCE = new Singleton();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static Singleton getUniqueInstance() &#123;</span><br><span class="line">        return SingletonHolder.INSTANCE;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>枚举实现<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">public enum Singleton &#123;</span><br><span class="line"></span><br><span class="line">    INSTANCE;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        Singleton singleton = Singleton.INSTANCE;</span><br><span class="line"></span><br><span class="line">        try &#123;</span><br><span class="line">            Singleton[] enumConstants = Singleton.class.getEnumConstants();</span><br><span class="line">        &#125;</span><br><span class="line">        catch (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+可以防止反射攻击。其他实现中，可以通过setAccessible()方法修改私有构造函数访问级别为public，然后调用构造函数从而实例化对象，要防止攻击，需要在构造函数中添加防止多次实例化的代码。而本实现由JVM保证只会实例化一次</li>
+</ol>
+<h3 id="识别单例模式"><a href="#识别单例模式" class="headerlink" title="识别单例模式"></a>识别单例模式</h3><ol>
+<li>承担唯一责任并提供唯一的实例</li>
+<li>有状态单例类用于维护系统状态，无状态单例类提供工具性质的方法</li>
+</ol>
+<h3 id="单例模式和一个所有方法都是静态的工具类有什么区别"><a href="#单例模式和一个所有方法都是静态的工具类有什么区别" class="headerlink" title="单例模式和一个所有方法都是静态的工具类有什么区别"></a>单例模式和一个所有方法都是静态的工具类有什么区别</h3><ol>
+<li>加载类时静态工具类会被初始化，而单例模式可以控制自己的初始化过程和时机</li>
+<li>单例可以继承别的类或被继承，而静态工具类不能（在被继承时无法保证只有一个实例）</li>
+<li>单例可以被扩展到双体、三体（数据库连接池），而静态工具类没有这种扩展性</li>
+</ol>
+<h2 id="第九章、观察者模式"><a href="#第九章、观察者模式" class="headerlink" title="第九章、观察者模式"></a>第九章、观察者模式</h2><h3 id="什么是观察者模式"><a href="#什么是观察者模式" class="headerlink" title="什么是观察者模式"></a>什么是观察者模式</h3><p>又称为发布订阅模式，定义对象间的一种一对多的依赖关系，当一个对象的状态发生改变时，所有依赖于它的对象都得到通知并被自动更新。提供一种设计模式，让主题和观察者之间松耦合。例如天气预报，气象卫星监控地球天气状态，当天气发生变化时，所有气象卫星也跟着变化。</p>
+<h3 id="组成部分"><a href="#组成部分" class="headerlink" title="组成部分"></a>组成部分</h3><ol>
+<li>抽象目标角色：可以有任意多个观察者观察同一个目标，并且提供注册和删除观察者对象的接口，通常由抽象类或接口实现</li>
+<li>抽象观察者角色：为在目标改变时需要获得通知的对象定义一个更新接口，通常由抽象类或接口实现</li>
+<li>具体目标角色：将有关状态存入各个具体观察者角色对象，当状态改变时向所有观察者发出通知</li>
+<li>具体观察者角色：存储有关状态，与目标状态保持一致。需要实现抽象观察者接口的更新接口以保持一致</li>
+</ol>
+<h3 id="典型应用"><a href="#典型应用" class="headerlink" title="典型应用"></a>典型应用</h3><ol>
+<li>侦听事件驱动程序设计中的外部事件</li>
+<li>侦听/监视某个对象的状态变化</li>
+<li>发布者/订阅者模型，一个外部事件触发时，通知邮件列表中的订阅者</li>
+</ol>
+<h3 id="适用场景-3"><a href="#适用场景-3" class="headerlink" title="适用场景"></a>适用场景</h3><ol>
+<li>一个抽象模型有两个方面，其中一个依赖于另一个，将二者封装在独立的对象中以使他们可以各自独立地改变和复用</li>
+<li>当一个对象的改变需要同时改变其他对象，但不知道具体有多少个对象需要改变</li>
+<li>当一个对象必须通知其他对象，而他又不能提前知道其他对象是谁</li>
+</ol>
+<h3 id="具体实现方式"><a href="#具体实现方式" class="headerlink" title="具体实现方式"></a>具体实现方式</h3><ol>
+<li>拉模式：观察者主动从被观察者获得状态</li>
+<li>推模式：被观察者状态变化时主动发送到观察者，不管观察者是否接受</li>
+</ol>
+<h2 id="第十章、中介者模式"><a href="#第十章、中介者模式" class="headerlink" title="第十章、中介者模式"></a>第十章、中介者模式</h2><h3 id="什么是中介者模式"><a href="#什么是中介者模式" class="headerlink" title="什么是中介者模式"></a>什么是中介者模式</h3><p>用一个中介对象来封装一系列的对象交互，使各对象不需要显式地相互引用，而是松散耦合，而且可以独立地改变交互。即，将原来直接引用的对象或依赖的对象拆分，在中间加入一个“中介”对象，使得两头的对象分别和中介对象交互。比如男女约会可以在婚介公司注册，由公司配对并安排约会，从而不需要男女本人自己联系</p>
+<h3 id="组成部分-1"><a href="#组成部分-1" class="headerlink" title="组成部分"></a>组成部分</h3><ol>
+<li>抽象中介者角色：抽象中介者角色定义统一的接口用于各同事之间的通信（婚介）</li>
+<li>具体中介者角色：协调各同事角色实现协作行为，需要知道并引用各个同事角色（具体婚介公司）</li>
+<li>同事角色：每一个同事角色都知道对应的具体中介者角色，与其他同事角色通信时通过中介者实现（男女）</li>
+</ol>
+<h3 id="适用场景-4"><a href="#适用场景-4" class="headerlink" title="适用场景"></a>适用场景</h3><p>一组对象以定义良好但实现复杂的方式实现，比如男女约会要先经过家庭同意，对方家长和对方同意，产生了混乱的依赖关系，导致对象难以复用。</p>
+<h2 id="第十一章、代理模式"><a href="#第十一章、代理模式" class="headerlink" title="第十一章、代理模式"></a>第十一章、代理模式</h2><h3 id="什么是代理模式"><a href="#什么是代理模式" class="headerlink" title="什么是代理模式"></a>什么是代理模式</h3><p>为其他对象提供一种代理以控制对对象的访问。客户不想或不能直接引用一个对象，而代理对象可以在客户和目标之间起到中介作用，去掉客户不能看到的内容和服务或者添加额外的服务。例如你要找局长办事，但你没资格当面谈，所以委托秘书帮忙，由秘书代理去找局长</p>
+<h3 id="适用场景-5"><a href="#适用场景-5" class="headerlink" title="适用场景"></a>适用场景</h3><p>不修改原有方法的条件下对原有方法进行改进或修改</p>
+<h3 id="包含的角色"><a href="#包含的角色" class="headerlink" title="包含的角色"></a>包含的角色</h3><ol>
+<li>抽象角色：声明真实对象和代理对象的共同接口</li>
+<li>代理角色：代理对象角色内部含有对真实对象的引用，从而操作真实对象，且提供与真实对象相同的接口以代替，还可以附加其他操作，重新封装</li>
+<li>真实角色：被代理的角色，最终引用的目标</li>
+</ol>
+<h3 id="常见的代理模式"><a href="#常见的代理模式" class="headerlink" title="常见的代理模式"></a>常见的代理模式</h3><ol>
+<li>远程代理：为一个位于不同地址空间的对象提供一个局域代表对象</li>
+<li>虚拟代理：根据需要将一个资源消耗很大或比较复杂的对象延迟到真正需要时创建。比如访问一个很大的图片需要加载很久，做一个图片代理来代替</li>
+<li>保护代理：控制对一个对象的访问权限</li>
+<li>智能引用代理：提供额外服务，比如记录访问次数</li>
+</ol>
+<h3 id="静态代理、JDK动态代理和CGLIB动态代理"><a href="#静态代理、JDK动态代理和CGLIB动态代理" class="headerlink" title="静态代理、JDK动态代理和CGLIB动态代理"></a>静态代理、JDK动态代理和CGLIB动态代理</h3><h5 id="静态代理"><a href="#静态代理" class="headerlink" title="静态代理"></a>静态代理</h5><p>在程序运行之前，提前写好被代理方法的代理类，编译后运行。在程序运行前，class已经存在<br>定义接口</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public interface Target &#123;</span><br><span class="line">    public String execute();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实现接口</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public class TargetImpl implements Target &#123;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public String execute() &#123;</span><br><span class="line">        System.out.println(&quot;TargetImpl execute！&quot;);</span><br><span class="line">        return &quot;execute&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代理类</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">public class Proxy implements Target &#123;</span><br><span class="line">    private Target target;</span><br><span class="line"></span><br><span class="line">    public Proxy(Target target) &#123;</span><br><span class="line">        this.target = target;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public String execute() &#123;</span><br><span class="line">        System.out.println(&quot;perProcess&quot;);</span><br><span class="line">        String result = this.target.execute();</span><br><span class="line">        System.out.println(&quot;postProcess&quot;);</span><br><span class="line">        return result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>测试类</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public class ProxyTest &#123;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line"></span><br><span class="line">        Target target = new TargetImpl();</span><br><span class="line">        Proxy p = new Proxy(target);</span><br><span class="line">        String result = p.execute();</span><br><span class="line">        System.out.println(result);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>静态代理需要针对被代理的方法提前写好代理类，如果被代理方法非常多则要写很多代码，对此通过动态代理进行补充</p>
+<h5 id="JDK动态代理"><a href="#JDK动态代理" class="headerlink" title="JDK动态代理"></a>JDK动态代理</h5><p>通过反射机制，主要通过Proxy和InvocationHandler实现，运行时动态生成所需代理的class<br>接口</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public interface Target &#123;</span><br><span class="line">    public String execute();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实现类</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public class TargetImpl implements Target &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public String execute() &#123;</span><br><span class="line">        System.out.println(&quot;TargetImpl execute！&quot;);</span><br><span class="line">        return &quot;execute&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代理类</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">import java.lang.reflect.InvocationHandler;</span><br><span class="line">import java.lang.reflect.Method;</span><br><span class="line"></span><br><span class="line">public class DynamicProxyHandler implements InvocationHandler&#123;</span><br><span class="line"></span><br><span class="line">    private Target target;</span><br><span class="line"></span><br><span class="line">    public DynamicProxyHandler(Target target) &#123;</span><br><span class="line">        this.target = target;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable &#123;</span><br><span class="line">        System.out.println(&quot;========before==========&quot;);</span><br><span class="line">        Object result = method.invoke(target,args);</span><br><span class="line">        System.out.println(&quot;========after===========&quot;);</span><br><span class="line">        return result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>测试类</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">import java.lang.reflect.Proxy;</span><br><span class="line"></span><br><span class="line">public class DynamicProxyTest &#123;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        Target target = new TargetImpl();</span><br><span class="line">        DynamicProxyHandler handler = new DynamicProxyHandler(target);</span><br><span class="line">        Target proxySubject = (Target) Proxy.newProxyInstance(TargetImpl.class.getClassLoader(),TargetImpl.class.getInterfaces(),handler);</span><br><span class="line">        String result = proxySubject.execute();</span><br><span class="line">        System.out.println(result);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>JDK动态代理和静态代理都需要定义接口才能实现，而cglib可以解决这个问题</p>
+<h5 id="CGLIB代理"><a href="#CGLIB代理" class="headerlink" title="CGLIB代理"></a>CGLIB代理</h5><p>采用底层的字节码技术，通过字节码技术为一个类创建子类，并在子类中采用方法拦截的技术拦截所有父类方法的调用，顺势织入横切逻辑。<br>目标类</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public class Target &#123;</span><br><span class="line"></span><br><span class="line">    public String execute() &#123;</span><br><span class="line">        String message = &quot;-----------test------------&quot;;</span><br><span class="line">        System.out.println(message);</span><br><span class="line">        return message;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通用代理类</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">import net.sf.cglib.proxy.MethodInterceptor;</span><br><span class="line">import net.sf.cglib.proxy.MethodProxy;</span><br><span class="line"></span><br><span class="line">import java.lang.reflect.Method;</span><br><span class="line"></span><br><span class="line">public class MyMethodInterceptor implements MethodInterceptor&#123;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable &#123;</span><br><span class="line">        System.out.println(&quot;&gt;&gt;&gt;&gt;MethodInterceptor start...&quot;);</span><br><span class="line">        Object result = proxy.invokeSuper(obj,args);</span><br><span class="line">        System.out.println(&quot;&gt;&gt;&gt;&gt;MethodInterceptor ending...&quot;);</span><br><span class="line">        return &quot;result&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>测试类</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">import net.sf.cglib.proxy.Enhancer;</span><br><span class="line"></span><br><span class="line">public class CglibTest &#123;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        System.out.println(&quot;***************&quot;);</span><br><span class="line">        Target target = new Target();</span><br><span class="line">        CglibTest test = new CglibTest();</span><br><span class="line">        Target proxyTarget = (Target) test.createProxy(Target.class);</span><br><span class="line">        String res = proxyTarget.execute();</span><br><span class="line">        System.out.println(res);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public Object createProxy(Class targetClass) &#123;</span><br><span class="line">        Enhancer enhancer = new Enhancer();</span><br><span class="line">        enhancer.setSuperclass(targetClass);</span><br><span class="line">        enhancer.setCallback(new MyMethodInterceptor());</span><br><span class="line">        return enhancer.create();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代理对象生成过程由Enhancer类实现，步骤为</p>
+<ol>
+<li>生成代理类Class的二进制字节码</li>
+<li>通过Class.forName加载二进制字节码，生成Class对象</li>
+<li>通过反射机制获取实例构造，并初始化代理类对象</li>
+</ol>
+<h2 id="第十二章、享元模式"><a href="#第十二章、享元模式" class="headerlink" title="第十二章、享元模式"></a>第十二章、享元模式</h2><h3 id="什么是享元模式"><a href="#什么是享元模式" class="headerlink" title="什么是享元模式"></a>什么是享元模式</h3><p>意图运用共享技术有效地支持大量细粒度的对象，即如果有多个相同的对象，只共享一份就好。通常会和工厂模式一起使用。比如咖啡有10种口味，但店中卖出了1万份，没必要创建1万个订单对象，而是通过享元模式生成10个订单对象，由1万个订单共享使用这些订单（以咖啡口味为区分关键字）</p>
+<h3 id="适用场景-6"><a href="#适用场景-6" class="headerlink" title="适用场景"></a>适用场景</h3><ol>
+<li>一个应用程序使用了大量的对象</li>
+<li>完全由于使用大量的对象，造成很大的存储开销</li>
+<li>对象的大多数状态都可变为外部状态</li>
+<li>如果删除对象的外部状态，可以使用较少的共享对象取代很多组对象</li>
+<li>应用程序不依赖对象标识</li>
+</ol>
+<h3 id="如何使用享元"><a href="#如何使用享元" class="headerlink" title="如何使用享元"></a>如何使用享元</h3><ol>
+<li>定义享元抽象接口</li>
+<li>具体实现接口，并为内部状态添加内存空间，由享元工厂维护一个享元池，Map&lt;&gt;，当请求共享时，先在池中判断是否存在，如存在则直接返回对应对象，否则新建对象并加入到池中，较为依赖工厂模式</li>
+</ol>
+<h2 id="第十三章、构造器模式"><a href="#第十三章、构造器模式" class="headerlink" title="第十三章、构造器模式"></a>第十三章、构造器模式</h2><h3 id="什么是构造器"><a href="#什么是构造器" class="headerlink" title="什么是构造器"></a>什么是构造器</h3><ol>
+<li>不是函数，不能被继承</li>
+<li>修饰符只能使用访问修饰符，public, private, protected</li>
+<li>没有返回值，且不用声明void</li>
+</ol>
+<h3 id="构造器的执行过程"><a href="#构造器的执行过程" class="headerlink" title="构造器的执行过程"></a>构造器的执行过程</h3><ol>
+<li>Bind构造器的参数</li>
+<li>如果显示调用了this，则递归调用this构造器，然后跳到5</li>
+<li>递归调用显式或者隐式的父类构造器，除Object外</li>
+<li>执行显式的实例变量初始化</li>
+<li>执行其他部分</li>
+</ol>
+<h3 id="构造器和方法的区别"><a href="#构造器和方法的区别" class="headerlink" title="构造器和方法的区别"></a>构造器和方法的区别</h3><ol>
+<li>构造器只能加访问修饰符，并且与类同名，方法可以加abstract等修饰符，通常首字符小写</li>
+<li>this是一个指向当前对象实例的指针，在静态方法中不可使用</li>
+<li>this、super需要显式放在第一行</li>
+<li>如果没有构造器，则编译器自动加入一个不带任何参数的构造器，作为缺省</li>
+</ol>
+<h2 id="第十四章、生成器模式"><a href="#第十四章、生成器模式" class="headerlink" title="第十四章、生成器模式"></a>第十四章、生成器模式</h2><h3 id="什么是生成器模式"><a href="#什么是生成器模式" class="headerlink" title="什么是生成器模式"></a>什么是生成器模式</h3><p>创建复杂对象的算法应该独立于该对象的组成部分以及它们的装配方式，且构造过程必须允许被构造的对象有不同的表示。比如生产汽车时，需要先生产汽车配件，再将配件组装起来，作为一个对象功能太过耦合，因为配件可能用于多种不同品牌汽车的生产。生成器模式则将配件和组装解耦，Builder负责生产配件，而Director负责组装。与工厂模式类似，但最终生成产品的是Director</p>
+<h3 id="如何使用生成器模式"><a href="#如何使用生成器模式" class="headerlink" title="如何使用生成器模式"></a>如何使用生成器模式</h3><ol>
+<li>Builder接口定义如何创建复杂对象的各个部件</li>
+<li>Director将部件组装成产品</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ConcreteBuilder builder = new ConcreteBuilder();</span><br><span class="line">Director director = new Director(builder);</span><br><span class="line">director.construct();</span><br><span class="line">Product product = builder.getResult();</span><br></pre></td></tr></table></figure>
+
+<p>如果要把奔驰汽车换成宝马，则只需将客户端调用的BenzBuilder换成BMWBuilder，并在BMWBuilder中重新定义需要的组件生产</p>
+<h3 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h3><p>数据库连接池，当某个连接断掉时，由Director类诊断并修复部件，使之可重用</p>
+<h3 id="适用场景-7"><a href="#适用场景-7" class="headerlink" title="适用场景"></a>适用场景</h3><ol>
+<li>创建复杂对象的算法应该独立于该对象的组成部分以及它们的装配方式</li>
+<li>构造过程必须允许被构造的对象有不同的表示</li>
+</ol>
+<h2 id="第十五章、工厂方法模式"><a href="#第十五章、工厂方法模式" class="headerlink" title="第十五章、工厂方法模式"></a>第十五章、工厂方法模式</h2><h3 id="什么是工厂方法模式"><a href="#什么是工厂方法模式" class="headerlink" title="什么是工厂方法模式"></a>什么是工厂方法模式</h3><p>定义创建产品的接口，将实际创建工作推迟到子类中，客户端不需要知道产品对象的细节和创建方式。使得系统可以在不修改具体工厂角色的情况下引进新产品。比如篮球、足球运动员到体协注册，俱乐部到体协申请对应类型的运动员，由体协代为通信</p>
+<h3 id="涉及到的OO原则"><a href="#涉及到的OO原则" class="headerlink" title="涉及到的OO原则"></a>涉及到的OO原则</h3><ol>
+<li>OCP(Open-Close Principle)，开闭原则：软件实体应当对扩展开放，对修改关闭，当软件需要扩展时不应修改源码，而是在基础上新增</li>
+<li>DIP(Dependence Inversion Principle)依赖倒置原则：要针对接口编程，不要针对实现编程。高层次暴露给低层次的应是接口</li>
+<li>LoD(Law of Demeter)迪米特法则：只与你直接的朋友通信，避免和陌生人通信</li>
+</ol>
+<h3 id="工厂方法模式的角色"><a href="#工厂方法模式的角色" class="headerlink" title="工厂方法模式的角色"></a>工厂方法模式的角色</h3><ol>
+<li>抽象工厂角色：工厂方法模式的核心，与应用程序无关。任何在模式中创建的对象的工厂类必须实现该接口</li>
+<li>具体工厂角色：实现抽象工厂接口的具体工厂类，包含与应用程序相关逻辑，收到应用程序调用以创建产品对象</li>
+<li>抽象产品角色：工厂方法模式所创建的对象的超类型，即产品对象共同父类或接口</li>
+<li>具体产品角色：实现抽象产品角色定义的接口</li>
+</ol>
+<h3 id="为什么使用工厂方法模式"><a href="#为什么使用工厂方法模式" class="headerlink" title="为什么使用工厂方法模式"></a>为什么使用工厂方法模式</h3><p>在类初始化过程可能会进行繁杂的操作，如果都放在构造函数中会导致构造阶段工作过多，且不易维护。若使用工厂创建对象可以在构造前后加入额外的功能，并方便修改</p>
+<h3 id="简单工厂模式-VS-工厂方法模式"><a href="#简单工厂模式-VS-工厂方法模式" class="headerlink" title="简单工厂模式 VS 工厂方法模式"></a>简单工厂模式 VS 工厂方法模式</h3><p>简单工厂模式用来实例化目标对象，避免将具体类暴露给客户端。但不满足OCP，例如体协注册篮球、足球运动员，此时需要乒乓球运动员的话需要修改体协实现，增加注册乒乓球运动员的方法。<br>工厂方法模式满足OCP，将体协抽象为接口，篮球、足球分别实现，需要添加乒乓球时只需声明乒乓球类实现体协接口即可<br>对比：</p>
+<ol>
+<li>结构复杂度：简单工厂模式只需要一个工厂类，而工厂方法模式的工厂类随产品类个数增加而增加</li>
+<li>代码复杂度：与结构复杂度矛盾，简单工厂类随产品增加要新加许多代码，而工厂方法模式的具体工厂类只实现单一功能</li>
+<li>客户端编码难度：工厂方法模式满足OCP，但在客户端需要对工厂类具体实例化，而简单工厂模式的工程类是静态类，无需实例化</li>
+<li>管理难度：工厂方法模式满足OCP，具有扩展性，简单工厂模式也有扩展性，但需要对工厂类做修改</li>
+</ol>
+<h3 id="简单工厂模式示例"><a href="#简单工厂模式示例" class="headerlink" title="简单工厂模式示例"></a>简单工厂模式示例</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">public interface Product &#123;&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">public class ConcreteProduct1 implemets Product &#123;&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">public class ConcreteProduct2 implements Product &#123;&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">public class ConcreteProduct3 implements Product &#123;&#125;</span><br></pre></td></tr></table></figure>
+<p>SimplyFactory是简单工厂实现，被所有需要进行实例化的客户类调用</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">public class SimplyFactory &#123;</span><br><span class="line"></span><br><span class="line">    public Product createProduct(int type) &#123;</span><br><span class="line">        if (type == 1) &#123;</span><br><span class="line">            return new ConcreteProduct1();</span><br><span class="line">        &#125;</span><br><span class="line">        else if (type == 2) &#123;</span><br><span class="line">            return new ConcreteProduct2();</span><br><span class="line">        &#125;</span><br><span class="line">        return new ConcreteProduct3();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>客户端使用简单工厂进行实例化</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public class Client &#123;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        SimpleFactory simpleFactory = new SimpleFactory();</span><br><span class="line">        Product product = simpleFactory.createProduct(1);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="工厂方法模式示例"><a href="#工厂方法模式示例" class="headerlink" title="工厂方法模式示例"></a>工厂方法模式示例</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public abstract class Factory &#123;</span><br><span class="line">    public abstract Product factoryMethod();</span><br><span class="line">    </span><br><span class="line">    public void doSth() &#123;</span><br><span class="line">        Product product = factoryMethod();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public class ConcreteFactory1 extends Factory &#123;</span><br><span class="line">    public Product factoryMethod() &#123;</span><br><span class="line">        return new ConcreteProduct1();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public class ConcreteFactory2 extends Factory &#123;</span><br><span class="line">    public Product factoryMethod() &#123;</span><br><span class="line">        return new ConcreteProduct2();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public class ConcreteFactory3 extends Factory &#123;</span><br><span class="line">    public Product factoryMethod() &#123;</span><br><span class="line">        return new ConcreteProduct3();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="第十六章、抽象工厂模式"><a href="#第十六章、抽象工厂模式" class="headerlink" title="第十六章、抽象工厂模式"></a>第十六章、抽象工厂模式</h2><h3 id="什么是抽象工厂模式"><a href="#什么是抽象工厂模式" class="headerlink" title="什么是抽象工厂模式"></a>什么是抽象工厂模式</h3><p>提供一个创建一系列相关或相互依赖对象的接口，而无需指定具体类。又称工具箱模式，工厂类的通信接口只有抽象工厂和创建产品族的各个工厂方法，不带任何参数，并返回有抽象产品类型的具体产品示例，使得客户端不依赖具体产品的类。例如吃炸鸡，我们只点炸鸡，但炸鸡下还有麦当劳和肯德基的具体区分，但和我们没关系</p>
+<h3 id="抽象工厂模式的角色"><a href="#抽象工厂模式的角色" class="headerlink" title="抽象工厂模式的角色"></a>抽象工厂模式的角色</h3><ol>
+<li>抽象工厂角色：担任这个角色的是工厂方法模式的核心，是与应用系统的商业逻辑无关，通常用抽象类或接口实现</li>
+<li>具体工厂角色：直接在客户端的调用下创建产品的实例，含有选择合适产品对象的逻辑，逻辑与应用系统的商业逻辑紧密相关的</li>
+<li>抽象产品角色：抽象工厂方法模式创建的对象的父类或接口</li>
+<li>具体产品角色：抽象工厂模式创建的任何产品对象都是某一具体产品类的实例，是客户端最终需要的东西</li>
+</ol>
+<h3 id="适用场景-8"><a href="#适用场景-8" class="headerlink" title="适用场景"></a>适用场景</h3><ol>
+<li>一个系统独立于它的产品的创建、组合和表示时</li>
+<li>一个系统要由多个产品系列中的一个来配置时</li>
+<li>要强调一系列相关的产品对象的设计以便进行联合使用时</li>
+<li>提供一个产品类库，只想显示他们的接口而不是实现时</li>
+</ol>
+<p>例如三种抽象产品：门、房间、墙。有两组具体实现：卧室和起居室。抽象工厂可以根据客户指令去生产卧室和起居室的房间</p>
+<h3 id="工厂模式与抽象工厂模式的区别"><a href="#工厂模式与抽象工厂模式的区别" class="headerlink" title="工厂模式与抽象工厂模式的区别"></a>工厂模式与抽象工厂模式的区别</h3><p>产品等级：不同类型的产品，比如苹果、桌子<br>产品族：同一种东西的不同类型，比如电脑有联想、苹果的<br>假设在大棚里有水果和蔬菜（不同产品等级），水果下还有苹果、香蕉等（产品族），并且分为北方的和南方的，如上分类的情况，希望通过工厂实现具体产品<br>如果在大棚里只有蔬菜，可以使用简单工厂模式<br>如果引入水果，则使用工厂方法模式，将产品登记分开，即工厂方法模式用一个工厂去创建很多水果或蔬菜<br>如果在北京和广州都有大棚，种同样的东西，则需要使用抽象工厂模式，来区分同一类产品是源自哪里，不同地区的工厂生产不同的水果</p>
+<h2 id="第十七章、原型模式"><a href="#第十七章、原型模式" class="headerlink" title="第十七章、原型模式"></a>第十七章、原型模式</h2><h3 id="什么是原型模式"><a href="#什么是原型模式" class="headerlink" title="什么是原型模式"></a>什么是原型模式</h3><p>原型模式允许一个对象再创建另一个可定制的对象，而无需知道如何创建的细节，原理是将一个原型对象传递给那个要发动创建的对象，通过拷贝传来的原型对象实现</p>
+<h3 id="为什么需要"><a href="#为什么需要" class="headerlink" title="为什么需要"></a>为什么需要</h3><p>利用已有的一个原型对象，快速生成和原型对象一样的实例，例如A a = new A(); 此时想要一个同样的b，则按照原型模式A b = a.clone()</p>
+<h3 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h3><p>优点：</p>
+<ol>
+<li>允许动态增加或减少产品类，对整个结构没有影响</li>
+<li>提供了简化的创建结构，而不像工厂方法模式需要有一个与产品类等级结构相同的类</li>
+<li>具有给一个应用软件动态加载新功能的能力，依赖于高度独立性</li>
+<li>不需要任何事先确定的等级结构</li>
+</ol>
+<p>缺点：类必须实现深拷贝方法</p>
+<h3 id="适用场景-9"><a href="#适用场景-9" class="headerlink" title="适用场景"></a>适用场景</h3><ol>
+<li>当一个系统应该独立于它的产品创建、构成和表示时</li>
+<li>当要实例化的类是在运行时指定</li>
+<li>为了避免创建一个与产品类层次平行的工厂类层次时</li>
+<li>当一个类的实例只能有几个不同状态组合中的一种时</li>
+</ol>
+<h2 id="第十八章、备忘录模式"><a href="#第十八章、备忘录模式" class="headerlink" title="第十八章、备忘录模式"></a>第十八章、备忘录模式</h2><h3 id="什么是备忘录模式"><a href="#什么是备忘录模式" class="headerlink" title="什么是备忘录模式"></a>什么是备忘录模式</h3><p>在不破坏封装性的前提下，捕获一个对象的内部状态，并在该对象之外保存这个状态。目的是后续可以利用这个对象恢复到之前的状态。举例，月光宝盒</p>
+<h3 id="组成部分-2"><a href="#组成部分-2" class="headerlink" title="组成部分"></a>组成部分</h3><ol>
+<li>备忘录角色：存储备忘发起角色的内部状态，需要有两个接口：1）窄接口：备忘录管理者角色能看到的，不可见备忘录中的属性；2）宽接口：备忘发起角色可以看到，能得到自己放入备忘录角色中的属性</li>
+<li>备忘发起角色：创建一个备忘录，保存当前时刻内部状态，在需要时使用备忘录恢复内部状态</li>
+<li>备忘录管理者角色：负责保存备忘录，但不能操作或检查备忘录里的内容</li>
+</ol>
+<h3 id="适用场景-10"><a href="#适用场景-10" class="headerlink" title="适用场景"></a>适用场景</h3><ol>
+<li>保存历史状态并有效地保持封装边界，避免暴露备忘发起角色的内部信息，对其他对象屏蔽。</li>
+</ol>
+<h3 id="实现-1"><a href="#实现-1" class="headerlink" title="实现"></a>实现</h3><p>发起人：创建含有内部状态的备忘录对象，并使用备忘录对象存储状态<br>负责人：保存备忘录对象，但不能坚持备忘录对象内容<br>备忘录：将发起人对象的内部状态存起来，并保证内容不被发起人之外的对象访问</p>
+<h3 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h3><p>备忘录：1）存储发起人的内部状态，状态灵活可变；2）能保护内容不被发起人对象之外的任意对象读取<br>发起人：1）创建一个含有当前内部状态的备忘录对象；2）使用备忘录对象存储内部状态<br>负责人：保存备忘录对象且不检查内容</p>
+<h2 id="第十九章、操作型模式"><a href="#第十九章、操作型模式" class="headerlink" title="第十九章、操作型模式"></a>第十九章、操作型模式</h2><h3 id="操作、方法、签名和算法的概念"><a href="#操作、方法、签名和算法的概念" class="headerlink" title="操作、方法、签名和算法的概念"></a>操作、方法、签名和算法的概念</h3><p>操作：定义了服务的规范，在方法之上的抽象概念定义类所提供的的服务，并给出接口。<br>方法：实现具体的操作，可以实现多态，例如定义不同参数数量和类型<br>签名：与操作类似，也是方法的接口，包括方法名、形参的数目和类型，但不包括返回类型。一个方法通常有一个方法签名，实现一个操作<br>算法：定义良好的计算过程，一个算法可能包含多个操作和方法，也可能仅仅是方法的一部分</p>
+<h2 id="第二十章、模板方法模式"><a href="#第二十章、模板方法模式" class="headerlink" title="第二十章、模板方法模式"></a>第二十章、模板方法模式</h2><h3 id="什么是模板方法模式"><a href="#什么是模板方法模式" class="headerlink" title="什么是模板方法模式"></a>什么是模板方法模式</h3><p>定义一个操作中的算法的骨架，将骨架中的步骤延迟到子类中实现，使得子类不改变一个算法的结构即可重定义算法的某些特定步骤。模板中将不知道具体实现的步骤封装成抽象方法，并提供一些调用顺序，可以确定算法的核心结构，同时带来灵活性。举例去吃面，做面条定义步骤为加面、加汤，但具体的加普通面还是刀削面，以及加什么卤是子类实现的</p>
+<h3 id="结构"><a href="#结构" class="headerlink" title="结构"></a>结构</h3><ol>
+<li>抽象模板类：定义一个或多个抽象操作，由子类实现。并实现一个具体操作，其中定义了调用抽象操作的顺序以确定顶层逻辑。这个具体操作成为模板方法</li>
+<li>具体类：实现抽象模板类定义的抽象操作</li>
+</ol>
+<h3 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h3><p>在一个方法中实现一个算法，并将算法中某些步骤定义推迟，使得其他类可以重新定义。例如Collections.sort()方法，待排序对象需要实现Comparator接口</p>
+<h3 id="模板方法模式和策略模式"><a href="#模板方法模式和策略模式" class="headerlink" title="模板方法模式和策略模式"></a>模板方法模式和策略模式</h3><p>模板方法模式使用继承实现代码复用，而策略模式使用委托，具有比继承更大的灵活性</p>
+<h2 id="第二十一章、状态模式"><a href="#第二十一章、状态模式" class="headerlink" title="第二十一章、状态模式"></a>第二十一章、状态模式</h2><h3 id="什么是状态模式"><a href="#什么是状态模式" class="headerlink" title="什么是状态模式"></a>什么是状态模式</h3><p>允许一个对象在其内部状态改变时改变它的行为</p>
+<h3 id="角色-1"><a href="#角色-1" class="headerlink" title="角色"></a>角色</h3><ol>
+<li>使用环境角色：客户程序通过它来满足自己的需求，定义客户端感兴趣的接口，并保留一个具体状态类的实例</li>
+<li>状态角色：定义一个接口以封装与使用环境角色的一个特定状态相关的行为</li>
+<li>具体状态角色：实现状态角色定义的接口，结构与策略模式非常类似</li>
+</ol>
+<p>通过使用多态，可以动态地改变语境对象的属性State的内容，使其从指向一个具体状态类到指向另一个具体状态类，从而改变语境对象</p>
+<h3 id="状态模式与策略模式"><a href="#状态模式与策略模式" class="headerlink" title="状态模式与策略模式"></a>状态模式与策略模式</h3><p>状态模式中，状态的变迁是由对象的内部条件决定，外接只需关心其接口，不必关心其状态对象的创建和转化。策略模式里，采取何种策略由外部条件决定。<br>结构形式几乎一样，但应用场景不同，区别在于状态模式重在强调对象内部状态的变化改变对象的行为，策略模式重在外部对策略的选择</p>
+<h3 id="适用场景-11"><a href="#适用场景-11" class="headerlink" title="适用场景"></a>适用场景</h3><p>适合状态的切换。当出现大量if else进行切换时，可以考虑是否使用状态模式，不只是根据状态，也根据属性。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">if (state == 0) state = 1;</span><br><span class="line">else if (state == 1) state = 0;</span><br></pre></td></tr></table></figure>
+
+<p>即状态是切换（同一变量的改变）</p>
+<h2 id="第二十二章、策略模式"><a href="#第二十二章、策略模式" class="headerlink" title="第二十二章、策略模式"></a>第二十二章、策略模式</h2><h3 id="什么是策略模式"><a href="#什么是策略模式" class="headerlink" title="什么是策略模式"></a>什么是策略模式</h3><p>定义一系列的算法，把他们一个个封装起来，并使他们可以相互替换，由环境角色来调用策略，客户端决定调用何种策略。举例，可以定义4个操作类加减乘除，环境角色持有这四种策略的引用，客户端声明环境角色类，并调用其中策略类对应的操作方法</p>
+<h3 id="角色-2"><a href="#角色-2" class="headerlink" title="角色"></a>角色</h3><ol>
+<li>抽象策略角色：用一个抽象类或接口实现，定义算法所完成的功能</li>
+<li>具体策略角色：实现算法具体功能</li>
+<li>环境角色：持有策略类的引用</li>
+</ol>
+<h3 id="优缺点-1"><a href="#优缺点-1" class="headerlink" title="优缺点"></a>优缺点</h3><p>优点：1）提供了管理相关算法族的方法；2）避免使用多重条件转移语句<br>缺点：1）必须知道所有的具体策略类及区别；2）生成许多的策略类，开销大</p>
+<h3 id="适用场景-12"><a href="#适用场景-12" class="headerlink" title="适用场景"></a>适用场景</h3><ol>
+<li>系统有许多类，区别仅在于行为</li>
+<li>动态选择几种算法中的一种</li>
+<li>一个对象有很多行为</li>
+</ol>
+<h3 id="实现步骤"><a href="#实现步骤" class="headerlink" title="实现步骤"></a>实现步骤</h3><ol>
+<li>定义抽象策略类，定义各个实现的共同抽象方法</li>
+<li>定义具体策略类，具体实现父类的共同方法</li>
+<li>定义环境角色类，私有化声明抽象策略类，提供操作入口</li>
+</ol>
+<h3 id="策略模式与状态模式、模板模式的区别"><a href="#策略模式与状态模式、模板模式的区别" class="headerlink" title="策略模式与状态模式、模板模式的区别"></a>策略模式与状态模式、模板模式的区别</h3><ol>
+<li>状态模式侧重状态方面，一般不接受新的状态对象；策略模式侧重不同的行为的改变，在统一接口下，强调多态下面行为的执行过程，可以从用户接收参数</li>
+<li>模板模式是算法在父类中，子类不完全改写，而实现部分，但整体的框架不变，可以使程序更灵活</li>
+</ol>
+<h2 id="第二十三章、命令模式"><a href="#第二十三章、命令模式" class="headerlink" title="第二十三章、命令模式"></a>第二十三章、命令模式</h2><h3 id="什么是命令模式"><a href="#什么是命令模式" class="headerlink" title="什么是命令模式"></a>什么是命令模式</h3><p>将一个请求封装成一个对象，从而可以用不同的请求对客户进行参数化，对请求排队或记录请求日志，以及支持可撤销的操作。举例，点菜时的请求可以添加，可以撤销，可以更改</p>
+<h3 id="角色-3"><a href="#角色-3" class="headerlink" title="角色"></a>角色</h3><ol>
+<li>命令角色：声明执行操作的接口</li>
+<li>具体命令角色：讲一个接收者对象绑定于一个动作，调用接收者相应的操作，实现命令角色声明的接口</li>
+<li>客户角色：创建一个具体命令对象</li>
+<li>请求者角色：调用命令对象执行这个请求</li>
+<li>接收者角色：知道如何实施与执行一个请求相关的操作</li>
+</ol>
+<h3 id="命令模式实现undo"><a href="#命令模式实现undo" class="headerlink" title="命令模式实现undo"></a>命令模式实现undo</h3><p>将中间状态保存到栈中，需要撤销时取出对应的中间状态类，调用该类的undo方法，可以修改当前对象的状态</p>
+<h3 id="优点-1"><a href="#优点-1" class="headerlink" title="优点"></a>优点</h3><ol>
+<li>命令模式将调用操作的请求对象与知道如何实现该操作的接收对象解耦</li>
+<li>具体命令角色可以被不同的请求者角色重用</li>
+<li>可将多个命令装配成一个复合命令</li>
+<li>增加新的具体命令角色很容易</li>
+</ol>
+<h3 id="适用场景-13"><a href="#适用场景-13" class="headerlink" title="适用场景"></a>适用场景</h3><ol>
+<li>需要抽象出待执行的动作，然后以参数形式提供出来</li>
+<li>在不同时刻指定、排列和执行请求</li>
+<li>需要支持取消操作</li>
+<li>支持修改日志功能</li>
+<li>需要支持事务操作</li>
+</ol>
+<h2 id="第二十四章、解释器模式"><a href="#第二十四章、解释器模式" class="headerlink" title="第二十四章、解释器模式"></a>第二十四章、解释器模式</h2><h3 id="什么是解释器模式"><a href="#什么是解释器模式" class="headerlink" title="什么是解释器模式"></a>什么是解释器模式</h3><p>定义语言的语法，并建立一个解释器来解释语言中的句子。比如榨苹果汁，有不同的做法，每一个做法对应一个解释器</p>
+<h2 id="第二十五章、扩展型模式"><a href="#第二十五章、扩展型模式" class="headerlink" title="第二十五章、扩展型模式"></a>第二十五章、扩展型模式</h2><h3 id="什么是扩展型模式"><a href="#什么是扩展型模式" class="headerlink" title="什么是扩展型模式"></a>什么是扩展型模式</h3><p>向模式添加元素，通常是对象类和属性。举例，现在使用的手机，除了通信功能，还有一系列额外的软件</p>
+<h2 id="装饰器模式"><a href="#装饰器模式" class="headerlink" title="装饰器模式"></a>装饰器模式</h2><h3 id="什么是装饰器模式"><a href="#什么是装饰器模式" class="headerlink" title="什么是装饰器模式"></a>什么是装饰器模式</h3><p>动态给一个对象添加一些额外的功能，相比用继承方式更灵活地扩充功能。比如对于每个函数增加日志输出功能，用装饰器修饰目标类并在合适位置输出日志，还有Java的IO，</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">FileReader fr = new FileReader(filename);</span><br><span class="line">BufferedReader br = new BufferedReader(fr);</span><br></pre></td></tr></table></figure>
+
+<p>就是使用装饰器修饰fr，为其添加buffer对应功能</p>
+<h3 id="角色-4"><a href="#角色-4" class="headerlink" title="角色"></a>角色</h3><ol>
+<li>Component：装饰器模式中公共方法的类</li>
+<li>ConcreteComponent：具体被修饰的类</li>
+<li>Decorator：核心对象，所有具体装饰器对象的父类，完成装饰器的部分职能，继承自Component，并包含一个Component作为成员变量，可以调用其方法</li>
+<li>ConcreteDecorator：具体装饰器对象，完成装饰功能。装饰功能通过调用被装饰对象对应的方法，加上装饰器对象自身的方法，实现额外添加功能</li>
+</ol>
+<h3 id="优缺点-2"><a href="#优缺点-2" class="headerlink" title="优缺点"></a>优缺点</h3><p>优点：相比继承，提供了更大的灵活性，可以动态决定是否添加一个功能，并且使用不同的具体装饰类及排列组合，可以实现多种行为<br>缺点：装饰器比继承使用更少的类，但使用更多的对象</p>
+<h2 id="第二十七章、迭代器模式"><a href="#第二十七章、迭代器模式" class="headerlink" title="第二十七章、迭代器模式"></a>第二十七章、迭代器模式</h2><h3 id="什么是迭代器模式"><a href="#什么是迭代器模式" class="headerlink" title="什么是迭代器模式"></a>什么是迭代器模式</h3><p>分离了集合对象的遍历行为，抽象出一个迭代器类来负责，既不暴露集合的内部结构，又让外部代码透明地访问集合内部的数据。比如Java 中的Iterator通过传入集合类型的参数将其转换为迭代器</p>
+<h3 id="角色-5"><a href="#角色-5" class="headerlink" title="角色"></a>角色</h3><ol>
+<li>迭代器角色：定义访问和遍历元素的接口</li>
+<li>具体迭代器模式：实现迭代器接口，并记录遍历的当前位置</li>
+<li>容器角色：提供创建具体迭代器角色的接口</li>
+<li>具体容器角色：实现容器角色的接口</li>
+</ol>
+<h3 id="适用场景-14"><a href="#适用场景-14" class="headerlink" title="适用场景"></a>适用场景</h3><ol>
+<li>访问一个容器对象的内容而不暴露内部表示</li>
+<li>支持对容器对象的多种遍历</li>
+<li>为遍历不同的容器结构提供一个统一的接口</li>
+</ol>
+<h2 id="第二十八章、访问者模式"><a href="#第二十八章、访问者模式" class="headerlink" title="第二十八章、访问者模式"></a>第二十八章、访问者模式</h2><h3 id="什么是访问者模式"><a href="#什么是访问者模式" class="headerlink" title="什么是访问者模式"></a>什么是访问者模式</h3><p>在每个自定义对象中预定义一个Accept（请求访问）方法，以对象为参数，调用访问者对象的visit方法来操作这个对象</p>
+<h3 id="角色-6"><a href="#角色-6" class="headerlink" title="角色"></a>角色</h3><ol>
+<li>抽象访问者：声明一个或多个访问操作</li>
+<li>具体访问者：实现上述接口</li>
+<li>抽象结点：声明一个接受操作，接受一个访问者对象作为参数</li>
+<li>具体结点：实现上述声明的接受操作</li>
+</ol>
+<h3 id="适用场景-15"><a href="#适用场景-15" class="headerlink" title="适用场景"></a>适用场景</h3><p>被访问类结构比较稳定，即系统很少出现增加新节点的时候。因为访问者模式对OCP支持不好</p>
+<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><ol>
+<li>增加结点困难</li>
+<li>破坏封装</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/classicalBooks/" rel="tag"># 经典书籍</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/02/17/%E7%A8%8B%E5%BA%8F%E5%91%98%E9%9D%A2%E8%AF%95%E9%87%91%E5%85%B8/" rel="prev" title="程序员面试金典">
+      <i class="fa fa-chevron-left"></i> 程序员面试金典
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/02/17/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BC%BA%E5%A4%B1%E7%9A%84%E6%95%99%E8%82%B2%E7%AC%94%E8%AE%B0/" rel="next" title="计算机缺失的教育笔记">
+      计算机缺失的教育笔记 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E7%AB%A0"><span class="nav-number">1.</span> <span class="nav-text">第一章</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E7%AB%A0%E3%80%81%E6%8E%A5%E5%8F%A3%E5%9E%8B%E6%A8%A1%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text">第二章、接口型模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A5%E5%8F%A3%E5%9E%8B%E6%9C%89%E5%93%AA%E4%BA%9B%E6%A8%A1%E5%BC%8F"><span class="nav-number">2.1.</span> <span class="nav-text">接口型有哪些模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8A%BD%E8%B1%A1%E7%B1%BB%E5%92%8C%E6%8E%A5%E5%8F%A3%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">2.2.</span> <span class="nav-text">抽象类和接口的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B"><span class="nav-number">2.3.</span> <span class="nav-text">示例</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E7%AB%A0%E3%80%81%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">第三章、适配器模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B-1"><span class="nav-number">3.1.</span> <span class="nav-text">示例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8F%E5%9B%9B%E8%A6%81%E7%B4%A0"><span class="nav-number">3.2.</span> <span class="nav-text">适配器模式四要素</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%95%E6%97%B6%E4%BD%BF%E7%94%A8%E9%80%82%E9%85%8D%E5%99%A8"><span class="nav-number">3.3.</span> <span class="nav-text">何时使用适配器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E9%85%8D%E5%99%A8%E5%88%86%E7%B1%BB"><span class="nav-number">3.4.</span> <span class="nav-text">适配器分类</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%9B%9B%E7%AB%A0%E3%80%81%E5%A4%96%E8%A7%82%E6%A8%A1%E5%BC%8F"><span class="nav-number">4.</span> <span class="nav-text">第四章、外观模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%A4%96%E8%A7%82%E6%A8%A1%E5%BC%8F"><span class="nav-number">4.1.</span> <span class="nav-text">什么是外观模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="nav-number">4.2.</span> <span class="nav-text">注意事项</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%94%E7%AB%A0%E3%80%81%E7%BB%84%E5%90%88%E6%A8%A1%E5%BC%8F"><span class="nav-number">5.</span> <span class="nav-text">第五章、组合模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E7%BB%84%E5%90%88%E6%A8%A1%E5%BC%8F"><span class="nav-number">5.1.</span> <span class="nav-text">什么是组合模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">5.2.</span> <span class="nav-text">适用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%85%AD%E7%AB%A0%E3%80%81%E6%A1%A5%E6%8E%A5%E6%A8%A1%E5%BC%8F"><span class="nav-number">6.</span> <span class="nav-text">第六章、桥接模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%A1%A5%E6%8E%A5%E6%A8%A1%E5%BC%8F"><span class="nav-number">6.1.</span> <span class="nav-text">什么是桥接模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BB%E8%A6%81%E7%89%B9%E7%82%B9"><span class="nav-number">6.2.</span> <span class="nav-text">主要特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8E%E9%80%82%E9%85%8D%E5%99%A8%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">6.3.</span> <span class="nav-text">与适配器的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF-1"><span class="nav-number">6.4.</span> <span class="nav-text">适用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%83%E7%AB%A0%E3%80%81%E8%B4%A3%E4%BB%BB%E5%9E%8B%E6%A8%A1%E5%BC%8F"><span class="nav-number">7.</span> <span class="nav-text">第七章、责任型模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E8%B4%A3%E4%BB%BB%E5%9E%8B%E6%A8%A1%E5%BC%8F"><span class="nav-number">7.1.</span> <span class="nav-text">什么是责任型模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%92%E8%89%B2"><span class="nav-number">7.2.</span> <span class="nav-text">角色</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF-2"><span class="nav-number">7.3.</span> <span class="nav-text">适用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E7%82%B9"><span class="nav-number">7.4.</span> <span class="nav-text">优点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0"><span class="nav-number">7.5.</span> <span class="nav-text">实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%85%AB%E7%AB%A0%E3%80%81%E5%8D%95%E4%BD%93%E6%A8%A1%E5%BC%8F"><span class="nav-number">8.</span> <span class="nav-text">第八章、单体模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F"><span class="nav-number">8.1.</span> <span class="nav-text">什么是单例模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F"><span class="nav-number">8.2.</span> <span class="nav-text">实现方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%86%E5%88%AB%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F"><span class="nav-number">8.3.</span> <span class="nav-text">识别单例模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E5%92%8C%E4%B8%80%E4%B8%AA%E6%89%80%E6%9C%89%E6%96%B9%E6%B3%95%E9%83%BD%E6%98%AF%E9%9D%99%E6%80%81%E7%9A%84%E5%B7%A5%E5%85%B7%E7%B1%BB%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB"><span class="nav-number">8.4.</span> <span class="nav-text">单例模式和一个所有方法都是静态的工具类有什么区别</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B9%9D%E7%AB%A0%E3%80%81%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F"><span class="nav-number">9.</span> <span class="nav-text">第九章、观察者模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F"><span class="nav-number">9.1.</span> <span class="nav-text">什么是观察者模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%84%E6%88%90%E9%83%A8%E5%88%86"><span class="nav-number">9.2.</span> <span class="nav-text">组成部分</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B8%E5%9E%8B%E5%BA%94%E7%94%A8"><span class="nav-number">9.3.</span> <span class="nav-text">典型应用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF-3"><span class="nav-number">9.4.</span> <span class="nav-text">适用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F"><span class="nav-number">9.5.</span> <span class="nav-text">具体实现方式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%8D%81%E7%AB%A0%E3%80%81%E4%B8%AD%E4%BB%8B%E8%80%85%E6%A8%A1%E5%BC%8F"><span class="nav-number">10.</span> <span class="nav-text">第十章、中介者模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E4%B8%AD%E4%BB%8B%E8%80%85%E6%A8%A1%E5%BC%8F"><span class="nav-number">10.1.</span> <span class="nav-text">什么是中介者模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%84%E6%88%90%E9%83%A8%E5%88%86-1"><span class="nav-number">10.2.</span> <span class="nav-text">组成部分</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF-4"><span class="nav-number">10.3.</span> <span class="nav-text">适用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%8D%81%E4%B8%80%E7%AB%A0%E3%80%81%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F"><span class="nav-number">11.</span> <span class="nav-text">第十一章、代理模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F"><span class="nav-number">11.1.</span> <span class="nav-text">什么是代理模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF-5"><span class="nav-number">11.2.</span> <span class="nav-text">适用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8C%85%E5%90%AB%E7%9A%84%E8%A7%92%E8%89%B2"><span class="nav-number">11.3.</span> <span class="nav-text">包含的角色</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F"><span class="nav-number">11.4.</span> <span class="nav-text">常见的代理模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E4%BB%A3%E7%90%86%E3%80%81JDK%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86%E5%92%8CCGLIB%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86"><span class="nav-number">11.5.</span> <span class="nav-text">静态代理、JDK动态代理和CGLIB动态代理</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E4%BB%A3%E7%90%86"><span class="nav-number">11.5.0.1.</span> <span class="nav-text">静态代理</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#JDK%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86"><span class="nav-number">11.5.0.2.</span> <span class="nav-text">JDK动态代理</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#CGLIB%E4%BB%A3%E7%90%86"><span class="nav-number">11.5.0.3.</span> <span class="nav-text">CGLIB代理</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%8D%81%E4%BA%8C%E7%AB%A0%E3%80%81%E4%BA%AB%E5%85%83%E6%A8%A1%E5%BC%8F"><span class="nav-number">12.</span> <span class="nav-text">第十二章、享元模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E4%BA%AB%E5%85%83%E6%A8%A1%E5%BC%8F"><span class="nav-number">12.1.</span> <span class="nav-text">什么是享元模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF-6"><span class="nav-number">12.2.</span> <span class="nav-text">适用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8%E4%BA%AB%E5%85%83"><span class="nav-number">12.3.</span> <span class="nav-text">如何使用享元</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%8D%81%E4%B8%89%E7%AB%A0%E3%80%81%E6%9E%84%E9%80%A0%E5%99%A8%E6%A8%A1%E5%BC%8F"><span class="nav-number">13.</span> <span class="nav-text">第十三章、构造器模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%9E%84%E9%80%A0%E5%99%A8"><span class="nav-number">13.1.</span> <span class="nav-text">什么是构造器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E5%99%A8%E7%9A%84%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B"><span class="nav-number">13.2.</span> <span class="nav-text">构造器的执行过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E5%99%A8%E5%92%8C%E6%96%B9%E6%B3%95%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">13.3.</span> <span class="nav-text">构造器和方法的区别</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%8D%81%E5%9B%9B%E7%AB%A0%E3%80%81%E7%94%9F%E6%88%90%E5%99%A8%E6%A8%A1%E5%BC%8F"><span class="nav-number">14.</span> <span class="nav-text">第十四章、生成器模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E7%94%9F%E6%88%90%E5%99%A8%E6%A8%A1%E5%BC%8F"><span class="nav-number">14.1.</span> <span class="nav-text">什么是生成器模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8%E7%94%9F%E6%88%90%E5%99%A8%E6%A8%A1%E5%BC%8F"><span class="nav-number">14.2.</span> <span class="nav-text">如何使用生成器模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%94%E7%94%A8"><span class="nav-number">14.3.</span> <span class="nav-text">应用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF-7"><span class="nav-number">14.4.</span> <span class="nav-text">适用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%8D%81%E4%BA%94%E7%AB%A0%E3%80%81%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F"><span class="nav-number">15.</span> <span class="nav-text">第十五章、工厂方法模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F"><span class="nav-number">15.1.</span> <span class="nav-text">什么是工厂方法模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%89%E5%8F%8A%E5%88%B0%E7%9A%84OO%E5%8E%9F%E5%88%99"><span class="nav-number">15.2.</span> <span class="nav-text">涉及到的OO原则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F%E7%9A%84%E8%A7%92%E8%89%B2"><span class="nav-number">15.3.</span> <span class="nav-text">工厂方法模式的角色</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%BF%E7%94%A8%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F"><span class="nav-number">15.4.</span> <span class="nav-text">为什么使用工厂方法模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F-VS-%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F"><span class="nav-number">15.5.</span> <span class="nav-text">简单工厂模式 VS 工厂方法模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F%E7%A4%BA%E4%BE%8B"><span class="nav-number">15.6.</span> <span class="nav-text">简单工厂模式示例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F%E7%A4%BA%E4%BE%8B"><span class="nav-number">15.7.</span> <span class="nav-text">工厂方法模式示例</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%8D%81%E5%85%AD%E7%AB%A0%E3%80%81%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F"><span class="nav-number">16.</span> <span class="nav-text">第十六章、抽象工厂模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F"><span class="nav-number">16.1.</span> <span class="nav-text">什么是抽象工厂模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F%E7%9A%84%E8%A7%92%E8%89%B2"><span class="nav-number">16.2.</span> <span class="nav-text">抽象工厂模式的角色</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF-8"><span class="nav-number">16.3.</span> <span class="nav-text">适用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F%E4%B8%8E%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">16.4.</span> <span class="nav-text">工厂模式与抽象工厂模式的区别</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%8D%81%E4%B8%83%E7%AB%A0%E3%80%81%E5%8E%9F%E5%9E%8B%E6%A8%A1%E5%BC%8F"><span class="nav-number">17.</span> <span class="nav-text">第十七章、原型模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%8E%9F%E5%9E%8B%E6%A8%A1%E5%BC%8F"><span class="nav-number">17.1.</span> <span class="nav-text">什么是原型模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81"><span class="nav-number">17.2.</span> <span class="nav-text">为什么需要</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-number">17.3.</span> <span class="nav-text">优缺点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF-9"><span class="nav-number">17.4.</span> <span class="nav-text">适用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%8D%81%E5%85%AB%E7%AB%A0%E3%80%81%E5%A4%87%E5%BF%98%E5%BD%95%E6%A8%A1%E5%BC%8F"><span class="nav-number">18.</span> <span class="nav-text">第十八章、备忘录模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%A4%87%E5%BF%98%E5%BD%95%E6%A8%A1%E5%BC%8F"><span class="nav-number">18.1.</span> <span class="nav-text">什么是备忘录模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%84%E6%88%90%E9%83%A8%E5%88%86-2"><span class="nav-number">18.2.</span> <span class="nav-text">组成部分</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF-10"><span class="nav-number">18.3.</span> <span class="nav-text">适用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0-1"><span class="nav-number">18.4.</span> <span class="nav-text">实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%9C%E7%94%A8"><span class="nav-number">18.5.</span> <span class="nav-text">作用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%8D%81%E4%B9%9D%E7%AB%A0%E3%80%81%E6%93%8D%E4%BD%9C%E5%9E%8B%E6%A8%A1%E5%BC%8F"><span class="nav-number">19.</span> <span class="nav-text">第十九章、操作型模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%93%8D%E4%BD%9C%E3%80%81%E6%96%B9%E6%B3%95%E3%80%81%E7%AD%BE%E5%90%8D%E5%92%8C%E7%AE%97%E6%B3%95%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="nav-number">19.1.</span> <span class="nav-text">操作、方法、签名和算法的概念</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E5%8D%81%E7%AB%A0%E3%80%81%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F"><span class="nav-number">20.</span> <span class="nav-text">第二十章、模板方法模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F"><span class="nav-number">20.1.</span> <span class="nav-text">什么是模板方法模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%84"><span class="nav-number">20.2.</span> <span class="nav-text">结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%AE%E7%9A%84"><span class="nav-number">20.3.</span> <span class="nav-text">目的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F%E5%92%8C%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F"><span class="nav-number">20.4.</span> <span class="nav-text">模板方法模式和策略模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E5%8D%81%E4%B8%80%E7%AB%A0%E3%80%81%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8F"><span class="nav-number">21.</span> <span class="nav-text">第二十一章、状态模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8F"><span class="nav-number">21.1.</span> <span class="nav-text">什么是状态模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%92%E8%89%B2-1"><span class="nav-number">21.2.</span> <span class="nav-text">角色</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8F%E4%B8%8E%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F"><span class="nav-number">21.3.</span> <span class="nav-text">状态模式与策略模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF-11"><span class="nav-number">21.4.</span> <span class="nav-text">适用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E5%8D%81%E4%BA%8C%E7%AB%A0%E3%80%81%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F"><span class="nav-number">22.</span> <span class="nav-text">第二十二章、策略模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F"><span class="nav-number">22.1.</span> <span class="nav-text">什么是策略模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%92%E8%89%B2-2"><span class="nav-number">22.2.</span> <span class="nav-text">角色</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E7%BC%BA%E7%82%B9-1"><span class="nav-number">22.3.</span> <span class="nav-text">优缺点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF-12"><span class="nav-number">22.4.</span> <span class="nav-text">适用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E6%AD%A5%E9%AA%A4"><span class="nav-number">22.5.</span> <span class="nav-text">实现步骤</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F%E4%B8%8E%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8F%E3%80%81%E6%A8%A1%E6%9D%BF%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">22.6.</span> <span class="nav-text">策略模式与状态模式、模板模式的区别</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E5%8D%81%E4%B8%89%E7%AB%A0%E3%80%81%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F"><span class="nav-number">23.</span> <span class="nav-text">第二十三章、命令模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F"><span class="nav-number">23.1.</span> <span class="nav-text">什么是命令模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%92%E8%89%B2-3"><span class="nav-number">23.2.</span> <span class="nav-text">角色</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F%E5%AE%9E%E7%8E%B0undo"><span class="nav-number">23.3.</span> <span class="nav-text">命令模式实现undo</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E7%82%B9-1"><span class="nav-number">23.4.</span> <span class="nav-text">优点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF-13"><span class="nav-number">23.5.</span> <span class="nav-text">适用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E5%8D%81%E5%9B%9B%E7%AB%A0%E3%80%81%E8%A7%A3%E9%87%8A%E5%99%A8%E6%A8%A1%E5%BC%8F"><span class="nav-number">24.</span> <span class="nav-text">第二十四章、解释器模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E8%A7%A3%E9%87%8A%E5%99%A8%E6%A8%A1%E5%BC%8F"><span class="nav-number">24.1.</span> <span class="nav-text">什么是解释器模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E5%8D%81%E4%BA%94%E7%AB%A0%E3%80%81%E6%89%A9%E5%B1%95%E5%9E%8B%E6%A8%A1%E5%BC%8F"><span class="nav-number">25.</span> <span class="nav-text">第二十五章、扩展型模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%89%A9%E5%B1%95%E5%9E%8B%E6%A8%A1%E5%BC%8F"><span class="nav-number">25.1.</span> <span class="nav-text">什么是扩展型模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A3%85%E9%A5%B0%E5%99%A8%E6%A8%A1%E5%BC%8F"><span class="nav-number">26.</span> <span class="nav-text">装饰器模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E8%A3%85%E9%A5%B0%E5%99%A8%E6%A8%A1%E5%BC%8F"><span class="nav-number">26.1.</span> <span class="nav-text">什么是装饰器模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%92%E8%89%B2-4"><span class="nav-number">26.2.</span> <span class="nav-text">角色</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E7%BC%BA%E7%82%B9-2"><span class="nav-number">26.3.</span> <span class="nav-text">优缺点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E5%8D%81%E4%B8%83%E7%AB%A0%E3%80%81%E8%BF%AD%E4%BB%A3%E5%99%A8%E6%A8%A1%E5%BC%8F"><span class="nav-number">27.</span> <span class="nav-text">第二十七章、迭代器模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E8%BF%AD%E4%BB%A3%E5%99%A8%E6%A8%A1%E5%BC%8F"><span class="nav-number">27.1.</span> <span class="nav-text">什么是迭代器模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%92%E8%89%B2-5"><span class="nav-number">27.2.</span> <span class="nav-text">角色</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF-14"><span class="nav-number">27.3.</span> <span class="nav-text">适用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E5%8D%81%E5%85%AB%E7%AB%A0%E3%80%81%E8%AE%BF%E9%97%AE%E8%80%85%E6%A8%A1%E5%BC%8F"><span class="nav-number">28.</span> <span class="nav-text">第二十八章、访问者模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E8%AE%BF%E9%97%AE%E8%80%85%E6%A8%A1%E5%BC%8F"><span class="nav-number">28.1.</span> <span class="nav-text">什么是访问者模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%92%E8%89%B2-6"><span class="nav-number">28.2.</span> <span class="nav-text">角色</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF-15"><span class="nav-number">28.3.</span> <span class="nav-text">适用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%BA%E7%82%B9"><span class="nav-number">28.4.</span> <span class="nav-text">缺点</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Jiahang Gu</p>
+  <div class="site-description" itemprop="description">认真学习，享受生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">11</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JiahangGu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JiahangGu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/fengzhizi76506" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;fengzhizi76506" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jiahang Gu</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

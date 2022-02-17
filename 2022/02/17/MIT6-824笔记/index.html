@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="简介分布式系统目的 更高的性能，最好是线性增加 提供容错，当一台机器故障时另一台可以马上替换 空间分布，需要两个地区的机器协同工作 保证安全，将代码分散，并通过网络进行交互  构建分布式系统的工具 RPC 线程 并发控制">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MIT6.824笔记">
+<meta property="og:url" content="http://example.com/2022/02/17/MIT6-824%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:site_name" content="菜汤里的咸鱼要翻身">
+<meta property="og:description" content="简介分布式系统目的 更高的性能，最好是线性增加 提供容错，当一台机器故障时另一台可以马上替换 空间分布，需要两个地区的机器协同工作 保证安全，将代码分散，并通过网络进行交互  构建分布式系统的工具 RPC 线程 并发控制">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/RaftNotes/badCase1.png">
+<meta property="og:image" content="http://example.com/images/zooKeeper/linear.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200907195303645.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1BldGVyX2NQYW4=,size_16,color_FFFFFF,t_70#pic_center">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200907195224730.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1BldGVyX2NQYW4=,size_16,color_FFFFFF,t_70#pic_center">
+<meta property="og:image" content="https://mit-public-courses-cn-translatio.gitbook.io/~/files/v0/b/gitbook-28427.appspot.com/o/assets%2F-MAkokVMtbC7djI1pgSw%2F-MFm4umOtKBcv00JRuuU%2F-MFn6neq6Rc5VapzQF40%2Fimage.png?alt=media&token=8565a162-47f5-4f4b-b893-613aa8aad366">
+<meta property="og:image" content="https://mit-public-courses-cn-translatio.gitbook.io/~/files/v0/b/gitbook-28427.appspot.com/o/assets%2F-MAkokVMtbC7djI1pgSw%2F-MFuJRt3Jts5mw0kTCdD%2F-MFwwQu0gml2wioq39yR%2Fimage.png?alt=media&token=c9e88f71-36a2-4701-94af-5b7f310339cb">
+<meta property="og:image" content="https://mit-public-courses-cn-translatio.gitbook.io/~/files/v0/b/gitbook-28427.appspot.com/o/assets%2F-MAkokVMtbC7djI1pgSw%2F-MGDMi39kJWJ6Q51aoWN%2F-MGDRH_A0-tcJKtfjbh4%2Fimage.png?alt=media&token=b72f3ccb-8bbb-46b6-8c82-9681cbd856fe">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211219162617873.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211219171343582.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211219181932368.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211220160708782.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211220205838384.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211220212029618.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211220212445979.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211220213900117.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211220214413303.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211221150645057.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211221155120726.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211221161110779.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211221161803343.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211221163348304.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211222155520500.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211222160642471.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211222162654290.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211222214257574.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211222215834987.png">
+<meta property="article:published_time" content="2022-02-17T11:55:09.000Z">
+<meta property="article:modified_time" content="2022-02-17T11:58:51.484Z">
+<meta property="article:author" content="Jiahang Gu">
+<meta property="article:tag" content="MIT6.824">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/RaftNotes/badCase1.png">
+
+<link rel="canonical" href="http://example.com/2022/02/17/MIT6-824%E7%AC%94%E8%AE%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>MIT6.824笔记 | 菜汤里的咸鱼要翻身</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">菜汤里的咸鱼要翻身</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/17/MIT6-824%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MIT6.824笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-17 19:55:09 / 修改时间：19:58:51" itemprop="dateCreated datePublished" datetime="2022-02-17T19:55:09+08:00">2022-02-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/course-notes/" itemprop="url" rel="index"><span itemprop="name">课程笔记</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>30k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>27 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><h3 id="分布式系统目的"><a href="#分布式系统目的" class="headerlink" title="分布式系统目的"></a>分布式系统目的</h3><ol>
+<li>更高的性能，最好是线性增加</li>
+<li>提供容错，当一台机器故障时另一台可以马上替换</li>
+<li>空间分布，需要两个地区的机器协同工作</li>
+<li>保证安全，将代码分散，并通过网络进行交互</li>
+</ol>
+<h3 id="构建分布式系统的工具"><a href="#构建分布式系统的工具" class="headerlink" title="构建分布式系统的工具"></a>构建分布式系统的工具</h3><ol>
+<li>RPC</li>
+<li>线程</li>
+<li>并发控制</li>
+</ol>
+<h3 id="可扩展性"><a href="#可扩展性" class="headerlink" title="可扩展性"></a>可扩展性</h3><p>通常希望线性增加机器可以带来线性的性能提升，如果增加机器所带来的的性能提升不能弥补机器的开销，不如不做。增加机器带来的架构复杂性可能导致这个问题</p>
+<h3 id="可用性"><a href="#可用性" class="headerlink" title="可用性"></a>可用性</h3><ol>
+<li>系统故障时使用备份替换，保证可用</li>
+<li>可恢复性，出现故障后不提供服务，但在人工修复后可以从故障处恢复并提供服务</li>
+</ol>
+<p>工具</p>
+<ol>
+<li>非易失存储，用于重启后恢复故障前的状态</li>
+<li>复制，使用备份机制替换</li>
+</ol>
+<h3 id="一致性"><a href="#一致性" class="headerlink" title="一致性"></a>一致性</h3><p>强一致性：任何时刻服务器都一致，通过牺牲性能来实现，尤其是通信<br>弱一致性：不保证服务器的状态始终一致，可能得到不同的结果，性能更好</p>
+<h3 id="MapReduce"><a href="#MapReduce" class="headerlink" title="MapReduce"></a>MapReduce</h3><p>Job。整个MapReduce计算称为Job。</p>
+<p>Task。每一次MapReduce调用称为Task。</p>
+<p>协调器用于分配任务，把控任务的进度，重分配执行失败或超时的任务。</p>
+<p>工作流程（lab1中加深理解）</p>
+<p>worker的工作流程：</p>
+<ol>
+<li>从协调器获得任务，对任务分类，如果为map任务，处理输入，输出多个中间文件</li>
+<li>如果为reduce任务，从所有输入文件中汇总key，然后排序做reduce，输出到一个文件</li>
+<li>如果为空，则表示当前尚无任务可做，等待</li>
+<li>上述任务完成均需要通过rpc调用通知协调器该任务已完成，因此需要特定task的id来唯一识别</li>
+</ol>
+<p>coordinator的工作流程：</p>
+<ol>
+<li>根据输入文件初始化配置，在得到worker的请求时，如果存在map任务则分配，并记录到对应的id-&gt;Task映射</li>
+<li>如果map任务均完成，分配reduce任务，并记录</li>
+<li>在任务启动后，设置定时器监控该任务是否在设定时间内执行完成，若没有完成，恢复该任务，并在下次worker请求时重新分配</li>
+<li>当map任务完成时，初始化所有的reduce任务，便于后续分配</li>
+<li>当所有的reduce任务完成后，返回work已完成，退出</li>
+</ol>
+<h2 id="GFS"><a href="#GFS" class="headerlink" title="GFS"></a>GFS</h2><h3 id="系统目标及实现方式"><a href="#系统目标及实现方式" class="headerlink" title="系统目标及实现方式"></a>系统目标及实现方式</h3><ol>
+<li>性能：将数据分割放到大量服务器上，并行处理，称为分片</li>
+<li>容错：服务器数量的增加导致错误出现称为常态，避免人工介入而是系统自动修复</li>
+<li>自动修复：可以复制到备份服务器，故障时自动切换</li>
+<li>一致性：保证复制的服务器状态一致，否则切换后可能具有错误的或者过时的数据</li>
+</ol>
+<h3 id="GFS的设计目标"><a href="#GFS的设计目标" class="headerlink" title="GFS的设计目标"></a>GFS的设计目标</h3><ol>
+<li>构建大型的、快速的文件系统，全局有效，内部共享。每个数据文件被分割并存放在多个服务器，读取时从多个服务器同时读以提高吞吐，并由程序聚合。数据中心应是物理分割的，防止灾害摧毁所有备份</li>
+<li>GFS供内部使用</li>
+<li>GFS对大型顺序文件操作做了定制，关注点在顺序处理和巨大的吞吐量</li>
+</ol>
+<h3 id="错误数据对应用程序的影响"><a href="#错误数据对应用程序的影响" class="headerlink" title="错误数据对应用程序的影响"></a>错误数据对应用程序的影响</h3><p>取决于具体的应用。比如搜索引擎返回的网页即使出现遗漏或不够精确的结果也不影响，允许临时不一致状态出现。但银行业务必须保证强一致性</p>
+<h3 id="master节点保存的内容"><a href="#master节点保存的内容" class="headerlink" title="master节点保存的内容"></a>master节点保存的内容</h3><ol>
+<li>文件名到chunk ID或者chunk handle数组的对应。需要保存在磁盘上，防止master宕机后丢失</li>
+<li>chunk ID到chunk数据的对应，包括<br>1）每个chunk存储在哪些服务器，不需要保存在磁盘，因为master重启后会先跟所有chunkServer通信获取版本号<br>2）每个chunk当前版本号，需要保存在磁盘，如果不保存，则可能分配版本号之后宕机，在重启通信时得到不同的版本号，并且无法得知是否是最新的<br>3）哪个chunk服务器持有租约，即是主chunk，不需要写入，等待租约过期即可，届时指定新的<br>4）主chunk的租约过期时间，不用写入</li>
+</ol>
+<p>chunk的版本号增加，通常是由于新增chunk，或者指定的主chunk失联或故障，需要指定新的主chunk并新建租约</p>
+<h3 id="读文件"><a href="#读文件" class="headerlink" title="读文件"></a>读文件</h3><p>master根据文件名和偏移地址，将存储文件chunk的服务器地址列表返回给客户端，客户端选择网络上最近的（根据ip判断）进行访问。客户端可能连续多次读取同一chunk的位置，所以需要缓存chunk和服务器的映射</p>
+<p>如果读取的数据超过了一个chunk，或者跨越了边界。应用程序会通过一个内部库注意到，并将读请求拆分成两个请求发送到master节点。证明客户端可以算出来是哪个chunk，只是不知道存储在哪个服务器上</p>
+<h3 id="写文件"><a href="#写文件" class="headerlink" title="写文件"></a>写文件</h3><p>写文件多数是记录追加操作，所以客户端不需要知道文件到底有多长，而只是向master节点查询哪个chunk服务器保存了文件的最后一个chunk。<br>master节点收到请求后，找出该chunk的主副本，如果不存在则找出最新的chunk副本（最新是指版本号和master记录的一致，这也是master节点需要把版本号持久化到硬盘的原因），并且选择一个作为主chunk副本发放租约，同时增加版本号。然后master节点向主副本和二级副本发消息通知他们是主还是二级，并让他们将版本号存储在本地磁盘</p>
+<h3 id="master为什么不讲所有chunk服务器的最大版本号最为最新版本号"><a href="#master为什么不讲所有chunk服务器的最大版本号最为最新版本号" class="headerlink" title="master为什么不讲所有chunk服务器的最大版本号最为最新版本号"></a>master为什么不讲所有chunk服务器的最大版本号最为最新版本号</h3><p>master节点重启时会和所有chunk服务器通信得到版本号，如果保存最新版本号的chunk服务器刚好全部宕机，则得到的最大版本号并不是最新的，导致使用持有旧副本的服务器，版本管理出现错误</p>
+<h3 id="master遇到一个chunk服务器上报的版本号更高"><a href="#master遇到一个chunk服务器上报的版本号更高" class="headerlink" title="master遇到一个chunk服务器上报的版本号更高"></a>master遇到一个chunk服务器上报的版本号更高</h3><p>master节点会认为分配主副本时出错，使用这个更好的版本号作为最新的chunk版本号，并通知其余二级副本更新版本号。当master向chunk副本发送完选择主副本的消息后崩溃，可能出现这种情况。可以通过在写入版本号到磁盘之前等待其余副本返回版本更新确认消息之后</p>
+<h3 id="写入优化"><a href="#写入优化" class="headerlink" title="写入优化"></a>写入优化</h3><p>客户端先将要写入的数据发给所有chunkServer，并写入到临时位置。当所有服务器都返回确认消息后，客户端向主副本发送消息请求追加到文件。主副本会选择一个写入顺序决定并发请求的客户端写入顺序，并通知所有的二级副本按照这个顺序写入。</p>
+<h3 id="写入失败的问题"><a href="#写入失败的问题" class="headerlink" title="写入失败的问题"></a>写入失败的问题</h3><p>如果主副本写入失败，则直接返回客户端写入失败，通知客户端重试。也可能部分二级副本写入失败，则返回客户端部分写入失败，也需要重试。此时会出现不一致的情况，例如同一chunk的相同偏移位置可能有些副本存在正确数据，而写入失败的副本则是空，但对应数据在重试成功后依然保持一致。</p>
+<h5 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h5><p>这里有一个问题，既然写入失败需要重试，对应的偏移位置开始的chunk空间就被废弃，当失败率较高时，是不是会造成较高的浪费。但如果主副本是流水线处理，在得到其余二级副本回复之前已经写入多条请求的数据，则无法覆盖失败偏移位置处的空间，没有较好的办法回收。如果这个chunk一直没被回收，这块空间就一直浪费着</p>
+<p>另一个问题，追加记录的数据量超过最后一个chunk的剩余量，需要新建chunk时如何操作？由主副本响应给master节点从而对请求拆分，还是主副本构建新的chunk（具有这个权限吗）？</p>
+<h3 id="版本号增加的情况"><a href="#版本号增加的情况" class="headerlink" title="版本号增加的情况"></a>版本号增加的情况</h3><p>只有master节点认为chunk没有主副本时才增加。</p>
+<h3 id="脑裂"><a href="#脑裂" class="headerlink" title="脑裂"></a>脑裂</h3><p>一个chunk副本同时存在多个主副本控制写入，且不知道彼此的存在，最终导致两个不同的数据拷贝。为了避免这个情况，GFS在master节点记住每个租约的过期时间，当master无法与主副本通信，会等待租约到期确保主副本停止控制，才指定新的主副本</p>
+<h3 id="升级强一致性需要考虑的问题"><a href="#升级强一致性需要考虑的问题" class="headerlink" title="升级强一致性需要考虑的问题"></a>升级强一致性需要考虑的问题</h3><ol>
+<li>主副本探测重复的请求，例如写入数据B到达时需要判断之前是否出现过，保证不出现多次写入重复数据</li>
+<li>二级副本必须严格执行操作而不是仅返回错误，当出现永久性故障不能完成时，需要及时移除</li>
+<li>使用两阶段提交的技术执行操作，先发请求并等待所有二级副本回复可以完成，再请求所有二级副本执行操作</li>
+<li>主副本发送请求后崩溃，需要一个二级副本成为新的主副本，并首先于所有二级副本同步，已确认操作历史相同</li>
+<li>主副本需要与二级副本周期性沟通，确保副本保存的数据一致</li>
+</ol>
+<h3 id="GFS单master设计的问题"><a href="#GFS单master设计的问题" class="headerlink" title="GFS单master设计的问题"></a>GFS单master设计的问题</h3><ol>
+<li>master节点为每个文件、每个chunk维护表单，随着应用增加导致master耗尽内存</li>
+<li>master节点承载所有客户端请求，负载压力大</li>
+<li>应用程序很难处理GFS奇怪的语义，例如不一致的和未定义的</li>
+<li>master节点故障不是自动切换，需要人工干预</li>
+</ol>
+<h2 id="VMware-FT"><a href="#VMware-FT" class="headerlink" title="VMware FT"></a>VMware FT</h2><h3 id="容错和复制"><a href="#容错和复制" class="headerlink" title="容错和复制"></a>容错和复制</h3><p>复制用于提供高可用性，但不是万能的。所有硬件设计的缺陷和软件的bug，因为错误会出现在所有的复制机器上。但可以预防单机故障的影响，因为可以使用另一台一致的机器替换。<br>在复制时，需要根据实际情况衡量复制是否值得，也可以从经济方面和复制收益考虑，即复制的开销是否小于收益</p>
+<h3 id="复制方式"><a href="#复制方式" class="headerlink" title="复制方式"></a>复制方式</h3><ol>
+<li>状态转移：主副本将自己完整状态，例如内存、寄存器内容拷贝到备份，确保两台机器状态完全一致。可以只发送上次同步之后发生变更的内容，但状态仍然是很大的数据量</li>
+<li>复制状态机：复制外部输入，在同样的状态下一相同的顺序看到相同的输入，则会一直保持一致。通常外部输入比完整状态数据量更小。但可能出现随机操作，例如根据当前时间戳执行指令，对于此类操作需要主副本将结果发送给备份机器。这种方法成本较低，但是方案设计更复杂</li>
+</ol>
+<p>如果主副本发生了故障，VMware FT提出的方案是在机器级别的复制，即所有最底层的数据均复制到备份新的机器。而GFS等大多数系统均采用应用程序级别的chunk，应用程序只需要副本数据一致即可</p>
+<p>VM FT是用在单核，因为多核情况下，可能由于cpu的交叉运行产生不同的状态，例如锁的获取。</p>
+<h3 id="工作原理"><a href="#工作原理" class="headerlink" title="工作原理"></a>工作原理</h3><p>Primary和Backup虚机需要在两个物理服务器上，并且通过各自的VMM（虚拟机监控器）交互，目标是让两个虚机的内存镜像完全一致。</p>
+<ol>
+<li>客户端发送请求到Primary，产生一个数据包及中断，送到VMM。</li>
+<li>VMM首先模拟该中断，并将数据发送给Primary，同时拷贝一份数据发送到Backup的VMM</li>
+<li>Primary产生输出，但不立即响应客户端，而是缓存起来</li>
+<li>Backup的VMM在虚机上重放，输出由VMM丢弃，并将成功消息发送给Primary</li>
+<li>Primary收到后将结果返回给客户端</li>
+<li>当Primary挂掉后，Backup的VMM检测到，立即停止从Primary接受消息，并切换为Primary，因为内存一致，存在到客户端的tcp连接，并将后续输出返回客户端，此时可能Primary返回消息</li>
+</ol>
+<h3 id="非确定操作"><a href="#非确定操作" class="headerlink" title="非确定操作"></a>非确定操作</h3><ol>
+<li>客户端输入。客户端的请求何时送达及内容都是不可预期的，如果不保证中断触发的时间和位置相同，则可能出现状态不一致的情况</li>
+<li>随机数生成器、获取时间的指令、获取计算机的唯一ID</li>
+<li>多核并发。因为无法确定指令的执行顺序（硬件会优化），例如请求锁可能出现获得锁的进程不同的情况</li>
+</ol>
+<p>VM FT对于非确定操作，VMM不会拷贝同样的操作到Backup，而是等Primary虚机执行完成后，将执行结果以及对应的指令位置发送到Backup，并伪造一个定时器中断。</p>
+<p>Primary流程</p>
+<ol>
+<li><p>客户端输入到达Primary。</p>
+</li>
+<li><p>Primary的VMM将输入的拷贝发送给Backup虚机的VMM。所以有关输入的Log条目在Primary虚机生成输出之前，就发往了Backup。之后，这条Log条目通过网络发往Backup，但是过程中有可能丢失。</p>
+</li>
+<li><p>Primary的VMM将输入发送给Primary虚机，Primary虚机生成了输出。现在Primary虚机的里的数据已经变成了11，生成的输出也包含了11。但是VMM不会无条件转发这个输出给客户端。</p>
+</li>
+<li><p>Primary的VMM会等到之前的Log条目都被Backup虚机确认收到了才将输出转发给客户端。所以，包含了客户端输入的Log条目，会从Primary的VMM送到Backup的VMM，Backup的VMM不用等到Backup虚机实际执行这个输入，就会发送一个表明收到了这条Log的ACK报文给Primary的VMM。当Primary的VMM收到了这个ACK，才会将Primary虚机生成的输出转发到网络中。</p>
+</li>
+</ol>
+<p>但等待ack再响应客户端的方式对性能限制明显，例如0.5毫秒的ack延时，则qps最多2000，对于大型项目来说无法接受。一种做法是在应用层做复制，这样可以过滤所有只读请求</p>
+<h3 id="重复输出"><a href="#重复输出" class="headerlink" title="重复输出"></a>重复输出</h3><p>Primary回复客户端后挂了，此时应该同步到Backup的客户端请求记录还在VMM的Log缓冲区，所以Backup此时切主，首先消费所有的堆积信息，然后回复客户端，但因为利用同一个TCP连接，会产生同样的tcp包序号，在客户端的tcp会忽略该数据包，阴差阳错的解决了重复的问题。</p>
+<p>但所有复制系统都要有对应的去重，可以在应用程序级通过序号来实现</p>
+<h3 id="Test-and-Set服务"><a href="#Test-and-Set服务" class="headerlink" title="Test-and-Set服务"></a>Test-and-Set服务</h3><p>当主副本和备份机之间无法连接但二者都没有挂时，备份机会认为主机挂了自己上线接管服务，导致出现了脑裂状态。此时需要一个Test-and-Set服务，在备份机认为主机挂了时访问，确认主机真的挂了，然后才上线，即决定当前哪个机器上线</p>
+<h2 id="Raft"><a href="#Raft" class="headerlink" title="Raft"></a>Raft</h2><h3 id="过半投票"><a href="#过半投票" class="headerlink" title="过半投票"></a>过半投票</h3><p>所有操作必须获得过半服务器的认可来执行。原理是：如果网络存在分区，则必不可能有超过一个分区拥有过半数量的服务器。另一个特性在于：每次操作都需要过半服务器批准，则任意两组过半服务器至少有一个服务器是重叠的，这是避免脑裂的关键特性。当更换leader时，所得到的的过半投票的机器必然与旧leader过半服务器有重叠，所以新leader知道旧leader的任期号，这是正常运行的重要因素</p>
+<h3 id="客户端请求"><a href="#客户端请求" class="headerlink" title="客户端请求"></a>客户端请求</h3><p>客户端发请求给集群的leader节点对应的应用程序，应用程序将操作下发到raft层，当leader复制到过半的节点后向上通知应用程序表明操作成功，同时leader将commit该操作的消息夹带在下一个Append Entry的消息或心跳中，以通知所有follower更新状态，保持与leader的同步。</p>
+<p>所以这里leader只要等过半节点复制成功即可返回，后续执行会不断重试，而不是在返回客户端时关注</p>
+<h3 id="日志同步"><a href="#日志同步" class="headerlink" title="日志同步"></a>日志同步</h3><p><img src="/images/RaftNotes/badCase1.png" alt="同步过程"><br>C客户端，S1 leader，S2 S3为follower</p>
+<ol>
+<li>S1收到客户端请求，在本地追加到日志，并同时通过追加日志RPC发送到其他副本，等待过半节点响应（包含自己，所以只需要一个）</li>
+<li>S2响应</li>
+<li>S1收到过半响应，执行该请求，得到结果并返回给客户端</li>
+<li>S3响应，这是有用的，但S1没有必要等待S3响应</li>
+<li>S2、S3响应后并不知道是否成功，也不知道请求是否被提交，需要在leader下一次的追加日志RPC中携带更大的commit号，follower收到了后得知之前的commit号已被提交，执行相应请求，更新本地状态。如果客户端请求很稀疏则状态更新不及时，但通常很少出现</li>
+</ol>
+<p>Log会出现短暂的不同，但长期来看，会是完全相同的情况。</p>
+<h3 id="日志的用途"><a href="#日志的用途" class="headerlink" title="日志的用途"></a>日志的用途</h3><ol>
+<li>用作排序的一个手段，对于复制状态机来说，所有副本不仅要执行相同的操作，还需要用相同的顺序执行这些操作</li>
+<li>在副本收到了操作，但还没执行时，需要将这个操作存放在某处，直到收到了leader发送的更大的commit号。对于follower来说，log也是存储临时操作的地方，因为可能被丢弃</li>
+<li>需要在leader记录到log，因为可能需要重传到follower。如果由于网络原因，follower没有及时响应，leader需要重传操作</li>
+<li>帮助重启的服务器恢复状态。重启后悔使用存储在磁盘中的log恢复到故障前的状态，及用于持久化存储操作。follower重启后，会立即读取log，但是不会执行任何操作，而是等待leader同步信息</li>
+</ol>
+<h3 id="Leader选举过程"><a href="#Leader选举过程" class="headerlink" title="Leader选举过程"></a>Leader选举过程</h3><p>有leader的系统比无leader具有更高的效率。raft的leader通过任期还唯一标识</p>
+<ol>
+<li>raft节点有一个计时器，到时间未收到leader消息则发起投票（leader可能挂掉也可能网络故障），该节点将任期+1，向其他节点发起投票请求RPC</li>
+<li>候选者节点收到其他投票，如果赞同他为leader的票数过半，则成为leader，并向所有其他节点发送Append Entries消息，因为只有leader可以发送该消息，所以其他节点默认他为leader</li>
+</ol>
+<p>AppendEntries消息会重置节点的选举定时器。</p>
+<p>如果投票出现平票会重新投票（可能发现的间隔很短，都投给自己）</p>
+<p>Follower在投票给leader后，会记录对应的leader的任期号，即使自己的log内没有对应任期号的任何记录，在下次选举时依然要用记录的任期号+1来发起投票，而不是log内对应的任期号</p>
+<p>选举leader过程的关键点是，可能被投票成为leader候选人的结点是具备完整提交log的</p>
+<p><strong>如果说一个server被选为leader，记录了一条log，然后挂了，没有响应客户端和复制到其他Follower，那如果下次任期他重启并重新成为leader，在与Follower比较时，会发现log多了一条，自己怎么识别出这条log是未提交的？</strong></p>
+<h3 id="选举限制"><a href="#选举限制" class="headerlink" title="选举限制"></a>选举限制</h3><p>只给满足如下条件的候选人投票：</p>
+<ol>
+<li>候选人的最后一条日志对应的任期号大于自己最后一条</li>
+<li>候选人的任期号相同，并且候选人的日志长度大于等于自己的日志</li>
+</ol>
+<h3 id="选举定时器如何设置"><a href="#选举定时器如何设置" class="headerlink" title="选举定时器如何设置"></a>选举定时器如何设置</h3><ol>
+<li>超时时间至少要数倍大于Leader的心跳间隔，不然会由于网络故障，导致在心跳收到之前触发选举，一直选举从而无法正常工作</li>
+<li>不同节点的定时器的超时时间差必须足够长，使得第一个开始选举的节点能够完成一轮选举。（否则在还没完成选举就又开始另一个选举，容易出现瓜分选票的情况）</li>
+<li>不能过大，因为这个时间确定了系统从瘫痪状态恢复的速度</li>
+<li>每次重置定时器都选择一个随机值，而不是一开始一个随机值，反复使用</li>
+</ol>
+<h3 id="异常情况"><a href="#异常情况" class="headerlink" title="异常情况"></a>异常情况</h3><p>假设3个服务器，S1, S2, S3<br>S1: 3<br>S2: 3 3<br>S3: 3 3<br>发生的情况：S3是任期leader，收到请求，并发送给其他服务器，其他服务器写入到log，之后收到第二个请求，但可能出现：1）发送给S1的消息丢了；2）S1关机；3）S3发追加记录RPC给S2后故障了。<br>如果这是S3故障需要新的选举，则某个节点成为新的leader，需要：1）leader认识到槽位2的请求可能提交，不能丢弃；2）leader确保S1在槽位2记录与其他节点完全一样的请求</p>
+<p>另一个例子<br>    10  11  12  13<br>S1  3<br>S2  3   3   4<br>S3  3   3   5<br>出现的情况：S2是任期4的leader，收到请求并加到log中。然后在复制请求前故障了，新的选举S3成为leader，收到请求加到log中，然后故障了。<br>对于槽位10和11的log，均有超过半数的服务器记录，所以可以提交了，不能丢弃，但12的log不够半数，一定没有提交，可以丢弃。至少需要丢弃一个以保证log一致</p>
+<p>假设下一个任期为6，S3成为新的leader，则S3需要同步S1和S2的日志与自己相同。此时收到了客户端请求，在槽位13处记录了新的log 任期为6，需要发送给两个follower。发送给客follower的追加记录RPC会携带prevLogIndex和prevLogTerm字段，这里prevLogIndex是前一个槽的位置即12，prevLogTerm是S3上前一个槽位的任期号，这里是5.follower收到追加记录RPC后得到这两个字段，并与自己作对比，显然不匹配。S2在槽位12的log条目任期4，所以S2拒绝。S1在槽位12没有log，也拒绝。<br>Leader会为每个Follower维护nextIndex字段，这里一开始都是13，在收到S1和S2的拒绝后，会减小nextIndex，此时prevLogIndex为11，prevLogTerm是3，同时在RPC中也包含prevLogIndex之后的所有条目，即槽位12和13的log条目。<br>此时S2收到RPC并得到字段后与自己匹配，接受这个消息，并删除本地index之后的log写入新的，此时与S3保持一致<br>S1仍返回拒绝，由leader继续减小nextIndex，此时匹配，接受这条消息，写入leader传来的日志，此时保持一致<br>leader在收到follower的肯定消息后，将对应follower的nextIndex增加1</p>
+<h3 id="快速恢复"><a href="#快速恢复" class="headerlink" title="快速恢复"></a>快速恢复</h3><p>对于每次拒绝请求只恢复一个log槽位可能过于花费时间。可以通过一些方式来优化。大致思想是：可以以任期为单位来回退。<br>以3类场景做样例<br>场景1：<br>S1  4   5   5<br>S2  4   6   6   6<br>场景2：<br>S1  4   4   4<br>S2  4   6   6   6<br>场景3：<br>S1  4<br>S2  4   6   6   6</p>
+<p>可以让follower在回复给leader的追加记录RPC，携带3个额外信息加速日志恢复。<br>XTerm：follower与leader冲突的log对应的任期号，如果没有返回-1<br>XIndex：follower对应任期号为XTerm的第一条log条目的槽位号<br>XLen：如果Follower在对应位置没有log，XTerm返回-1，Xlen则表示空白的log槽位数</p>
+<p>对于各种场景如何工作<br>场景1：follower会返回XTerm=5，XIndex=2，S2发现没有任期5的日志，将本地记录的S1的nextIndex设置到XIndex，即S1中任期5的第一条log对应的槽位号。所以如果leader完全没有XTerm的任何log，应该回退到XIndex的位置，则发的下一条追加日志RPC就可以覆盖到S1中所有XTerm对应的log<br>场景2：follower返回XTerm=4，XIndex=1，leader发现自己有任期4的日志，将本地记录的S1的nextIndex设置到本地在XTerm位置的log条目后面，即槽位2。下一位leader发出追加记录RPC时，可以一次覆盖S1中槽位2和槽位3的log<br>场景3：follower返回XTerm=-1，XLen=2，表示S1日志太短，没有log，leader回退到follower最后一条log条目的下一条，即槽位2，并从这里开始发送RPC。<br>也可以使用二分查找进一步加速，是一种可行方案</p>
+<p><strong>使用二分搜索需要对比Follower和leader的日志差异，Follower并不知道所有的leader的log，怎么比较？</strong></p>
+<p>在一步一步回退的情况下，leader发送给Follower的消息会带有前一个log条目的任期和slot，并且会发送所有该slot之后的log条目，用于Follower确认一致后修改自己的log</p>
+<h3 id="持久化"><a href="#持久化" class="headerlink" title="持久化"></a>持久化</h3><p>Raft论文图标记一些数据为持久化，一些非持久化。这里解释为什么有些需要持久化，而有些不需要</p>
+<p>需要持久化存储的：</p>
+<ol>
+<li>Log：所有的log条目，在重启时服务器需要读log以恢复之前状态，但不采取任何操作。需要被持久化存储的原因是，log是唯一记录了应用程序状态的地方。</li>
+<li>CurrentTerm：当前任期。当S1记录log为5，6,7，S2和S3只记录了log为5时，如果S1关机，在投票时可能不知道任期号应该从8开始，导致出现两个任期6。</li>
+<li>votedFor：投票的服务器。如果没有持久化，则故障并重启之后，认为自己并没有投票，在当前选举中还是会投票，可能导致为多个服务器投票，不符合raft算法要求。</li>
+</ol>
+<p>可以直到和外界通信时，才可能持久化存储数据。可以进行批量优化，因为单次写入磁盘的代价太高。例如累计100个log之后再通过追加记录RPC写入。</p>
+<p>而commitIndex、lastApplied、nextIndex和matchIndex可以被丢弃</p>
+<h3 id="日志快照"><a href="#日志快照" class="headerlink" title="日志快照"></a>日志快照</h3><p>与其他类似，快照是对应用程序状态的拷贝，作为特殊的log条目存储。</p>
+<h3 id="log压缩"><a href="#log压缩" class="headerlink" title="log压缩"></a>log压缩</h3><p>许多表单记录可能是对同一个数据进行修改，例如KV表单同个log修改同一个key行，更早的修改是无用的数据，可以通过压缩将无用的数据删除，只更新最新有效的数据。而快照之前的日志可以删除。可以使用LSM机制实现。<br>如果follower重启，且log较短，可能认为是日志较少，但其实通过快照的方式可以先由leader将快照通过快照RPC传送到follower。如果follower的log短于leader通过记录追加RPC发送的内容，会强制leader回退自己的log，在某个点，leader不能再回退，此时将自己的快照发给follower，之后通过记录追加RPC发送后续Log。</p>
+<h2 id="ZooKeeper"><a href="#ZooKeeper" class="headerlink" title="ZooKeeper"></a>ZooKeeper</h2><h3 id="线性一致"><a href="#线性一致" class="headerlink" title="线性一致"></a>线性一致</h3><p>满足线性一致性的服务可以表现的只像一个服务器，且服务器没有故障。<br>定义：如果执行历史整体可以按照一个顺序排列，且排列顺序与客户端请求的实际时间相符合，则是线性一致的。<br>或者说，两个不同的客户端发出请求，且请求之间有顺序，满足线性一致的服务保证操作是非并发的，即一个请求在另一个完成之后开始，且每个读操作都能看到最近一次写入的值。如果能在满足观察到的事实的情况下，为请求指定一个执行顺序产生上述输出，则满足线性一致。如果能构造一个请求顺序使得请求形成环，则不满足</p>
+<p>举例：<br>假设客户端发出写请求W1,设置x=1，过了一会收到服务器的回复。之后客户端（可能不是同一个）又发一个写请求W2，设置x=2，并收到回复。同时某个客户端发送读x的请求R2得到了2.同时还有另一个读x的请求R1得到的是1。并且，W1在W2开始之前结束，R2和R1在时间上存在重叠，且与W1和W2也重叠<br>|–W1–|   |–W2–|<br>   |—–R2—–|<br>     |—R1—-|<br><img src="/images/zooKeeper/linear.png" alt="例图"><br>对于这4个操作，如果设置顺序为W1, R1, W2, R2的话总是线性的，并且满足读到的顺序<br>如果对于这种情况<br>|–W1–|    |–W2–|<br>    |—-R2—-|  |—-R1—-|<br>R1总在R2之后执行，且R2需要在W1之后执行，此时X已被修改为2，无法读取出1，所以不满足线性一致</p>
+<p>线性一致的历史记录必须与请求的实际时间匹配，某个请求如果在另一个请求结束后才开始，则构建线性一致的序列中，后来的请求必须排在先来的请求之后。</p>
+<p>构建序列要满足的条件：</p>
+<ol>
+<li>序列中的请求的顺序与实际时间匹配</li>
+<li>每个读请求看到的都是序列中前一个写请求写入的值</li>
+</ol>
+<p>这里定义线性一致是否满足完全是从客户端的视角来看，因为除去复杂的网络、系统等问题，只有客户端的读可以得到系统内部的结果。所以只能说系统的请求记录是线性一致的，不能说系统设计是，因为我们只是观察了系统的输出</p>
+<p>线性一致只能有一个数据更新序列，如果多个客户端读的序列结果存在矛盾，则不满足</p>
+<h3 id="ZooKeeper意义"><a href="#ZooKeeper意义" class="headerlink" title="ZooKeeper意义"></a>ZooKeeper意义</h3><ol>
+<li>一个通用的协调服务，帮助人们快速构建分布式系统</li>
+<li>通过多副本实现容错和通用</li>
+</ol>
+<h3 id="特性"><a href="#特性" class="headerlink" title="特性"></a>特性</h3><p>一个多副本系统，是一个容错的、通用的协调服务，通过多副本完成容错。同大多数分布式服务一样，希望有n倍数量的服务器得到接近n倍的性能</p>
+<h3 id="性能分析"><a href="#性能分析" class="headerlink" title="性能分析"></a>性能分析</h3><p>ZooKeeper运行在Zab上，Zab几乎与Raft一样。有一个Leader有两层，上层是与客户端交互的ZooKeeper，下层是与Raft类似的管理多副本的Zab。Zab的工作是维护用来存放一系列操作的log，由客户端发来，有多个副本，每个副本有自己的log，并会将新的请求加到log中。收到请求后，Zab将拷贝发送给其他副本，由副本追加到内存的log或持久化存储在磁盘上，确保故障重启后可以不丢失</p>
+<p>出于对性能的考虑，ZooKeeper使用读写分离，读请求可以由副本处理，故读性能随着服务器数量增加而增加。实际上，ZooKeeper不要求返回最近的写入数据，对于读放弃线性一致性。但是所有写请求，ZooKeeper保证按照leader指定的顺序。并且对于单个客户端来说，读写的顺序是FIFO的</p>
+<h3 id="一致性保证"><a href="#一致性保证" class="headerlink" title="一致性保证"></a>一致性保证</h3><ol>
+<li>写请求是线性一致的</li>
+<li>任何一个客户端的请求，会按照客户端指定的顺序来执行，称为FIFO客户端序列</li>
+</ol>
+<p>写请求可能是通过标号来保证执行的顺序。读请求不需要经过leader，只能看到请求的副本的log状态，所以读请求必须在前一个读请求对应的位置或之后的位置执行</p>
+<p>当客户端当前交互的副本挂了，需要将读请求发送给另一个副本，此时FIFO客户端序列仍有效。意味着尽管客户端切换了副本，但新副本的读请求，必须在旧副本的log或之后执行。</p>
+<p>原理是每个log条目被Leader打上zxid标签，即条目号，副本回复客户端读请求时会携带zxid，客户端会记住zxid，并会在后续请求带上，则其他副本知道至少在这个zxid或之后执行读请求。</p>
+<h3 id="同步操作"><a href="#同步操作" class="headerlink" title="同步操作"></a>同步操作</h3><p>ZooKeeper有一个弥补非严格线性一致性的方法。使用sync操作，本质是一个写请求，最终出现在所有副本的log中，并且要求在发送读请求时，在副本有上一次sync请求之前，不要回复读请求。</p>
+<h3 id="Znode"><a href="#Znode" class="headerlink" title="Znode"></a>Znode</h3><p>ZooKeeper以文件目录的形式管理数据，所以每一个数据点可以认为是一个file。假设master节点要维护配置，对应一些znode。如何保证对配置的更新是原子性的（即客户端不会读到修改到一半的配置）。<br>当master要做一系列写请求更新配置时，会以这种顺序执行写请求。当Ready file存在时，允许读这个配置，否则说明正在更新中。所以更新配置首先要删除Ready file，当所有配置完成后再次创建。master以期望的执行顺序打上tag，之后由leader按照顺序将请求加到多副本的log中，副本收到请求后按顺序执行。<br>读请求稍微复杂，在读之前需要通过exist判断ready file是否存在，则副本的读请求会在ready file重新创建的位置之后执行。所以可以保证读请求可以看到之前配置的全部更新。<br>如果一次更新配置完成后，又要进行更新。在这期间，副本使用exist检查到了ready file，但master又开始了新一轮的配置，此时读到的配置文件可能是错误的。为避免这种情况，副本在exist时可以注册一个watch，当不满足条件时，除了返回false，还会建立一个针对该文件的watch，后续当这个文件被修改时，leader会通知这个副本。所以副本会先收到关于ready file的删除通知，然后才收到其他在log中位于删除ready file之后的读请求的响应。</p>
+<h4 id="类型"><a href="#类型" class="headerlink" title="类型"></a>类型</h4><ol>
+<li>持久Znode，需要显式的创建和删除</li>
+<li>临时Znode，如果与客户端失去连接，zookeeper会删除临时结点，需要通过心跳来续命。可用于锁的争用</li>
+<li>序列Znode，在特定前缀后增加递增的数字来表示当前文件的序列号，ZooKeeper确保不会重复</li>
+</ol>
+<h3 id="特点总结"><a href="#特点总结" class="headerlink" title="特点总结"></a>特点总结</h3><ol>
+<li>类似于raft框架，所以具有容错性，且发生网络分区时也可以有正确的行为</li>
+<li>zookeeper分离读写请求，使得读请求可以被任何副本处理，但也可能返回旧数据</li>
+<li>确保一次只处理一个写请求，且所有副本能看到一致的写请求顺序，这样所有副本状态才能保持一致</li>
+<li>一个客户端发出的所有读写请求会按照客户端发出的顺序FIFO执行</li>
+<li>一个特定客户端的连续请求，后来的总是能看到前一个请求的位置或之后位置的请求</li>
+</ol>
+<h3 id="目标和用途"><a href="#目标和用途" class="headerlink" title="目标和用途"></a>目标和用途</h3><ol>
+<li>可以实现VMware FT需要的Test-and-Set服务</li>
+<li>发布其他服务器使用的配置信息</li>
+<li>选举master</li>
+<li>选举新的master从zookeeper中读出旧master的状态</li>
+<li>对于类似于MapReduce的系统，worker节点可以通过zookeeper创建小文件来注册自己</li>
+<li>master节点向zookeeper写入具体工作，worker节点从中一个一个取出，执行，完成后再删除</li>
+</ol>
+<h3 id="API"><a href="#API" class="headerlink" title="API"></a>API</h3><p>像是一个文件系统，有一个层级化的目录结构，例如根目录和每个应用程序自己的子目录</p>
+<ol>
+<li>CREATE(PATH，DATA，FLAG)。入参分别是文件的全路径名PATH，数据DATA，和表明znode类型的FLAG。创建成功则得到yes，说明是第一个创建的客户端，否则其余客户端正在使用。具有排他性，可以用于实现锁</li>
+<li>DELETE(PATH，VERSION)。入参分别是文件的全路径名PATH，和版本号VERSION。当且仅当znode的版本号和传入的版本号相同，才执行操作。</li>
+<li>EXIST(PATH，WATCH)。入参分别是文件的全路径名PATH，和一个有趣的额外参数WATCH。watch设置为true，则后续文件变化时会通知客户端</li>
+<li>GETDATA(PATH，WATCH)。入参分别是文件的全路径名PATH，和WATCH标志位。这里的watch监听的是文件的内容的变化。</li>
+<li>SETDATA(PATH，DATA，VERSION)。入参分别是文件的全路径名PATH，数据DATA，和版本号VERSION。如果你传入了version，那么Zookeeper当且仅当文件的版本号与传入的version一致时，才会更新文件。</li>
+<li>LIST(PATH)。入参是目录的路径名，返回的是路径下的所有文件</li>
+</ol>
+<h3 id="znode"><a href="#znode" class="headerlink" title="znode"></a>znode</h3><p>文件和目录都称为znode，包含三种znode</p>
+<ol>
+<li>Regular znodes。一旦创建，除非显式删除否则永久存在</li>
+<li>Ephemeral znodes，如果zookeeper认为创建znode的客户端挂了，会删除这种类型的znode。</li>
+<li>Sequential znodes。实际创建的文件名是在特定名字后再加上一个数字，确保数字不重合并且总是递增的</li>
+</ol>
+<h3 id="使用案例"><a href="#使用案例" class="headerlink" title="使用案例"></a>使用案例</h3><ol>
+<li>实现计数器<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">WHILE TRUE:</span><br><span class="line">    X, V = GETDATA(&quot;F&quot;)</span><br><span class="line">    IF SETDATA(&quot;F&quot;, X + 1, V):</span><br><span class="line">        BREAK</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>SETDATA只有当实际版本号等于V时才更新，有点类似于CAS操作<br>2. 实现非扩展锁</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">WHILE TRUE:</span><br><span class="line">    IF CREATE(&quot;f&quot;, data, ephemeral=TRUE): RETURN</span><br><span class="line">    IF EXIST(&quot;f&quot;, watch=TRUE):</span><br><span class="line">        WAIT</span><br></pre></td></tr></table></figure>
+
+<p>第2行尝试创建锁文件，如果创建成功则获得锁，return。否则等待锁释放，并注册watch来检测文件的删除。此时如果1000个客户端等待所释放，则每次释放后，获得锁的复杂度是O(N)，因为只有一个客户端可以得到锁，而其他客户端需要一次判断后继续阻塞</p>
+<ol start="3">
+<li>实现可扩展锁<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">CREATE(&quot;f&quot;, data, sequential=TRUE, ephemeral=TRUE)</span><br><span class="line">WHILE TRUE:</span><br><span class="line">    LIST(&quot;f*&quot;)</span><br><span class="line">    IF NO LOWER #FILE: RETURN</span><br><span class="line">    IF EXIST(NEXT LOWER #FILE, watch=TRUE):</span><br><span class="line">        WAIT</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>创建一个序列化文件，并得到一个全局唯一的序号。在第3行列出所有序列化文件，并和得到的序号比较。如果现存的文件序号都不小于第一行得到的序号，则表明获得锁。否则注册一个watch，等待比自己更小的下一个锁文件删除。因为只是等待下一个更小的，之前的更小的不会通知，所以每次释放锁只有一个客户端收到通知并获得锁，复杂度O(1)</p>
+<p>注意，2和3的wait都表示可能是一个sleep，需要经过watch事件的通知才能回到循环的起始位置，而不是一直不停的循环</p>
+<h2 id="链复制"><a href="#链复制" class="headerlink" title="链复制"></a>链复制</h2><h3 id="旧的链复制"><a href="#旧的链复制" class="headerlink" title="旧的链复制"></a>旧的链复制</h3><p>一些服务器按照链排列，第一个称为head，最后一个是tail。</p>
+<p>写请求总是发送给head，head收到请求后更新本地，并传递给链的下一个。直到tail执行完成，链式返回所有的中间结点直到head，返回客户端请求已完成。<br>读请求发到tail，直接根据自己的当前状态来回复。因为除非一个请求到达tail，否则不会提交，所以在tail中读取到的数据一定是已提交过的，即系统中最新的有效数据</p>
+<p><img src="https://img-blog.csdnimg.cn/20200907195303645.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1BldGVyX2NQYW4=,size_16,color_FFFFFF,t_70#pic_center" alt="链式复制"></p>
+<h3 id="故障恢复"><a href="#故障恢复" class="headerlink" title="故障恢复"></a>故障恢复</h3><ol>
+<li>head挂了，则下一个结点成为新的head。不需要做其他操作。对于处理中的请求：如果已发送到第二个节点，则不会因为head挂停止转发；如果转发之前就挂了，则后续服务器不知道这个请求，依然保持一致</li>
+<li>tail挂了，则前一个节点成为新的tail，因为必然知道之前tail的所有信息</li>
+<li>中间挂了，则移除该故障节点，并将前一个节点发往故障节点的请求重新发送到下一个节点</li>
+<li>每个节点需要知道它的前驱和后继结点，以及链的头部和尾部</li>
+</ol>
+<h3 id="存在问题"><a href="#存在问题" class="headerlink" title="存在问题"></a>存在问题</h3><ol>
+<li>所有写操作都在head，读操作在tail，成本较高，采用n个副本但读写均只有一个副本可用。并且有潜在的热点问题，导致单个服务器负载过高</li>
+<li>具有较高的延迟，每个写操作都需要在不同节点上完成后才能响应客户端，这其中包括数据在节点间网络中传输的时间</li>
+</ol>
+<h3 id="与Raft对比"><a href="#与Raft对比" class="headerlink" title="与Raft对比"></a>与Raft对比</h3><ol>
+<li>性能上：leader可能成为瓶颈，负担较高，因为leader需要将写请求发送给所有的follower。而链复制则可以在单位时间处理更多写请求，只需要向后继结点发送。</li>
+<li>链复制中，只有tail节点可以看到读请求</li>
+<li>故障恢复更简单</li>
+<li>CRAQ具有更高的延迟，因为需要所有的服务器均完成写请求并确认，如果存在某个服务器当前资源少，完成请求的时间较长，则整个系统都需要等待，属于是木桶装水由最短的那个边决定。而Raft则只要较快的大多数完成即可提交，并且保证该数据不会丢失。</li>
+</ol>
+<h3 id="改进的CRAQ"><a href="#改进的CRAQ" class="headerlink" title="改进的CRAQ"></a>改进的CRAQ</h3><p><img src="https://img-blog.csdnimg.cn/20200907195224730.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1BldGVyX2NQYW4=,size_16,color_FFFFFF,t_70#pic_center" alt="CRAQ工作原理"></p>
+<p>主要改进点在于，CRAQ使得所有节点均可以处理读操作，因为目前只读的系统广泛使用，比如访问网站，需要响应给用户对应的网站内容。同时又能够提供强一致性，不能降低延时，但可以增加系统的吞吐量</p>
+<p>改进点：</p>
+<ol>
+<li>单节点可以存储对象的多个版本，包括一个单调递增版本号和标记位（表示数据干净还是脏）</li>
+<li>结点收到对象新版本时，将最新版本附加到列表<ol>
+<li>如果不是尾结点，标记为脏，并继续向后传</li>
+<li>如果是，则标记为干净，且该数据已提交，向前反向传播确认数据提交</li>
+</ol>
+</li>
+<li>结点收到反向传播的确认消息时，标记该对象版本为干净，删除此前的所有版本</li>
+<li>收到对象的读请求<ol>
+<li>如果版本是干净的，直接返回。当只有一个版本时，默认是干净的</li>
+<li>如果是脏的，与尾结点通信，查询最后提交的版本好，从该节点的对象版本列表中返回该对象对应版本的数据。</li>
+</ol>
+</li>
+</ol>
+<p>如上图，第二个结点查询K时，会首先查询尾结点K对应的版本号，然后从本地结点的版本列表中返回V1.</p>
+<h3 id="配置管理器"><a href="#配置管理器" class="headerlink" title="配置管理器"></a>配置管理器</h3><p><strong>链复制不能抵御网络分区和脑裂，所以不能单独使用。</strong>需要外部有一个配置管理器作为权威来决定谁挂了谁活着。例如head节点和下一个节点失联，则下一个节点成为另一个head，同时提供写请求服务，导致分区不一致。而配置管理器的容错是基于raft或者zookeeper的。所以结点自己无法决定自己是否在系统中存活，而是需要外部的配置管理器来决定，需要去查询来判断结点状态。</p>
+<p>否则，比如head与第二个节点失联，此时head认为第二个结点挂了，而第二个结点认为head挂了，都去连接下一个结点，此时会出现脑裂问题，即两个结点的状态不同。</p>
+<p>但如果两个结点都存活，但之间的网络是断开的，这样即使与配置管理器通信认为是活着，也无法正常解决脑裂问题，需要更仔细的设计管理器的功能</p>
+<h3 id="协作服务"><a href="#协作服务" class="headerlink" title="协作服务"></a>协作服务</h3><p>CRAQ采用ZooKeeper提供健壮的、分布式的、高性能的方式管理组成员以及存储链的元数据。正如此前提到的，ZooKeeper的功能之一是提供有效的配置管理，可以将链的所有成员信息放在ZooKeeper的结点中，在每次发生更改时可从中得到其他节点信息</p>
+<h3 id="WAL预写式日志"><a href="#WAL预写式日志" class="headerlink" title="WAL预写式日志"></a>WAL预写式日志</h3><p>保证系统的容错性。要求数据库软件在修改磁盘真实的数据页之前，先将log条目加入到WAL中以描述书屋。这样数据库故障恢复之后，可以通过WAL恢复到正确的状态。比如执行了一半的事务，在故障恢复后可以发现事务未完成，则撤回之前的操作，相当于undo。或者发现事务的提交记录，将记录中新的数据写入到磁盘中，称为redo。</p>
+<h2 id="Aurora"><a href="#Aurora" class="headerlink" title="Aurora"></a>Aurora</h2><h3 id="整体介绍"><a href="#整体介绍" class="headerlink" title="整体介绍"></a>整体介绍</h3><p>意义：</p>
+<ol>
+<li>商用，且比其他数据库快35倍</li>
+<li>在做通用存储且发现性能不好的情况下，转向应用定制</li>
+<li>其他许多云基础设施的实现细节</li>
+</ol>
+<p>用途：</p>
+<ol>
+<li>Amazon提供的EC2（Elastic Cloud）实例服务，弹性计算实例，其上可部署不同的服务，比如Web、数据库</li>
+<li>数据库服务希望能在机器挂掉时转移到其他运行机器上，如果存储在本地硬盘，会出现数据丢失，所以实现块存储的服务，EBS（Elastic Block Store），对应的是一些互为副本的存储服务器，表现的像是普通的硬盘，但内部使用网络传输数据进行副本的复制。当EC2挂了，可以新起一个并挂载之前的EBS卷，就可以恢复之前的数据。</li>
+</ol>
+<p>问题：</p>
+<ol>
+<li>性能：要用网络传输所有的数据，通常会将副本放在一个AZ（Availability Zone）中，可以减少传输延时</li>
+<li>可靠性：当AZ挂了，副本丢失。通常是在一个城市内有多个AZ，距离较近的AZ之间存储副本</li>
+</ol>
+<p>架构</p>
+<ol>
+<li>有6个数据的副本，位于3个AZ（数据中心），每个AZ有2个副本</li>
+<li>不需要6个都确认写入才执行，而是采用Quorum形式，任意4个写入即可确认，因此可以忽略掉挂掉的或者网络连接慢的服务器。</li>
+<li>在不同副本之间传递的数据是log条目，如果是数据则会非常大，增加网络传输的负担。但因此这个Auraro系统不再通用，只能是应用定义的（要解释特定的log含义，比如MySQL的log）。但是EBS服务提供的应该是通用的，他只是模拟磁盘提供对数据的读写支持，而不管数据之外的任何操作和语义</li>
+</ol>
+<h3 id="容错目标"><a href="#容错目标" class="headerlink" title="容错目标"></a>容错目标</h3><ol>
+<li>对于写操作，只有一个AZ挂了之后，写操作不受影响</li>
+<li>对于读操作，一个AZ和一个其他AZ的服务器挂了之后，读操作不受影响。确保AZ下线时间很长时依然具有容错性，并返回正确数据</li>
+<li>期望能够容忍暂时的慢副本</li>
+<li>如果一个副本挂了，能够快速从故障中恢复，生成新的副本。</li>
+</ol>
+<h3 id="Quorum复制机制"><a href="#Quorum复制机制" class="headerlink" title="Quorum复制机制"></a>Quorum复制机制</h3><p>假设有N个副本，为了能执行写操作，必须确保写操作被W个副本确认，W &lt; N，同理读操作需要从R个副本读取，R &lt; N。Quorum要求，任意发送写请求的W个服务器和任意接受读请求的R个服务器有重叠，即R + W &gt; N，最少情况为R + W = N + 1.<br>对于读请求，可能看到不同的结果，会对每个数据建立一个版本号，读到数据后返回版本号最大的数据（即最新的）<br>相比链复制，可以轻易剔除暂时故障、失联或者慢的副本。也可以调整读写性能，只需要设置对应的R和W即可。</p>
+<p>在亚马逊的Aurora的Quorum系统中，N = 6, W = 4, R = 3.</p>
+<p>通常情况下不会设置W为1，因为此时只需要写入一个，而从所有的服务器读，如果包含最新数据的机器挂掉，则在他重启之前，无法读取正确的最新的数据。也不会设置r为1，因为此时需要所有副本都写入成功，当存在一个慢副本或者失联副本就会导致系统性能受影响</p>
+<h3 id="读写存储服务器"><a href="#读写存储服务器" class="headerlink" title="读写存储服务器"></a>读写存储服务器</h3><p>在一个故障恢复过程中，事务只能在之前所有事务都恢复后才被恢复。</p>
+<p>存储服务器内存放的是自身磁盘page的cache，和对应的log。当一个写请求到来时，会追加记录log，但不会立即修改cache，当有读请求需要返回该page数据时，会应用所有log到page数据，并写入到磁盘，并将最新的page的数据返回给读取的服务器。同时在page的cache中删除对应log列表，更新cache。</p>
+<p>Quorum Read可以避免。通过记录每一次write操作写到对应存储服务器的log编号，在每次读取数据可以得知该数据在所有存储服务器中的最新数据所在位置，挑选最新的服务器进行读取，可以得到更小的读代价。</p>
+<h3 id="数据分片"><a href="#数据分片" class="headerlink" title="数据分片"></a>数据分片</h3><p>Amazon将数据库的数据分割存储到多组存储服务器上，每组6个副本，每份数据10GB。这些10GB的数据逻辑上作为多个分组，但物理上仍在一个服务器上，可能有几TB的硬盘容量，如果服务器挂了，受限于单个磁盘的写入速度，传输TB级别的数据是非常慢的，以至于无法接受。采用的优化方案是，假设挂的服务器上有100个数据库，找到100个不同的存储服务器，每一个分配一个数据块，并行分发数据，则恢复速度增加了100倍，总的来说就是打散，将数据在物理上分为不同的服务器，这样可以增加磁盘的并行写入速度。这样需要记录一个数据到分组的表单，在每次修改请求到来时，根据表单查找对应的分组，并只将log发送到对应分组。</p>
+<p><img src="https://mit-public-courses-cn-translatio.gitbook.io/~/files/v0/b/gitbook-28427.appspot.com/o/assets%2F-MAkokVMtbC7djI1pgSw%2F-MFm4umOtKBcv00JRuuU%2F-MFn6neq6Rc5VapzQF40%2Fimage.png?alt=media&token=8565a162-47f5-4f4b-b893-613aa8aad366" alt="img"></p>
+<p>一个服务器上可能存储的是多个不同的分组的数据，如果该服务器挂掉，每一个分组的数据选择一个独立的物理服务器负责恢复，使用N个服务器可以得到N倍的性能提升</p>
+<h2 id="Fragnipani-分布式文件系统"><a href="#Fragnipani-分布式文件系统" class="headerlink" title="Fragnipani 分布式文件系统"></a>Fragnipani 分布式文件系统</h2><h3 id="整体架构"><a href="#整体架构" class="headerlink" title="整体架构"></a>整体架构</h3><p>网络文件系统。联合少量的工作站，每个用户使用自己的工作站读写文件时产生的更改可以同步的共享到其他工作站。</p>
+<p>组成：</p>
+<ol>
+<li>工作站，每个用户使用的机器，可以读写文件系统</li>
+<li>Petal共享虚拟磁盘，保存文件系统的数据结构，如文件内容、inode、目录等。工作站读写数据，会将petal服务器发送RPC，获取对应的数据。可以认为petal服务器是基于网络的共享磁盘，可以使用类似于本地磁盘的操作来读写</li>
+<li>懒写回的方式。本地工作站对数据的修改，会暂时缓存在本地，当其他工作站需要看到对应文件的内容时，才会写回到petal服务器并显示给其他工作站</li>
+<li>Frangipani模块，放在工作站上，用于工作站与petal存储系统的交互，提供文件系统的逻辑功能。因为每个工作站都有一个模块，可以与petal交互，所以是一个去中心化的设计，所有工作站都可以操作。</li>
+<li>锁服务器：提供锁，分布到多个工作站上，逻辑上是独立的服务器，但和petal服务器运行在一起</li>
+</ol>
+<h3 id="挑战"><a href="#挑战" class="headerlink" title="挑战"></a>挑战</h3><ol>
+<li>缓存一致性：当修改一个文件内容后，希望其他工作站可以看到该内容</li>
+<li>冲突解决：当同时对一个目录修改时，应该互不干扰，且具有原子性，即使有多步操作，也希望这些操作是即时生效的</li>
+<li>崩溃修复：由于本地缓存，当工作站崩溃时并未完全写回到petal服务器，如何能恢复单个工作站的内容而不影响其他工作站，例如正在查看崩溃服务器上次的修改内容</li>
+<li>去中心化带来的逻辑问题</li>
+</ol>
+<h3 id="缓存一致性协议"><a href="#缓存一致性协议" class="headerlink" title="缓存一致性协议"></a>缓存一致性协议</h3><p>线性一致性保证能看到最新数据，缓存可以提升性能。</p>
+<p>锁服务器：存在一个表单为每个锁命名，包括这个锁对应的文件以及当前归属的工作站。这里假设锁都是排他。</p>
+<p>每个工作站也会在Frangipani模块中记录本地工作站拥有的所有锁对应的文件名、锁的状态（busy或idle）和文件缓存内容。工作站使用完锁之后会在本地标记该锁为idle，但不会返回给锁服务器。</p>
+<p>关于锁和缓存数据的规则来保证缓存一致性</p>
+<ol>
+<li>工作者不允许持有缓存的数据，除非也持有数据相关的锁。即在得到数据之前，首先要得到锁。</li>
+<li>如果释放锁之前，修改了锁保护的数据，必须将数据写回到petal，并且只有确认后才能将锁归还给锁服务器。所以是先向petal写数据，然后释放锁，最后从工作站的lock表中删除锁记录和缓存数据</li>
+</ol>
+<p>写请求加锁的流程</p>
+<ol>
+<li>工作站1请求目录/a的锁，锁服务器发现该文件对应的锁未分配，赋给工作站1，工作站1在本地的lock表单中写入信息，并修改状态。可以从petal服务器读文件</li>
+<li>工作站2请求目录/a的锁，锁服务器查看lock表发现在工作站1，发送收回锁的req给工作站1，此时工作站1如果锁处于空闲，将数据回写到petal，并回复释放响应给锁服务器。如果不是空闲，则直到工作站1的修改请求完成并且写回到petal服务器后，才回复释放响应。</li>
+<li>锁服务器收到释放响应后，重新将锁分配给工作站2</li>
+</ol>
+<p><img src="https://mit-public-courses-cn-translatio.gitbook.io/~/files/v0/b/gitbook-28427.appspot.com/o/assets%2F-MAkokVMtbC7djI1pgSw%2F-MFuJRt3Jts5mw0kTCdD%2F-MFwwQu0gml2wioq39yR%2Fimage.png?alt=media&token=c9e88f71-36a2-4701-94af-5b7f310339cb" alt="img"></p>
+<p>上述只是排它锁的工作流程，还有共享的读锁，可以由多个工作站同时持有来读取文件。</p>
+<p>此外，如果没有其他工作站读取文件，上述机制会导致数据永远不会写入到petal服务器中，但实际实现中，为了防止本地工作站修改的文件内容在崩溃后丢失，每隔30秒会将所有修改的数据写回到petal中，即使崩溃最多丢失30秒的数据。</p>
+<h3 id="原子性"><a href="#原子性" class="headerlink" title="原子性"></a>原子性</h3><p>数据库风格的事务系统，以锁为核心。</p>
+<ol>
+<li>执行操作前，获取操作所需要的所有的锁</li>
+<li>完成操作之前，不会释放所有锁，并且在修改写回到petal后，才会释放所有锁</li>
+</ol>
+<h3 id="Log"><a href="#Log" class="headerlink" title="Log"></a>Log</h3><p>通过WAL的方式确保可以实现故障恢复。</p>
+<p>2种处理方法：</p>
+<ol>
+<li>发现工作站崩溃就释放所有锁，这可能导致其他工作站看到处于中间状态的数据，读错比读不到更严重</li>
+<li>不释放持有的锁。但其他工作站永远等待锁。</li>
+</ol>
+<p>因此，一定需要释放锁，但要能解决崩溃的服务器只写入了部分数据的情况。</p>
+<p>特点：</p>
+<ol>
+<li>log不是只有一份，而是每个工作站都保存独立的一份。</li>
+<li>工作站的log存储在petal服务器上，而不是本地，和其他系统有很大区别</li>
+<li>log具有递增的log编号，可以通过编号来确定最新的log。</li>
+<li>log只记录元数据的修改，用于恢复文件系统，而用户文件的内容会丢失</li>
+</ol>
+<p>工作站收到锁服务器的释放req后，执行下列流程</p>
+<ol>
+<li>工作站将内存中还没有写入到petal的log写回</li>
+<li>将被该锁保护的数据写回到petal</li>
+<li>向锁服务器响应锁释放消息</li>
+</ol>
+<h3 id="故障恢复-1"><a href="#故障恢复-1" class="headerlink" title="故障恢复"></a>故障恢复</h3><p>前提：锁服务器发出的revoke消息在超时后会认为崩溃，并启动恢复过程。此时会寻求另一个正常的工作站，由该工作站读取崩溃的工作站的log，并进行恢复。</p>
+<p>故障场景：</p>
+<ol>
+<li>工作站1未向petal写入log就故障，此时工作站2读取log没有任何信息，锁服务器释放锁，恢复。此时可能丢失工作站1对文件的修改，因为log只记录元数据。</li>
+<li>工作站1向petal写入了部分log。工作站2会检查log的每个条目，并重新执行。执行完成后通知锁服务器，释放工作站1的所有锁。</li>
+<li>有可能的是，工作站2重新执行log，但其实已有部分写入到petal，导致在相同位置写入了相同的数据。（这里没懂，如果是元数据，比如向目录创建文件，即使写入相同数据也会被覆盖，可能丢失该文件的内容，但文件系统的结构还是符合预期的）。</li>
+</ol>
+<p>每一份存储在petal的数据都会有一个版本号，在log中会记录该版本号，在工作站恢复log时，会对比当前数据，来确保是属于崩溃服务器的操作。比如工作站1删除文件a，而工作站2创建文件a，工作站3在恢复时，发现文件a还存在，此时需要根据log版本号来对比该文件是未删除还是重新创建的。</p>
+<p>工作站需要修改元数据时，会先从petal中读取版本号，在创建log填入当前版本号+1作为新的版本号</p>
+<h2 id="分布式事务"><a href="#分布式事务" class="headerlink" title="分布式事务"></a>分布式事务</h2><h3 id="并发控制"><a href="#并发控制" class="headerlink" title="并发控制"></a>并发控制</h3><h3 id="原子提交"><a href="#原子提交" class="headerlink" title="原子提交"></a>原子提交</h3><ol>
+<li>悲观并发控制，使用排它锁，在数据处理完成之前不能释放。适合于冲突非常频繁的场景</li>
+<li>乐观并发控制，先执行操作，执行完成后写入前判断数据是否被其余进程修改过，如果有则继续重试。</li>
+</ol>
+<h3 id="两阶段锁"><a href="#两阶段锁" class="headerlink" title="两阶段锁"></a>两阶段锁</h3><ol>
+<li>使用任何数据之前，先获得锁</li>
+<li>事务必须持有任何已获得的锁，直到事务提交或者停止</li>
+</ol>
+<h3 id="两阶段提交"><a href="#两阶段提交" class="headerlink" title="两阶段提交"></a>两阶段提交</h3><p>要么参与的服务器都执行了操作，要么都没有执行。<br>分为事务协调者和服务器，协调者首先向对应的服务器发送prepare通知，服务器查看自身状态决定是否能完成并回复给协调者，当都响应后，协调者根据投票结果决定是否提交，如果可以提交则发送提交请求给所有服务器，并且事务参与者回复ACK说知道了需要提交。如果存在服务器回复不能执行，则协调者发送停止事务请求，通知其余服务器停止提交</p>
+<p>对于并发运行的多个事务，也许有多个事务协调者。此时需要知道每个消息对应的是哪个事务，因此持有数据的服务器会维护一个锁的表，记录锁被哪个事务持有，因此事务也需要ID，简称TID</p>
+<p><img src="https://mit-public-courses-cn-translatio.gitbook.io/~/files/v0/b/gitbook-28427.appspot.com/o/assets%2F-MAkokVMtbC7djI1pgSw%2F-MGDMi39kJWJ6Q51aoWN%2F-MGDRH_A0-tcJKtfjbh4%2Fimage.png?alt=media&token=b72f3ccb-8bbb-46b6-8c82-9681cbd856fe" alt="img"></p>
+<p>参与者无论是收到提交还是中止请求，都会释放对应数据的锁。</p>
+<h3 id="故障场景"><a href="#故障场景" class="headerlink" title="故障场景"></a>故障场景</h3><p>假设协调者X，和事务参与者A, B<br>场景1：B可能在回复X的prepare消息之前崩溃。此时B可以单方面停止事务，因为X不可能提交事务。一种恢复方法是，重启后内存中的数据都清除，有关事务的信息都丢失了，无法恢复，此时根本不需要关注事务，因为都没有执行过。<br>场景2：B在回复X Yes之后崩溃。X很有可能会提交事务，所以A可能已经执行事务，为保证一致性，B需要先将log持久化存储到磁盘上，故障重启后通过查看log，可以发现在一个事务中，根据log执行redo。所有故障恢复貌似都是使用WAL的机制<br>场景3：B在收到提交请求之后崩溃了。此时B完成了修改，并将数据持久化到了磁盘，重启后不需要做任何事。协调者可以因为没收到ACK再次发送提交消息，而B重启后内存中没有事务的信息，对于不知道的事务的提交消息，B仅仅ACK，因为如果此时B重启后没有事务信息则表示事务已在本地提交并在内存中删除相关状态。<br>场景4：X在发送提交消息之前崩溃，则没有参与者提交事务，重启后直接恢复到之前状态<br>场景5：X发送完一个或多个提交消息之后崩溃，则不允许它忘记相关的事务。所以X需要先将事务信息写入到log并持久化存储到磁盘中，重启后可以读硬盘恢复事务信息<br>场景6：X发送了prepare，但没有收到所有的Yes、No信息，此时可以重新发送一轮prepare消息，但可能会永远等待一个长时间下线的参与者，我们希望可以避免这种情况。所以可以单方面终止事务，并发送一轮终止消息。如果参与者重启后，向协调者发送关于自己崩溃前的事务的消息，则协调者发现自己不知道这个事务，可以告诉X应该终止<br>场景7：B收到了prepare，并回复yes，但没有收到提交消息，此时不允许参与者单方面终止事务，必须等待X的响应，哪怕是无限等待。直到X被修复，并重新启动流程，比如发送commit到B。此时B一直持有锁，阻塞其他对相关数据的请求</p>
+<h3 id="两阶段提交协议原理"><a href="#两阶段提交协议原理" class="headerlink" title="两阶段提交协议原理"></a>两阶段提交协议原理</h3><p>决策是在一个单一的实例，即事务协调者完成的。A或B都不能决定对事务的走向，也不会交互达成一致。只有协调者可以决定，且协调者是一个单一的实例。</p>
+<h3 id="优化"><a href="#优化" class="headerlink" title="优化"></a>优化</h3><p>两阶段提交很慢，因为需要在每一步都得到响应，比如网络之间的传输延时，或者log写入到持久化存储介质的耗时，并且需要等待最慢机器。因此只会在小环境中看到应用。</p>
+<p>一个优化的手段是针对X和AB使用Raft来实现，这样首先保证了整个系统的可用性，即不会因为单点故障卡住整个流程，另外也避免了等待最慢结点，只要大多数结点能完成请求即可。</p>
+<h2 id="Spanner"><a href="#Spanner" class="headerlink" title="Spanner"></a>Spanner</h2><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>Spanner是第一个数据分布在全球范围内的系统，并且支持外部一致性（分布一致性）。更类似于关系数据，从单一版本的键值存储系统演变为具有时间属性的多版本数据库。</p>
+<p>通过使用TrueTime API，可以为事务分配全球范围内的提交时间戳，以此来保证事务执行的线性一致性。</p>
+<p>Spanner在多个使用Paxos协议的组上执行两阶段提交协议。写操作都在master上，而读操作可以在任意结点。因此通过锁来保证master上事务的正确性，即可保证系统的一致性。</p>
+<h3 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h3><ol>
+<li>使用Paxos组来实现两阶段提交，可以避免单个结点故障或延时高导致整个系统的阻塞或高延时</li>
+<li>使用同步时间戳，即TT API，来保证只读事务的正确执行</li>
+</ol>
+<h3 id="出现的原因"><a href="#出现的原因" class="headerlink" title="出现的原因"></a>出现的原因</h3><ol>
+<li>谷歌的广告数据库多是不相关的MySQL或BigTable数据库，当需要共享使用数据时存在问题</li>
+<li>他们发现大部分操作是只读，希望能提升只读操作的性能</li>
+<li>希望系统能够提供强一致性和外部一致性</li>
+</ol>
+<h3 id="工作方式"><a href="#工作方式" class="headerlink" title="工作方式"></a>工作方式</h3><p><img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20211219162617873.png" alt="image-20211219162617873"></p>
+<p>将所有数据shard，可能存储到不同的Data Center上，每一个相同的shard，如上图的key A，由一个独立的paxos组管理，用来加速数据并发的处理。</p>
+<p>客户端将写请求发给负责对应数据所在的shard的paxos组的leader，由leader将操作日志复制给所有的follower。</p>
+<p>选择多个数据中心，一是因为可靠性，在一个挂掉或成为瓶颈之后（比如地震等）可以接着提供服务，另一方面是可以分布更广泛，在读取时可以从最新的数据中心读到，以此来降低数据传输延迟。</p>
+<p>问题：Paxos是大多数协议，即部分副本可能不包含最新的数据，如果希望从最近的数据中心读数据则可能读到过时数据。因此希望实现外部一致性，即每次读取都看到最新的数据。</p>
+<h3 id="读写分布式事务"><a href="#读写分布式事务" class="headerlink" title="读写分布式事务"></a>读写分布式事务</h3><p><img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20211219171343582.png" alt="image-20211219171343582"></p>
+<p>流程（C是客户端，DC i代表不同的数据中心，X\Y为shard数据，假设DC2是X的leader，DC1是Y的leader）：</p>
+<ol>
+<li>C希望修改X和Y，首先向DC2请求X的值和锁以及向DC1请求Y的值和锁</li>
+<li>成功后，会选择一个paxos组作为分布式协调者，例如Y shard的DC1，则首先向DC2请求修改X，向DC1请求修改Y</li>
+<li>DC2首先向follower发送写请求的log，在得到大多数回应后，向协调者即DC1发送yes，同理DC1会向follower发送log，得到大多数回应后向自身的协调者进程发送yes</li>
+<li>此时协调者确定可以提交，则首先向follower发送确认commit的log，在收到多数回应后，向DC2和自身的Y shard进程发送确认commit的指令，类似于此前的两阶段提交协议流程。</li>
+<li>Paxos leader在得到对应的commit或abort指令后，首先将log复制到所有follower，在得到大多数响应后，会修改对应值并释放所有相关数据的锁</li>
+</ol>
+<p>Spanner使用的是传统的两阶段提交协议，为了避免单点故障导致的无限期阻塞问题，paxos复制协议会在单点leader出现故障后，follower会取代leader，并且因为成为leader的follower存有当前leader对于当前事务的所有执行记录的log，他会继续执行leader决定的任何决策。</p>
+<h3 id="只读分布式事务"><a href="#只读分布式事务" class="headerlink" title="只读分布式事务"></a>只读分布式事务</h3><p>具有比读写事务是被以上的加速。</p>
+<p>外部一致性：在真实时间分布上，后发起的事务能看到之前事务的最新数据，而不应该有过时的。</p>
+<h4 id="快照隔离"><a href="#快照隔离" class="headerlink" title="快照隔离"></a>快照隔离</h4><p>时间戳定义</p>
+<ol>
+<li><p>读写事务：事务提交的时间</p>
+</li>
+<li><p>只读事务：事务开始的时间</p>
+</li>
+</ol>
+<p>类似于MySQL的MVCC的做法，读数据的时候根据事务版本号以及数据行的创建版本和删除版本来决定数据是否有效</p>
+<p><img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20211219181932368.png" alt="image-20211219181932368"></p>
+<p>事务：x = x - 1, y = y + 1</p>
+<p>问题：假设T1执行该事务并提交，T2在之后执行并提交，T3执行读x和y的事务，但由于T3机器慢，所以读x发生在T1之后，卡住，然后在T2之后读y，此时读到的x和y不是一个事务的结果，例如x=9, y=12，不符合预期</p>
+<p>解决方案：针对每个事务，建立一个时间戳，在读的时候返回小于当前只读事务的时间戳的事务结果中最大的时间戳对应的事务结果，则可以认为该结果是在只读事务发生时的逻辑上应该得到的数据。</p>
+<p>以上图为例：</p>
+<ol>
+<li>T1在时间戳@10修改x=9, y=11，T2在时间戳@20修改x=8, y=12</li>
+<li>T3在时间戳@15发起读，得到x=9，然后卡住，在T2执行完成后读y，此时会查看小于@15的最大时间戳事务，即T1，然后返回y=11。即逻辑上是得到T1, T3, T2的执行顺序，符合预期。</li>
+</ol>
+<h4 id="时间同步"><a href="#时间同步" class="headerlink" title="时间同步"></a>时间同步</h4><p>只有只读需要用到快照隔离，才需要考虑时间同步的问题，读写通过两阶段提交不需要考虑。</p>
+<p>时间的不确定性：</p>
+<ol>
+<li>不知道距离GPS多远，信号需要时间才能到达，存在一定的误差区间，比如当前收到时间为12点，但可能已经是12点00分01秒</li>
+</ol>
+<h4 id="TrueTime-API"><a href="#TrueTime-API" class="headerlink" title="TrueTime API"></a>TrueTime API</h4><ol>
+<li>TT.now()：返回一个区间，[earliest, latest]</li>
+<li>TT.after(t): 返回true如果t已经过去</li>
+<li>TT.before(t): 返回true如果t时间还没到达</li>
+</ol>
+<h4 id="规则"><a href="#规则" class="headerlink" title="规则"></a>规则</h4><h5 id="start-rule"><a href="#start-rule" class="headerlink" title="start rule"></a>start rule</h5><p>TS = TT.now().latest</p>
+<p>这是只读事务的开始时间，和读写事务的提交时间，可以保证后续的事务不能早于这个时间开始，因为这是当前时间的最大可能值。</p>
+<h5 id="commit-wait"><a href="#commit-wait" class="headerlink" title="commit wait"></a>commit wait</h5><p>delay TS &lt; TS.now().earliest</p>
+<p>保证事务提交时间戳一定是已经过去的，即该事务在准备提交时会请求TT.now()，直到返回的区间中不包括选定的TS时，才会提交该任务。</p>
+<h2 id="FaRM，并发控制"><a href="#FaRM，并发控制" class="headerlink" title="FaRM，并发控制"></a>FaRM，并发控制</h2><p>是一个探索性的系统，主要是对RDMA新型网络硬件性能的探索。</p>
+<p>假设数据传输发生在一个数据中心里，即副本在一个AZ。</p>
+<p>比Spanner快一百倍，但是Spanner解决的是跨地域的数据复制，比如全美范围，而不是假设在一个AZ中。</p>
+<p>FaRM的瓶颈是CPU时间。</p>
+<h3 id="工作方式-1"><a href="#工作方式-1" class="headerlink" title="工作方式"></a>工作方式</h3><p>使用ZK+配置管理器（Config Manager）管理系统的配置（不是重点）</p>
+<p>将所有数据哈希分片，然后对于每个数据片，使用一主一备的方式做备份。</p>
+<p>读写只能对主节点操作，并且主节点的更新需要复制给备份。</p>
+<p>提升性能的方式：</p>
+<ol>
+<li>使用分片技术，比如将数据分成N个部分到N个机器，可以得到将近N倍的性能提升</li>
+<li>使用RAM，而不是存储在硬盘中，利用内存的告诉读写性能</li>
+<li>使用非易失性的RAM方案，在掉电时可以坚持将RAM的数据落到硬盘上</li>
+<li>使用RDMA高速网络接口，（不太了解）</li>
+<li>kernel bypass，应用程序代码直接读写网络接口，而不通过内核</li>
+</ol>
+<h3 id="NVRAM，非易失性RAM"><a href="#NVRAM，非易失性RAM" class="headerlink" title="NVRAM，非易失性RAM"></a>NVRAM，非易失性RAM</h3><p>缺点：数据中心断电后，所有F+1个结点都会挂，需要避免。</p>
+<p>解决方案：在每个机架上放个电池，在检测到断电后，通知FaRM服务器将RAM数据到落盘（SSD），服务器开始拒绝处理后续的服务请求并启动持久化，在持久化完成后，服务器可以关机。在来电后，从硬盘上读取数据并回复RAM状态。</p>
+<p>问题：只能解决断电问题，比如出现硬件故障等机器问题，会导致机器重启，RAM数据丢失。所以需要做备份，但解决了持久化导致的性能瓶颈，因此瓶颈转移到网络和CPU上</p>
+<h3 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h3><p>NIC Network Interface Card</p>
+<h4 id="传统网络架构"><a href="#传统网络架构" class="headerlink" title="传统网络架构"></a>传统网络架构</h4><p><img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20211220160708782.png" alt="image-20211220160708782"></p>
+<p>如上图，APP运行在用户态，在内核态有socket buffer做缓存，TCP用于传输，NIC Driver是网络硬件的驱动程序，会包括一个输入和输出的buffer，经由网卡和网线传输数据。在用户态的数据要经过网络传输，需要首先复制一份到内核态，然后经过buffer和DMA发送到网卡，期间包括数据多次复制，导致网络性能无法全部用满，例如网线传输速度可能是10GB/s。</p>
+<h4 id="FaRM的网络"><a href="#FaRM的网络" class="headerlink" title="FaRM的网络"></a>FaRM的网络</h4><ol>
+<li>kernel bypass：构建一个通路消除内核的影响，通过DMA，网卡可以直接读取APP的数据，或发送APP的数据。将上图的DMA放到用户态。但用户程序需要自己实现传统TCP协议为我们提供的一些功能，比如check sum、去重、有序等。</li>
+<li>RDMA，remote direct memory access。通过一个连通多个服务器的RDMA控制器（带有开关），源服务器可以直接联系目标服务器的NIC。例如APP发送数据，可以从源服务器的用户态RDMA对应的buffer直接通知目标服务器的RDMA，来直接修改位于目标服务器用户态应用程序对应的地址空间的若干个字节数据，并可以通过回路直接得到对应的响应结果。这个过程CPU无感知。这个过程要比使用RPC快很多。RDMA NIC会运行类似TCP的功能去做到可靠连接需要的特性。目前只能在局域网上工作。</li>
+</ol>
+<p>FaRM使用的是单向RDMA，通常是向目标服务器追加log或message。这种方式可以达到每秒1千万次的操作，要比传统TCP快非常多。</p>
+<p>单向RDMA可以实现读，但是无法写。所以不能用于事务。</p>
+<h3 id="乐观并发控制，optimistic-concurrency-control"><a href="#乐观并发控制，optimistic-concurrency-control" class="headerlink" title="乐观并发控制，optimistic concurrency control"></a>乐观并发控制，optimistic concurrency control</h3><p>目前单向RDMA无法做到对锁的控制，无法实现原子性的test and set</p>
+<p>类似于CAS操作的原理。</p>
+<p>API：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">txCreate()</span><br><span class="line">o = txRead(OID)</span><br><span class="line">update(o)</span><br><span class="line">txWtire(OID, o)	<span class="comment">//仅仅是本地缓存</span></span><br><span class="line">ok = txCommit()	<span class="comment">//这里才会提交给服务器</span></span><br></pre></td></tr></table></figure>
+
+<p>会产生指数回退的问题：即所有并发的操作同时开始，只有一个能提交，其他N-1个操作都需要回退，并且下次回退依然会有O(N)个失败。可以采用延迟重试的方式，类似于raft选主，增加一个随机的等待时间再发起操作。</p>
+<p>OID包括region num，用于寻找对应的primary结点，此外还包括address，用于通过RDMA直接读取对应的地址内容</p>
+<p>每个region包括多个对象，每个对象具有</p>
+<ol>
+<li>version number在低位</li>
+<li>然后具体内容在高位</li>
+</ol>
+<p>每个服务器在内存保存了消息队列和log，这样可以通过RDMA直接添加log到对应的服务器</p>
+<h3 id="事务提交流程"><a href="#事务提交流程" class="headerlink" title="事务提交流程"></a>事务提交流程</h3><p><img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20211220205838384.png" alt="image-20211220205838384"></p>
+<p>C表示事务协调者（会从若干个客户端中选一个作为协调者），Pi和Bi分别表示同一个数据shard的主备结点，execute phase对应txCommit之前的所有操作，包括read和本地的修改，commit phase为调用txCommit之后的操作。其中P1和P2是读写事务，而P3是只读。虚线是RDMA读，实线是RDMA写，点状线表示硬件的ack</p>
+<p>commit步骤</p>
+<ol>
+<li>lock阶段，协调者将对应的事务发送给所有的主节点，在主节点后增加log，然后主节点根据自身状态进行一系列验证（当前提交的事务是否符合要求，通过CAS操作比较提交的版本号是不是之前读到的版本号，用来判断是否有其他事务进行过修改），并且主节点会设置对应的锁（用来防止其他客户端对同一个数据的并发访问），并发送投票，yes或no，返回给协调者。只要有一个回复no，协调者就会终止，并通知所有主节点停止，并返回应用程序错误</li>
+<li>协调者这里因为读取的操作，所以需要重新使用CAS操作判断下这个数据是否过期，并且在这里如果读取失败返回no，则协调者终止该事务的提交</li>
+<li>协调者向所有的备份节点发送commit-backup的log并存储到非易失介质，并在收到写成功的响应之后进行下一步（可以通过对应硬件的ack直接得知是否写完成）</li>
+<li>在所有备份节点写成功并通过硬件反馈成功后，通知所有主节点，写commit-primary记录到log，提交该事务，并且释放所有的锁，更新所有数据的version</li>
+<li>将更改应用到所有shard的结点上，主备节点会保存对应的log直到他们被截断。只有从主备节点都收到ack后才会懒式截断</li>
+</ol>
+<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><p>比如2个事务T1和T2，在两个客户端上，均执行x = x + 1，则合法的顺序是T1 T2或者T2 T1，且可能得到的结果x为</p>
+<ol>
+<li><p>x = 2，两个txCommit()都是true</p>
+</li>
+<li><p>x = 1，只有一个为true，另一个中止</p>
+</li>
+<li><p>x = 0，都被中止</p>
+</li>
+<li><p>情况1：假设两个事务同时txCommit，则主节点都会通过CAS判断版本号，第一个会首先对该数据上锁，然后第二个事务会返回失败，因为对应数据已被锁定。最终x=1</p>
+</li>
+<li><p>情况2：T2先读，然后T1执行提交，此时T2在发送lock后会通过CAS判断版本号被修改，lock失败<img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20211220212029618.png" alt="image-20211220212029618"></p>
+</li>
+<li><p>情况3：一看就成功，时间上都是线性没有重叠<img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20211220212445979.png" alt="image-20211220212445979"></p>
+</li>
+</ol>
+<p>强一致性的经典判断例子</p>
+<ol>
+<li><img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20211220213900117.png" alt="image-20211220213900117"></li>
+<li><img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20211220214413303.png" alt="image-20211220214413303"></li>
+</ol>
+<h2 id="SPARK"><a href="#SPARK" class="headerlink" title="SPARK"></a>SPARK</h2><h3 id="PagaRank示例"><a href="#PagaRank示例" class="headerlink" title="PagaRank示例"></a>PagaRank示例</h3><p>PageRank通过url指向关系，来尝试建模每个url的重要性。这里需要经过多次循环来得到最终结果（模拟用户点击）。</p>
+<p>目前使用MapReduce实现PageRank需要多次调用mapReduce，并且每次调用只解决其中的一部，对于中间的输入输出必须通过硬盘。</p>
+<p>调用collect之后才会真正启动worker去编码成java字节码，并得到最终的输出结果。在调用之前只是建立对应的图模型，但是无法得到结果。</p>
+<p><img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20211221150645057.png" alt="image-20211221150645057"></p>
+<p>在调用collect之前，只能看到对应的对象是一个RDD对象。调用之后，可以得到真实的结果</p>
+<p><img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20211221155120726.png" alt="image-20211221155120726"></p>
+<p>pagerank的运行图，在links join到ranks之后，重复做reduce + map的循环操作，如果采用之前的办法，这些操作都需要从硬盘读中间结果，并且将新的结果写入到硬盘。通过Spark的方式，可以将结果都保存在RDD概念的内存中，不再需要和硬盘做交互。</p>
+<h3 id="Narrow-Stage"><a href="#Narrow-Stage" class="headerlink" title="Narrow Stage"></a>Narrow Stage</h3><p><img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20211221161110779.png" alt="image-20211221161110779"></p>
+<p>如上图，所有的workers从最开始的read到后续的map等操作都是在本地执行，并且只针对本地的数据，而不需要与其他的worker通过网络交互。可以减少mapreduce的中间输入输出和disk的交互。</p>
+<p>前提是这些操作不需要知道全局信息，像distinct操作，需要全局去重，则无法使用这种方式，需要通过wide dependencies的方式来实现</p>
+<h3 id="Wide-Stage"><a href="#Wide-Stage" class="headerlink" title="Wide Stage"></a>Wide Stage</h3><p><img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20211221161803343.png" alt="image-20211221161803343"></p>
+<p>在distinct阶段，narrow stage在结束时，会根据wide后接的服务器个数N，将所有的数据哈希到N块，这个阶段叫做wide shuffle，然后wide stage启动时，会首先通过网络将分区好的数据按照分配的关系获取到本地，然后执行对应的操作。</p>
+<p>一个可行的优化是，在做narrow数据分区时，因为会有部分放在本地，所以spark会尽可能的将数据分配到本地从而减少网络的负担。</p>
+<p>只有在一开始就得到整个流程图(lineage graph)的情况下才可以由Spark做对应的优化</p>
+<h3 id="Failed-Worker-in-Wide-dependencies"><a href="#Failed-Worker-in-Wide-dependencies" class="headerlink" title="Failed Worker in Wide dependencies"></a>Failed Worker in Wide dependencies</h3><p><img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20211221163348304.png" alt="image-20211221163348304"></p>
+<p>如上图，在经过2步后需要通过wide stage建立全局的关联，如果此时worker2挂掉，则wide stage后的worker2需要知道其余所有worker的shuffle结果，则所有的worker都需要重新计算，这是不可接受的，因为可能他们需要和之前运行过的差不多的时间来做恢复，完全是一种浪费。</p>
+<p>需要一种更精明的方式来实现失败恢复。</p>
+<p>为此Spark支持每个worker周期性的实现checkpoint，例如在完成某一个阶段后将对应的结果持久化到hdfs中，这样在后续发生故障时，只需要从对应的检查点中恢复，并且做下一步的重新计算即可。</p>
+<h2 id="Memcache"><a href="#Memcache" class="headerlink" title="Memcache"></a>Memcache</h2><p>传统架构：若干个客户端会访问若干个前端服务器，前端运行例如php等应用，会直接从mysql数据库读取，这种读数据库的方式会产生较大的操作延时。虽然在性能瓶颈达到后可以通过添加多个数据库服务器的方式来增加吞吐量，但是并发访问以及数据库的读写开销依然会导致不符合当前用户规模的响应时间。</p>
+<p>因此，下一代架构出现，在前端和数据库之间增加cache服务器，将数据保存在内存中，加快数据读写。</p>
+<h3 id="工作流程"><a href="#工作流程" class="headerlink" title="工作流程"></a>工作流程</h3><p>客户端发起get到memcache服务器，如果有则返回，如果没有则响应错误后，客户端要去访问数据库，从数据库拿到结果后，由客户端发起put请求到memcache服务器进行该cache的修改。</p>
+<p>为什么不是在未命中的时候memcache服务器访问DB，然后修改本地的cache再返回客户端？</p>
+<p>回答是：因为memcache只是个cache，不知道客户端需要存什么到memcache，以及不知道数据库到客户端的联系。（如果按照问题说的来做会更简单，可能是memcache没有这么做？）</p>
+<h3 id="架构分析"><a href="#架构分析" class="headerlink" title="架构分析"></a>架构分析</h3><p>facebook可能面临的数据一致性问题（最终一致性会导致用户看到的数据来自几秒前），当用户修改自己的信息，然后打开发现未修改时可能产生困惑，或者用户关注一些新闻或整点的数据。</p>
+<p><img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20211222155520500.png" alt="image-20211222155520500"></p>
+<p>存在东-西两个数据中心，互为主备且数据状态保持一致，西为主节点，所有写会写入到西的DB，然后备份到东结点，在几秒的延迟后会达到数据一致状态。</p>
+<h4 id="客户端读写流程"><a href="#客户端读写流程" class="headerlink" title="客户端读写流程"></a>客户端读写流程</h4><p><img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20211222160642471.png" alt="image-20211222160642471"></p>
+<p>注：写操作中，写入DB的sql语句被修改为一整个包括写入到DB并且会发送删除请求到memcache的事务操作。而在客户端还要进行一次delete则是因为由DB发起可能会存在一定延时，和客户端同步进行</p>
+<p>先发送del然后再写DB：会导致在del之后，此时如果用户读，会发现memcache没有，再从DB读取之前的旧数据并填充到memcache中，逻辑上来说这个数据已经过时，后续请求依然会从这个memcache读到旧数据</p>
+<p>而先写DB再del：可能在写DB的过程中，用户请求到修改之前的旧数据，但在DB写入完成且memcache删除后，后续读会从DB读到最新的数据</p>
+<p>为什么不用send(k,v)来代替delete，直接写比下一次读到再从DB读并填充到memcache更快</p>
+<p>答：可能会带来过时数据，如下图，在网络延迟下，按照这种执行顺序，我们期望X的值为2，但现在的顺序会导致在memcache中存储的值为1，是过时数据<img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20211222162654290.png" alt="image-20211222162654290"></p>
+<h3 id="性能分析-1"><a href="#性能分析-1" class="headerlink" title="性能分析"></a>性能分析</h3><p>优化方案：</p>
+<ol>
+<li>分区分片，将数据分成多个分区运行在不同的机器上。在memcache使用哈希将数据映射到不同分区，放于不同的服务器。<ol>
+<li>可以通过内存来提升性能</li>
+<li>对于热点数据不友好，假设热点数据依然只在一个服务器，则单个服务器负载过大</li>
+<li>客户端需要同时与多个服务器通信，如果使用TCP协议，都需要维持连接，客户端开销大</li>
+</ol>
+</li>
+<li>复制，多个机器保持一致的数据状态，可以任选一个机器进行操作。每个前端服务器访问任意的memcache服务器，每个服务器服务前端的一个子集。<ol>
+<li>更有利于热点数据</li>
+<li>客户端只与一个服务器通信，TCP连接少</li>
+<li>每个数据多份占用存储空间更多</li>
+<li>保持数据在多个地区，这样用户在访问的时候可以选择较近的数据中心提供数据，减少用户访问延迟，提升用户体验。</li>
+</ol>
+</li>
+</ol>
+<h3 id="负载分析"><a href="#负载分析" class="headerlink" title="负载分析"></a>负载分析</h3><p>在一个region中，会有若干个cluster部署多个前端服务器和memcache服务器。所有前端服务器只能访问本集群内的memcache服务器。此外cluster的大小通常会被限制在一定范围，因为前端服务器获取数据时，使用TCP连接，并且可能需要从所有的memcache中取数据，如果服务器过多，则单个前端建立的连接的负载会较高，影响性能。</p>
+<p>还包括一个区域池，用来存储不被那么经常访问的数据。因为每个cluster会复制所有相同的数据来提供热点数据的性能保障，但相对冷的数据没必要，所以放在区域池，即相对冷的数据只有一份，存在区域池。</p>
+<p>启动新集群可能增加数据库压力。在启动时会标记一个冷启动状态，在缓存未命中时，会先从其他cluster获取该cache，并加载到本地。如果未命中才会从数据库加载。</p>
+<h4 id="Thundering-herd"><a href="#Thundering-herd" class="headerlink" title="Thundering herd"></a>Thundering herd</h4><p>是指一个热点数据被修改之后，客户端发送del请求到memcache，此时还未从DB获取数据，同时若干个客户端同时发get请求到该服务器，然后换成未命中，则导致所有客户端都去DB查询，瞬间增加DB负载。（翻译过来应该是缓存穿透）</p>
+<p>可以使用lease的方式优化（这个lease类似锁，而不是标记主节点存活的lease）</p>
+<p>在第一个前端到达时，缓存未命中，会返回错误信息，并且会记录一个lease在本地，此时其他前端发送请求该数据时由于存在lease则返回等待响应，然后获得lease的前端去访问数据库得到数据后put写回到memcache，此时lease释放，其他前端可以再次请求。从而保证数据库的瞬间负载不会过高而崩溃。这个lease会设置超时时间，当超时后还未释放该lease则表示对应的前端获取数据库失败，会重新发放一个新的lease到另一个前端。</p>
+<h4 id="Gutter-idea"><a href="#Gutter-idea" class="headerlink" title="Gutter idea"></a>Gutter idea</h4><p>用来解决当一个memcache服务器挂掉，自动启动或切换memcache代替他，否则在访问该服务器时会得到超时，从而请求都到数据库。</p>
+<p><img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20211222214257574.png" alt="image-20211222214257574"></p>
+<p>会有一组Gutter服务器处于空闲状态，如果一个MC（memcache服务器）挂掉，则前端会对key做重新哈希，映射到对应的gutter，如果此时gutter具有该数据则直接返回，否则前端访问数据库。</p>
+<p>这样导致一个问题：为防止gutter保存过时数据，在所有数据删除的时候需要同时删除gutter上的数据，并且要发送到所有的gutter，可能是无用的，并且还要考虑删除失败的情况，如果放在事务中会增加失败的概率。将gutter的数据缓存设置为存在一定时间后自动删除，而不是DB或客户端主动删除的形式。</p>
+<p>注：论文声明，delete操作是幂等的。</p>
+<h3 id="一致性-1"><a href="#一致性-1" class="headerlink" title="一致性"></a>一致性</h3><p><img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20211222215834987.png" alt="image-20211222215834987"></p>
+<p>假设C1：get(k)得到了miss响应，则会从数据库读取该数据，而随后C2更新了k到DB，并且向memcache发送了删除请求，完成后，C1得到该数据尝试将该数据写回到MC，但此时的数据是C2修改之前即过时的数据，并且后续没有delete请求，导致该过时数据一直存在于MC中。</p>
+<p>可以接受一个过时数据存在一段较短的时间，但不能接受永远存在。</p>
+<p>解决方案：同样使用lease机制，在C1得到miss时，同时在MC中设置一个lease并且将该lease返回给C1，在C2修改完DB并且发送del之后，MC删除该k对应的lease，则C1尝试set时携带的lease会过期，则会被MC忽略，后续的请求会缓存不命中，从而去数据库获取最新的数据。</p>
+<p>如果C2的delete发生在C1 set之后，则C1设置了新数据，但是会在过后被删除，所以过时数据只会存在较短时间，而不是永久存在。</p>
+<h2 id="COPS，因果一致性"><a href="#COPS，因果一致性" class="headerlink" title="COPS，因果一致性"></a>COPS，因果一致性</h2><p><strong>部分图保存在其他机器，后续修复链接</strong></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/MIT6-824/" rel="tag"># MIT6.824</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/02/17/MapReduce%E7%AC%94%E8%AE%B0/" rel="prev" title="MapReduce笔记">
+      <i class="fa fa-chevron-left"></i> MapReduce笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/02/17/Raft%E7%AC%94%E8%AE%B0/" rel="next" title="Raft笔记">
+      Raft笔记 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E7%9B%AE%E7%9A%84"><span class="nav-number">1.1.</span> <span class="nav-text">分布式系统目的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E5%BB%BA%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%B7%A5%E5%85%B7"><span class="nav-number">1.2.</span> <span class="nav-text">构建分布式系统的工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AF%E6%89%A9%E5%B1%95%E6%80%A7"><span class="nav-number">1.3.</span> <span class="nav-text">可扩展性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AF%E7%94%A8%E6%80%A7"><span class="nav-number">1.4.</span> <span class="nav-text">可用性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-number">1.5.</span> <span class="nav-text">一致性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MapReduce"><span class="nav-number">1.6.</span> <span class="nav-text">MapReduce</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GFS"><span class="nav-number">2.</span> <span class="nav-text">GFS</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E7%9B%AE%E6%A0%87%E5%8F%8A%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F"><span class="nav-number">2.1.</span> <span class="nav-text">系统目标及实现方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GFS%E7%9A%84%E8%AE%BE%E8%AE%A1%E7%9B%AE%E6%A0%87"><span class="nav-number">2.2.</span> <span class="nav-text">GFS的设计目标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%94%99%E8%AF%AF%E6%95%B0%E6%8D%AE%E5%AF%B9%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">2.3.</span> <span class="nav-text">错误数据对应用程序的影响</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#master%E8%8A%82%E7%82%B9%E4%BF%9D%E5%AD%98%E7%9A%84%E5%86%85%E5%AE%B9"><span class="nav-number">2.4.</span> <span class="nav-text">master节点保存的内容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%BB%E6%96%87%E4%BB%B6"><span class="nav-number">2.5.</span> <span class="nav-text">读文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%99%E6%96%87%E4%BB%B6"><span class="nav-number">2.6.</span> <span class="nav-text">写文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#master%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%AE%B2%E6%89%80%E6%9C%89chunk%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%9A%84%E6%9C%80%E5%A4%A7%E7%89%88%E6%9C%AC%E5%8F%B7%E6%9C%80%E4%B8%BA%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC%E5%8F%B7"><span class="nav-number">2.7.</span> <span class="nav-text">master为什么不讲所有chunk服务器的最大版本号最为最新版本号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#master%E9%81%87%E5%88%B0%E4%B8%80%E4%B8%AAchunk%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8A%E6%8A%A5%E7%9A%84%E7%89%88%E6%9C%AC%E5%8F%B7%E6%9B%B4%E9%AB%98"><span class="nav-number">2.8.</span> <span class="nav-text">master遇到一个chunk服务器上报的版本号更高</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%99%E5%85%A5%E4%BC%98%E5%8C%96"><span class="nav-number">2.9.</span> <span class="nav-text">写入优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%99%E5%85%A5%E5%A4%B1%E8%B4%A5%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">2.10.</span> <span class="nav-text">写入失败的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%80%9D%E8%80%83"><span class="nav-number">2.10.0.1.</span> <span class="nav-text">思考</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%89%88%E6%9C%AC%E5%8F%B7%E5%A2%9E%E5%8A%A0%E7%9A%84%E6%83%85%E5%86%B5"><span class="nav-number">2.11.</span> <span class="nav-text">版本号增加的情况</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%84%91%E8%A3%82"><span class="nav-number">2.12.</span> <span class="nav-text">脑裂</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%87%E7%BA%A7%E5%BC%BA%E4%B8%80%E8%87%B4%E6%80%A7%E9%9C%80%E8%A6%81%E8%80%83%E8%99%91%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">2.13.</span> <span class="nav-text">升级强一致性需要考虑的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GFS%E5%8D%95master%E8%AE%BE%E8%AE%A1%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">2.14.</span> <span class="nav-text">GFS单master设计的问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#VMware-FT"><span class="nav-number">3.</span> <span class="nav-text">VMware FT</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%B9%E9%94%99%E5%92%8C%E5%A4%8D%E5%88%B6"><span class="nav-number">3.1.</span> <span class="nav-text">容错和复制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%8D%E5%88%B6%E6%96%B9%E5%BC%8F"><span class="nav-number">3.2.</span> <span class="nav-text">复制方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="nav-number">3.3.</span> <span class="nav-text">工作原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%9E%E7%A1%AE%E5%AE%9A%E6%93%8D%E4%BD%9C"><span class="nav-number">3.4.</span> <span class="nav-text">非确定操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%8D%E5%A4%8D%E8%BE%93%E5%87%BA"><span class="nav-number">3.5.</span> <span class="nav-text">重复输出</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Test-and-Set%E6%9C%8D%E5%8A%A1"><span class="nav-number">3.6.</span> <span class="nav-text">Test-and-Set服务</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Raft"><span class="nav-number">4.</span> <span class="nav-text">Raft</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%87%E5%8D%8A%E6%8A%95%E7%A5%A8"><span class="nav-number">4.1.</span> <span class="nav-text">过半投票</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%AF%B7%E6%B1%82"><span class="nav-number">4.2.</span> <span class="nav-text">客户端请求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E5%90%8C%E6%AD%A5"><span class="nav-number">4.3.</span> <span class="nav-text">日志同步</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E7%9A%84%E7%94%A8%E9%80%94"><span class="nav-number">4.4.</span> <span class="nav-text">日志的用途</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Leader%E9%80%89%E4%B8%BE%E8%BF%87%E7%A8%8B"><span class="nav-number">4.5.</span> <span class="nav-text">Leader选举过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%89%E4%B8%BE%E9%99%90%E5%88%B6"><span class="nav-number">4.6.</span> <span class="nav-text">选举限制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%89%E4%B8%BE%E5%AE%9A%E6%97%B6%E5%99%A8%E5%A6%82%E4%BD%95%E8%AE%BE%E7%BD%AE"><span class="nav-number">4.7.</span> <span class="nav-text">选举定时器如何设置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%82%E5%B8%B8%E6%83%85%E5%86%B5"><span class="nav-number">4.8.</span> <span class="nav-text">异常情况</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BF%AB%E9%80%9F%E6%81%A2%E5%A4%8D"><span class="nav-number">4.9.</span> <span class="nav-text">快速恢复</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%81%E4%B9%85%E5%8C%96"><span class="nav-number">4.10.</span> <span class="nav-text">持久化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E5%BF%AB%E7%85%A7"><span class="nav-number">4.11.</span> <span class="nav-text">日志快照</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#log%E5%8E%8B%E7%BC%A9"><span class="nav-number">4.12.</span> <span class="nav-text">log压缩</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ZooKeeper"><span class="nav-number">5.</span> <span class="nav-text">ZooKeeper</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BA%BF%E6%80%A7%E4%B8%80%E8%87%B4"><span class="nav-number">5.1.</span> <span class="nav-text">线性一致</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ZooKeeper%E6%84%8F%E4%B9%89"><span class="nav-number">5.2.</span> <span class="nav-text">ZooKeeper意义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%89%B9%E6%80%A7"><span class="nav-number">5.3.</span> <span class="nav-text">特性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90"><span class="nav-number">5.4.</span> <span class="nav-text">性能分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7%E4%BF%9D%E8%AF%81"><span class="nav-number">5.5.</span> <span class="nav-text">一致性保证</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8C%E6%AD%A5%E6%93%8D%E4%BD%9C"><span class="nav-number">5.6.</span> <span class="nav-text">同步操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Znode"><span class="nav-number">5.7.</span> <span class="nav-text">Znode</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B"><span class="nav-number">5.7.1.</span> <span class="nav-text">类型</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%89%B9%E7%82%B9%E6%80%BB%E7%BB%93"><span class="nav-number">5.8.</span> <span class="nav-text">特点总结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%AE%E6%A0%87%E5%92%8C%E7%94%A8%E9%80%94"><span class="nav-number">5.9.</span> <span class="nav-text">目标和用途</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#API"><span class="nav-number">5.10.</span> <span class="nav-text">API</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#znode"><span class="nav-number">5.11.</span> <span class="nav-text">znode</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%A1%88%E4%BE%8B"><span class="nav-number">5.12.</span> <span class="nav-text">使用案例</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%93%BE%E5%A4%8D%E5%88%B6"><span class="nav-number">6.</span> <span class="nav-text">链复制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A7%E7%9A%84%E9%93%BE%E5%A4%8D%E5%88%B6"><span class="nav-number">6.1.</span> <span class="nav-text">旧的链复制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%85%E9%9A%9C%E6%81%A2%E5%A4%8D"><span class="nav-number">6.2.</span> <span class="nav-text">故障恢复</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%98%E5%9C%A8%E9%97%AE%E9%A2%98"><span class="nav-number">6.3.</span> <span class="nav-text">存在问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8ERaft%E5%AF%B9%E6%AF%94"><span class="nav-number">6.4.</span> <span class="nav-text">与Raft对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%94%B9%E8%BF%9B%E7%9A%84CRAQ"><span class="nav-number">6.5.</span> <span class="nav-text">改进的CRAQ</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E7%AE%A1%E7%90%86%E5%99%A8"><span class="nav-number">6.6.</span> <span class="nav-text">配置管理器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%8F%E4%BD%9C%E6%9C%8D%E5%8A%A1"><span class="nav-number">6.7.</span> <span class="nav-text">协作服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#WAL%E9%A2%84%E5%86%99%E5%BC%8F%E6%97%A5%E5%BF%97"><span class="nav-number">6.8.</span> <span class="nav-text">WAL预写式日志</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Aurora"><span class="nav-number">7.</span> <span class="nav-text">Aurora</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E4%BB%8B%E7%BB%8D"><span class="nav-number">7.1.</span> <span class="nav-text">整体介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%B9%E9%94%99%E7%9B%AE%E6%A0%87"><span class="nav-number">7.2.</span> <span class="nav-text">容错目标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Quorum%E5%A4%8D%E5%88%B6%E6%9C%BA%E5%88%B6"><span class="nav-number">7.3.</span> <span class="nav-text">Quorum复制机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%BB%E5%86%99%E5%AD%98%E5%82%A8%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">7.4.</span> <span class="nav-text">读写存储服务器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%88%86%E7%89%87"><span class="nav-number">7.5.</span> <span class="nav-text">数据分片</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fragnipani-%E5%88%86%E5%B8%83%E5%BC%8F%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-number">8.</span> <span class="nav-text">Fragnipani 分布式文件系统</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="nav-number">8.1.</span> <span class="nav-text">整体架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%91%E6%88%98"><span class="nav-number">8.2.</span> <span class="nav-text">挑战</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE"><span class="nav-number">8.3.</span> <span class="nav-text">缓存一致性协议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E5%AD%90%E6%80%A7"><span class="nav-number">8.4.</span> <span class="nav-text">原子性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Log"><span class="nav-number">8.5.</span> <span class="nav-text">Log</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%85%E9%9A%9C%E6%81%A2%E5%A4%8D-1"><span class="nav-number">8.6.</span> <span class="nav-text">故障恢复</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1"><span class="nav-number">9.</span> <span class="nav-text">分布式事务</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6"><span class="nav-number">9.1.</span> <span class="nav-text">并发控制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E5%AD%90%E6%8F%90%E4%BA%A4"><span class="nav-number">9.2.</span> <span class="nav-text">原子提交</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%A4%E9%98%B6%E6%AE%B5%E9%94%81"><span class="nav-number">9.3.</span> <span class="nav-text">两阶段锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4"><span class="nav-number">9.4.</span> <span class="nav-text">两阶段提交</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%85%E9%9A%9C%E5%9C%BA%E6%99%AF"><span class="nav-number">9.5.</span> <span class="nav-text">故障场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4%E5%8D%8F%E8%AE%AE%E5%8E%9F%E7%90%86"><span class="nav-number">9.6.</span> <span class="nav-text">两阶段提交协议原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E5%8C%96"><span class="nav-number">9.7.</span> <span class="nav-text">优化</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Spanner"><span class="nav-number">10.</span> <span class="nav-text">Spanner</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">10.1.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%89%B9%E7%82%B9"><span class="nav-number">10.2.</span> <span class="nav-text">特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BA%E7%8E%B0%E7%9A%84%E5%8E%9F%E5%9B%A0"><span class="nav-number">10.3.</span> <span class="nav-text">出现的原因</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B7%A5%E4%BD%9C%E6%96%B9%E5%BC%8F"><span class="nav-number">10.4.</span> <span class="nav-text">工作方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%BB%E5%86%99%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1"><span class="nav-number">10.5.</span> <span class="nav-text">读写分布式事务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AA%E8%AF%BB%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1"><span class="nav-number">10.6.</span> <span class="nav-text">只读分布式事务</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BF%AB%E7%85%A7%E9%9A%94%E7%A6%BB"><span class="nav-number">10.6.1.</span> <span class="nav-text">快照隔离</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%97%B6%E9%97%B4%E5%90%8C%E6%AD%A5"><span class="nav-number">10.6.2.</span> <span class="nav-text">时间同步</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TrueTime-API"><span class="nav-number">10.6.3.</span> <span class="nav-text">TrueTime API</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A7%84%E5%88%99"><span class="nav-number">10.6.4.</span> <span class="nav-text">规则</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#start-rule"><span class="nav-number">10.6.4.1.</span> <span class="nav-text">start rule</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#commit-wait"><span class="nav-number">10.6.4.2.</span> <span class="nav-text">commit wait</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#FaRM%EF%BC%8C%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6"><span class="nav-number">11.</span> <span class="nav-text">FaRM，并发控制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B7%A5%E4%BD%9C%E6%96%B9%E5%BC%8F-1"><span class="nav-number">11.1.</span> <span class="nav-text">工作方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NVRAM%EF%BC%8C%E9%9D%9E%E6%98%93%E5%A4%B1%E6%80%A7RAM"><span class="nav-number">11.2.</span> <span class="nav-text">NVRAM，非易失性RAM</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C"><span class="nav-number">11.3.</span> <span class="nav-text">网络</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%A0%E7%BB%9F%E7%BD%91%E7%BB%9C%E6%9E%B6%E6%9E%84"><span class="nav-number">11.3.1.</span> <span class="nav-text">传统网络架构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#FaRM%E7%9A%84%E7%BD%91%E7%BB%9C"><span class="nav-number">11.3.2.</span> <span class="nav-text">FaRM的网络</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B9%90%E8%A7%82%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6%EF%BC%8Coptimistic-concurrency-control"><span class="nav-number">11.4.</span> <span class="nav-text">乐观并发控制，optimistic concurrency control</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8B%E5%8A%A1%E6%8F%90%E4%BA%A4%E6%B5%81%E7%A8%8B"><span class="nav-number">11.5.</span> <span class="nav-text">事务提交流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B"><span class="nav-number">11.6.</span> <span class="nav-text">示例</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SPARK"><span class="nav-number">12.</span> <span class="nav-text">SPARK</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PagaRank%E7%A4%BA%E4%BE%8B"><span class="nav-number">12.1.</span> <span class="nav-text">PagaRank示例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Narrow-Stage"><span class="nav-number">12.2.</span> <span class="nav-text">Narrow Stage</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Wide-Stage"><span class="nav-number">12.3.</span> <span class="nav-text">Wide Stage</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Failed-Worker-in-Wide-dependencies"><span class="nav-number">12.4.</span> <span class="nav-text">Failed Worker in Wide dependencies</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Memcache"><span class="nav-number">13.</span> <span class="nav-text">Memcache</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="nav-number">13.1.</span> <span class="nav-text">工作流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90"><span class="nav-number">13.2.</span> <span class="nav-text">架构分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%AF%BB%E5%86%99%E6%B5%81%E7%A8%8B"><span class="nav-number">13.2.1.</span> <span class="nav-text">客户端读写流程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-1"><span class="nav-number">13.3.</span> <span class="nav-text">性能分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B4%9F%E8%BD%BD%E5%88%86%E6%9E%90"><span class="nav-number">13.4.</span> <span class="nav-text">负载分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Thundering-herd"><span class="nav-number">13.4.1.</span> <span class="nav-text">Thundering herd</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Gutter-idea"><span class="nav-number">13.4.2.</span> <span class="nav-text">Gutter idea</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7-1"><span class="nav-number">13.5.</span> <span class="nav-text">一致性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#COPS%EF%BC%8C%E5%9B%A0%E6%9E%9C%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-number">14.</span> <span class="nav-text">COPS，因果一致性</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Jiahang Gu</p>
+  <div class="site-description" itemprop="description">认真学习，享受生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">11</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JiahangGu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JiahangGu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/fengzhizi76506" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;fengzhizi76506" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jiahang Gu</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

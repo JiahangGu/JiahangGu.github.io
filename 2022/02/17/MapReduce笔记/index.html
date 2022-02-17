@@ -20,20 +20,20 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="hexo的简易使用方式  安装nodejs 安装hexo，npm install hexo -g 安装依赖, npm install –save hexo-deployer-git  hexo命令hexo new “postName” # 新建文章hexo new page “pageName” # 新建页面hexo generate # 生成静态页面至public目录hexo server #">
+  <meta name="description" content="定义是一个编程模型，处理和生成超大数据集的算法模型的实现 原理用户首先创建一个Map函数处理一个基于KV对的数据集合，输出中间的基于KV对的数据集合，然后再创建一个Reduce函数用来合并所有具有相同中间Key值的中间Value值 难点">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Hexo简易使用指南">
-<meta property="og:url" content="http://example.com/2022/02/17/Hexo%E7%AE%80%E6%98%93%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/index.html">
+<meta property="og:title" content="MapReduce笔记">
+<meta property="og:url" content="http://example.com/2022/02/17/MapReduce%E7%AC%94%E8%AE%B0/index.html">
 <meta property="og:site_name" content="菜汤里的咸鱼要翻身">
-<meta property="og:description" content="hexo的简易使用方式  安装nodejs 安装hexo，npm install hexo -g 安装依赖, npm install –save hexo-deployer-git  hexo命令hexo new “postName” # 新建文章hexo new page “pageName” # 新建页面hexo generate # 生成静态页面至public目录hexo server #">
+<meta property="og:description" content="定义是一个编程模型，处理和生成超大数据集的算法模型的实现 原理用户首先创建一个Map函数处理一个基于KV对的数据集合，输出中间的基于KV对的数据集合，然后再创建一个Reduce函数用来合并所有具有相同中间Key值的中间Value值 难点">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2022-02-17T02:51:23.000Z">
-<meta property="article:modified_time" content="2022-02-17T11:49:25.311Z">
+<meta property="article:published_time" content="2022-02-17T11:53:46.000Z">
+<meta property="article:modified_time" content="2022-02-17T11:54:45.182Z">
 <meta property="article:author" content="Jiahang Gu">
-<meta property="article:tag" content="工具">
+<meta property="article:tag" content="MIT6.824">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://example.com/2022/02/17/Hexo%E7%AE%80%E6%98%93%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/">
+<link rel="canonical" href="http://example.com/2022/02/17/MapReduce%E7%AC%94%E8%AE%B0/">
 
 
 <script id="page-configurations">
@@ -46,7 +46,7 @@
   };
 </script>
 
-  <title>Hexo简易使用指南 | 菜汤里的咸鱼要翻身</title>
+  <title>MapReduce笔记 | 菜汤里的咸鱼要翻身</title>
   
 
 
@@ -171,7 +171,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/17/Hexo%E7%AE%80%E6%98%93%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/17/MapReduce%E7%AC%94%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -184,7 +184,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Hexo简易使用指南
+          MapReduce笔记
         </h1>
 
         <div class="post-meta">
@@ -195,7 +195,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2022-02-17 10:51:23 / 修改时间：19:49:25" itemprop="dateCreated datePublished" datetime="2022-02-17T10:51:23+08:00">2022-02-17</time>
+              <time title="创建时间：2022-02-17 19:53:46 / 修改时间：19:54:45" itemprop="dateCreated datePublished" datetime="2022-02-17T19:53:46+08:00">2022-02-17</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -203,7 +203,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/others/" itemprop="url" rel="index"><span itemprop="name">杂记</span></a>
+                  <a href="/categories/course-notes/" itemprop="url" rel="index"><span itemprop="name">课程笔记</span></a>
                 </span>
             </span>
 
@@ -213,14 +213,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.3k</span>
+              <span>1.8k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>2 分钟</span>
             </span>
 
         </div>
@@ -232,24 +232,34 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>hexo的简易使用方式</p>
-<ol>
-<li>安装nodejs</li>
-<li>安装hexo，npm install hexo -g</li>
-<li>安装依赖, npm install –save hexo-deployer-git</li>
-</ol>
-<p>hexo命令<br>hexo new “postName” # 新建文章<br>hexo new page “pageName” # 新建页面<br>hexo generate # 生成静态页面至public目录<br>hexo server # 开启预览访问端口（默认端口4000，’ctrl + c’关闭server）<br>hexo deploy # 部署到GitHub<br>hexo help  # 查看帮助<br>hexo version  # 查看Hexo的版本<br>hexo init # 初始化博客，必须在一个空文件夹中</p>
-<p>设置主题<br>在博客根目录中运行</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git <span class="built_in">clone</span> https://github.com/iissnan/hexo-theme-next themes/next</span><br></pre></td></tr></table></figure>
-<p>可以在themes下得到next文件夹，并修改_config.yml中theme字段值为next。<br>./_config.yml是博客配置，更新后需要重新部署，./themes/next/_config.yml是主题配置，更新后要重新生成。</p>
-<p>设置文章预览<br>安装插件<br>npm install hexo-excerpt –save<br>在./_config.yml中配置<br>excerpt:<br>  depth: 5<br>  excerpt_excludes: []<br>  more_excludes: []<br>  hideWholePostExcerpts: true</p>
-<p>设置字数统计和时长估计<br>安装插件<br>npm install hexo-symbols-count-time<br>./_config.yml中配置</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># 设置博客单词统计</span><br><span class="line">symbols_count_time:</span><br><span class="line">  # 文章字数统计</span><br><span class="line">  symbols: true</span><br><span class="line">  # 文章阅读时间统计</span><br><span class="line">  time: true</span><br><span class="line">  # 站点总字数统计</span><br><span class="line">  total_symbols: false</span><br><span class="line">  # 站点总阅读时间统计</span><br><span class="line">  total_time: false</span><br><span class="line">  exclude_codeblock: false</span><br></pre></td></tr></table></figure>
-<p>./themes/next/_config.yml配置</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"># Post wordcount display settings</span><br><span class="line"># Dependencies: https://github.com/theme-next/hexo-symbols-count-time</span><br><span class="line"># 设置博客单词统计</span><br><span class="line">symbols_count_time:</span><br><span class="line">  # 是否另起一行（true的话不和发表时间等同一行）</span><br><span class="line">  separated_meta: true</span><br><span class="line">  # 首页文章统计数量前是否显示文字描述（本文字数、阅读时长）</span><br><span class="line">  item_text_post: true</span><br><span class="line">  # 页面底部统计数量前是否显示文字描述（站点总字数、站点阅读时长）</span><br><span class="line">  item_text_total: false</span><br><span class="line">  # 平均字长</span><br><span class="line">  awl: 4</span><br><span class="line">  # 每分钟阅读字数</span><br><span class="line">  wpm: 275</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+        <h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>是一个编程模型，处理和生成超大数据集的算法模型的实现</p>
+<h3 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h3><p>用户首先创建一个Map函数处理一个基于KV对的数据集合，输出中间的基于KV对的数据集合，然后再创建一个Reduce函数用来合并所有具有相同中间Key值的中间Value值</p>
+<h3 id="难点"><a href="#难点" class="headerlink" title="难点"></a>难点</h3><p>如何处理并行计算、如何分发数据、如何处理错误、如何统筹数千台机器的计算流程</p>
+<h3 id="统计词频的样例"><a href="#统计词频的样例" class="headerlink" title="统计词频的样例"></a>统计词频的样例</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">map(String key, String value):</span><br><span class="line">    <span class="comment">// key: document name</span></span><br><span class="line">    <span class="comment">// value: document contents</span></span><br><span class="line">    <span class="keyword">for</span> each word w in value:</span><br><span class="line">        EmitIntermediate(w, “<span class="number">1</span>″);</span><br><span class="line">reduce(String key, Iterator values):</span><br><span class="line">    <span class="comment">// key: a word</span></span><br><span class="line">    <span class="comment">// values: a list of counts</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">result</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> each v in values:</span><br><span class="line">        result += ParseInt(v);</span><br><span class="line">    Emit(AsString(result));</span><br></pre></td></tr></table></figure>
 
-<p>插入图片<br>在/source下新建images文件夹存放图片，md中通过(/images/temp.jpg)引用。</p>
-<p>搭建本博客相关的参考文章：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/chenlove/p/15058170.html">启动教程</a>, <a target="_blank" rel="noopener" href="https://blog.csdn.net/as480133937/article/details/100138838">next主题设置</a>, <a target="_blank" rel="noopener" href="https://www.jianshu.com/p/b20fc983005f">next主题补充</a>, <a target="_blank" rel="noopener" href="https://blog.csdn.net/TomAndersen/article/details/104691118">字数统计</a></p>
+<h3 id="处理流程"><a href="#处理流程" class="headerlink" title="处理流程"></a>处理流程</h3><ol>
+<li>用户首先调用MapReduce库将输入文件分成M个数据片，大小通常为16MB到64MB，并在集群中创建大量程序副本</li>
+<li>程序中有一个master，其余是worker，由master将Map或Reduce任务分配给worker，共有M个Map任务和R个Reduce任务</li>
+<li>分配Map任务的worker读取相关数据，并解析出KV对，传递给用户定义的Map函数，生成中间KV对并缓存在内存中</li>
+<li>缓存的KV对通过分区函数分为R个区域，写入到本地磁盘，并将存储位置发给master，由master据此安排Reduce任务</li>
+<li>Reduce worker收到数据存储位置后，使用RPC读取缓存数据，读取完所有数据后对Key排序进行聚合</li>
+<li>Reduce worker遍历排序后的中间数据，对于每个key值和对应value传递给用户定义的Reduce函数，Reduce函数将输出追加到所属分区的输出文件（由用户指定）</li>
+<li>所有Map和Reduce任务完成后，master唤醒用户程序</li>
+</ol>
+<p>处理完成后得到R个输出文件，可以用于另一个MapReduce的输入，或合并得到结果</p>
+<h3 id="master"><a href="#master" class="headerlink" title="master"></a>master</h3><p>存储每个Map和Reduce任务的状态（空闲、工作或完成），以及worker机器标识。对于完成的Map任务，存储中间文件位置和大小，逐步递增地推送给工作的Reduce任务</p>
+<h5 id="worker故障"><a href="#worker故障" class="headerlink" title="worker故障"></a>worker故障</h5><p>master周期性的ping worker，如果无法联系则标记失效，并将所有这个worker完成的Map任务重设为空闲，安排给其余worker。如果执行一半后失效，会通知给所有Reduce，对应worker会从接手这个任务的机器那里获取数据</p>
+<h5 id="master失效"><a href="#master失效" class="headerlink" title="master失效"></a>master失效</h5><p>master周期性的保存checkpoint，失效后从最近的checkpoint恢复。但只有一个master，失效后需要停止MapReduce进程，重新执行</p>
+<h3 id="存储位置和优化"><a href="#存储位置和优化" class="headerlink" title="存储位置和优化"></a>存储位置和优化</h3><p>网络带宽资源较为重要，在启动时会考虑输入文件的位置信息，尽量将Map任务调度在含有输入数据的机器上运行，如果没有则尝试在最近的保存输入数据的机器上执行</p>
+<h3 id="任务粒度"><a href="#任务粒度" class="headerlink" title="任务粒度"></a>任务粒度</h3><p>R个Reduce和M个Map任务，R由用户指定，M最好使得每个输入文件大小为16MB到64MB，R值最好设置为worker机器数量的小的倍数，例如M=200000，R=5000，共2000个worker（这是倍数？）</p>
+<h3 id="效率优化"><a href="#效率优化" class="headerlink" title="效率优化"></a>效率优化</h3><p>影响总运行时间的是落伍者：即大多数都完成，但存在少部分没有完成（多数是因为对应机器出了故障或延时）。此时master调用备用任务进程执行剩下的正在处理的任务，当任一个完成任务即可标记为完成。通过多几个百分点的资源可优化44%的时间</p>
+<h3 id="技巧和扩展功能"><a href="#技巧和扩展功能" class="headerlink" title="技巧和扩展功能"></a>技巧和扩展功能</h3><ol>
+<li>分区函数：缺省分区函数为hash，用户也可以自定义分区函数，根据实际应用</li>
+<li>顺序保证：要对中间KV数据排序，保证输出一个有序的文件</li>
+<li>Combiner函数：用来将本地中间结果进行一次合并，然后再将合并结果发送出去。和Reduce函数唯一区别是Reduce的输出保存在输出文件，而Combiner输出到中间文件然后发给Reduce任务</li>
+<li>输入和输出类型：输入可以由用户自定义Reader接口实现支持新的输入类型，也可以实现从数据库读取记录</li>
+<li>跳过损坏记录：当某些程序bug导致Map或Reduce函数挂掉，为了保证整个流程继续，worker会记录异常信息并发送到master，master检查到某条记录不止失败一次时，标记该条记录跳过，通知map和reduce任务跳过</li>
+</ol>
 
     </div>
 
@@ -259,7 +269,7 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/tools/" rel="tag"># 工具</a>
+              <a href="/tags/MIT6-824/" rel="tag"># MIT6.824</a>
           </div>
 
         
@@ -268,12 +278,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2022/02/16/GFS%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/" rel="prev" title="GFS阅读笔记">
-      <i class="fa fa-chevron-left"></i> GFS阅读笔记
+    <a href="/2022/02/17/git%E7%AC%94%E8%AE%B0/" rel="prev" title="git笔记">
+      <i class="fa fa-chevron-left"></i> git笔记
     </a></div>
       <div class="post-nav-item">
-    <a href="/2022/02/17/%E7%A8%8B%E5%BA%8F%E5%91%98%E7%9A%84%E8%87%AA%E6%88%91%E4%BF%AE%E5%85%BB/" rel="next" title="程序员的自我修养">
-      程序员的自我修养 <i class="fa fa-chevron-right"></i>
+    <a href="/2022/02/17/MIT6-824%E7%AC%94%E8%AE%B0/" rel="next" title="MIT6.824笔记">
+      MIT6.824笔记 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -333,6 +343,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89"><span class="nav-number">1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9A%BE%E7%82%B9"><span class="nav-number">3.</span> <span class="nav-text">难点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%9F%E8%AE%A1%E8%AF%8D%E9%A2%91%E7%9A%84%E6%A0%B7%E4%BE%8B"><span class="nav-number">4.</span> <span class="nav-text">统计词频的样例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B"><span class="nav-number">5.</span> <span class="nav-text">处理流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#master"><span class="nav-number">6.</span> <span class="nav-text">master</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#worker%E6%95%85%E9%9A%9C"><span class="nav-number">6.0.1.</span> <span class="nav-text">worker故障</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#master%E5%A4%B1%E6%95%88"><span class="nav-number">6.0.2.</span> <span class="nav-text">master失效</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%98%E5%82%A8%E4%BD%8D%E7%BD%AE%E5%92%8C%E4%BC%98%E5%8C%96"><span class="nav-number">7.</span> <span class="nav-text">存储位置和优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A1%E7%B2%92%E5%BA%A6"><span class="nav-number">8.</span> <span class="nav-text">任务粒度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%88%E7%8E%87%E4%BC%98%E5%8C%96"><span class="nav-number">9.</span> <span class="nav-text">效率优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8A%80%E5%B7%A7%E5%92%8C%E6%89%A9%E5%B1%95%E5%8A%9F%E8%83%BD"><span class="nav-number">10.</span> <span class="nav-text">技巧和扩展功能</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
