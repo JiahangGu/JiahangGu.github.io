@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="本文是对leetcode上股票专题的总结&amp;emsp;&amp;emsp;买卖股票的专题都可以将买入和卖出分开考虑，买入是负收益，而卖出是正收益。刚开始时只能买入，所以收益为负，在买入之后就有了卖出的权力，可以获得正收益，在每次交易尽可能的降低负收益提高正收益。在使用DP解决问题时，可以维护每一天结束后的累计最大收益，并根据买入卖出的策略分别更新这两个状态，最终得到最大的收益解。 股票问题1给定一个数组，它">
+<meta property="og:type" content="article">
+<meta property="og:title" content="leetcode股票专题">
+<meta property="og:url" content="http://example.com/2022/02/18/leetcode%E8%82%A1%E7%A5%A8%E4%B8%93%E9%A2%98/index.html">
+<meta property="og:site_name" content="菜汤里的咸鱼要翻身">
+<meta property="og:description" content="本文是对leetcode上股票专题的总结&amp;emsp;&amp;emsp;买卖股票的专题都可以将买入和卖出分开考虑，买入是负收益，而卖出是正收益。刚开始时只能买入，所以收益为负，在买入之后就有了卖出的权力，可以获得正收益，在每次交易尽可能的降低负收益提高正收益。在使用DP解决问题时，可以维护每一天结束后的累计最大收益，并根据买入卖出的策略分别更新这两个状态，最终得到最大的收益解。 股票问题1给定一个数组，它">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-02-18T14:51:06.000Z">
+<meta property="article:modified_time" content="2022-02-18T14:51:45.352Z">
+<meta property="article:author" content="Jiahang Gu">
+<meta property="article:tag" content="算法题">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2022/02/18/leetcode%E8%82%A1%E7%A5%A8%E4%B8%93%E9%A2%98/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>leetcode股票专题 | 菜汤里的咸鱼要翻身</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">菜汤里的咸鱼要翻身</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/18/leetcode%E8%82%A1%E7%A5%A8%E4%B8%93%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          leetcode股票专题
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-18 22:51:06 / 修改时间：22:51:45" itemprop="dateCreated datePublished" datetime="2022-02-18T22:51:06+08:00">2022-02-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/algorithm-notes/" itemprop="url" rel="index"><span itemprop="name">算法总结</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>11k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>10 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><strong>本文是对leetcode上股票专题的总结</strong><br>&emsp;&emsp;买卖股票的专题都可以将买入和卖出分开考虑，买入是负收益，而卖出是正收益。刚开始时只能买入，所以收益为负，在买入之后就有了卖出的权力，可以获得正收益，在每次交易尽可能的降低负收益提高正收益。在使用DP解决问题时，可以维护每一天结束后的累计最大收益，并根据买入卖出的策略分别更新这两个状态，最终得到最大的收益解。</p>
+<h3 id="股票问题1"><a href="#股票问题1" class="headerlink" title="股票问题1"></a>股票问题1</h3><p>给定一个数组，它的第 i 个元素是一支给定股票第 i 天的价格。</p>
+<p>如果你最多只允许完成一笔交易（即买入和卖出一支股票一次），设计一个算法来计算你所能获取的最大利润。</p>
+<p>注意：你不能在买入股票前卖出股票。</p>
+<p>示例 1:</p>
+<p>输入: [7,1,5,3,6,4]<br>输出: 5<br>解释: 在第 2 天（股票价格 = 1）的时候买入，在第 5 天（股票价格 = 6）的时候卖出，最大利润 = 6-1 = 5 。<br>     注意利润不能是 7-1 = 6, 因为卖出价格需要大于买入价格；同时，你不能在买入前卖出股票。<br>示例 2:</p>
+<p>输入: [7,6,4,3,1]<br>输出: 0<br>解释: 在这种情况下, 没有交易完成, 所以最大利润为 0。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">class Solution:</span><br><span class="line">    def maxProfit(self, prices: List[int]) -&gt; int:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        首先明确股票的买卖收益决定于买入的价格和卖出的价格，如果买入价格低而卖出价格高，则可得到最大利润。此外还有限制是卖出必须在买入之后，可以在遍历过程中记录一个最低的价格，后续卖出的价格都可以理解为在该价格买入，并维护一个最大利润。</span><br><span class="line">        :param prices:</span><br><span class="line">        :return:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        # min_price = int(1e9)</span><br><span class="line">        # ans = 0</span><br><span class="line">        # for i in range(len(prices)):</span><br><span class="line">        #     if prices[i] &lt; min_price:</span><br><span class="line">        #         min_price = prices[i]</span><br><span class="line">        #     else:</span><br><span class="line">        #         ans = max(prices[i] - min_price, ans)</span><br><span class="line">        # return ans</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        动态规划解法（通用）:买卖股票有约束，根据题目要求，有以下两个约束条件</span><br><span class="line">        1.不能在买入股票前卖出股票</span><br><span class="line">        2.最多只允许一笔交易</span><br><span class="line">        因为当天是否持股是一个很重要的因素，而当天是否持股与前一天是否持股有关，为此需要将是否持股考虑到状态数组中</span><br><span class="line">        定义状态dp[i][j]表示i这一天结束的时候，持股状态为j时所拥有的最大利润。j=0表示不持股，j=1表示持股。</span><br><span class="line">        dp[i]的结算结果包含了区间[0,i]的信息，所以结果为dp[n-1][0]。</span><br><span class="line">        状态转移方程则可以定义为：</span><br><span class="line">        当天不持股的计算方式：</span><br><span class="line">        1.前一天不持股，且不采取任何操作</span><br><span class="line">        2.前一天持股，今天卖出</span><br><span class="line">        则dp[i][0] = max(dp[i-1][0], price[i] + dp[i-1][1])</span><br><span class="line">        当天持股的计算方式：</span><br><span class="line">        1.前一天持股，不采取任何操作</span><br><span class="line">        2.前一天不持股，今天买入股票</span><br><span class="line">        dp[i][1] = max(dp[i-1][1], -prices[i])，因为这里只能买入一次，所以买入股票所得的利润为当天股票价格的相反数</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        # if len(prices) == 0:</span><br><span class="line">        #     return 0</span><br><span class="line">        # dp = [[0] * 2 for _ in range(len(prices))]</span><br><span class="line">        # dp[0][1] = -prices[0]</span><br><span class="line">        # for i in range(1, len(prices)):</span><br><span class="line">        #     dp[i][0] = max(dp[i - 1][0], dp[i - 1][1] + prices[i])</span><br><span class="line">        #     dp[i][1] = max(dp[i - 1][1], -prices[i])</span><br><span class="line">        # return dp[len(prices) - 1][0]</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        发现上述实现方式的遍历过程中只需要用到i-1的状态，则可以使用两个变量分别记录当天持有股票和不持有时的最大利润。</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        if len(prices) == 0:</span><br><span class="line">            return 0</span><br><span class="line">        holder, sailor = -prices[0], 0</span><br><span class="line">        for i in range(1, len(prices)):</span><br><span class="line">            sailor = max(sailor, holder + prices[i])</span><br><span class="line">            holder = max(holder, -prices[i])</span><br><span class="line">        return sailor</span><br></pre></td></tr></table></figure>
+
+<h3 id="股票问题2"><a href="#股票问题2" class="headerlink" title="股票问题2"></a>股票问题2</h3><p>给定一个数组，它的第 i 个元素是一支给定股票第 i 天的价格。</p>
+<p>设计一个算法来计算你所能获取的最大利润。你可以尽可能地完成更多的交易（多次买卖一支股票）。</p>
+<p>注意：你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。</p>
+<p>示例 1:</p>
+<p>输入: [7,1,5,3,6,4]<br>输出: 7<br>解释: 在第 2 天（股票价格 = 1）的时候买入，在第 3 天（股票价格 = 5）的时候卖出, 这笔交易所能获得利润 = 5-1 = 4 。<br>     随后，在第 4 天（股票价格 = 3）的时候买入，在第 5 天（股票价格 = 6）的时候卖出, 这笔交易所能获得利润 = 6-3 = 3 。<br>示例 2:</p>
+<p>输入: [1,2,3,4,5]<br>输出: 4<br>解释: 在第 1 天（股票价格 = 1）的时候买入，在第 5 天 （股票价格 = 5）的时候卖出, 这笔交易所能获得利润 = 5-1 = 4 。<br>     注意你不能在第 1 天和第 2 天接连购买股票，之后再将它们卖出。<br>     因为这样属于同时参与了多笔交易，你必须在再次购买前出售掉之前的股票。<br>示例 3:</p>
+<p>输入: [7,6,4,3,1]<br>输出: 0<br>解释: 在这种情况下, 没有交易完成, 所以最大利润为 0。</p>
+<p>提示：</p>
+<p>1 &lt;= prices.length &lt;= 3 * 10 ^ 4<br>0 &lt;= prices[i] &lt;= 10 ^ 4</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">class Solution:</span><br><span class="line">    def maxProfit(self, prices: List[int]) -&gt; int:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        本题依然采用股票买卖专题中的动态规划通用解法。本题要求在购买之前必须卖出，但可以多次交易，</span><br><span class="line">        可以在第一题的基础上进行改进，第一次由于只能买卖一次在更新持有状态的利润时使用赋值而不是累加</span><br><span class="line">        操作表示一次买卖，多次买卖则应该修改为累加形式。</span><br><span class="line">        假设dp[i][j]表示第i天结束时持股状态为j时的最大利润。j=0表示不持股，j=1表示持股。</span><br><span class="line">        状态转移方程：</span><br><span class="line">        当天不持股：</span><br><span class="line">        1.前一天不持股且不采取任何操作</span><br><span class="line">        2.前一天持股，今天卖出</span><br><span class="line">        dp[i][0] = max(dp[i-1][0], dp[i-1][1] + prices[i])</span><br><span class="line">        当天持股：</span><br><span class="line">        1.前一天持股且不采取任何操作</span><br><span class="line">        2.前一天不持股，今天买入</span><br><span class="line">        dp[i][1] = max(dp[i-1][1], dp[i-1][0] - prices[i])</span><br><span class="line">        最终结果为dp[n-1][0]</span><br><span class="line">        :param prices:</span><br><span class="line">        :return:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        # n = len(prices)</span><br><span class="line">        # if n == 0:</span><br><span class="line">        #     return 0</span><br><span class="line">        # dp = [[0] * 2 for _ in range(n)]</span><br><span class="line">        # dp[0][1] = -prices[0]</span><br><span class="line">        # for i in range(1, n):</span><br><span class="line">        #     dp[i][0] = max(dp[i-1][0], dp[i-1][1] + prices[i])</span><br><span class="line">        #     dp[i][1] = max(dp[i-1][1], dp[i-1][0] - prices[i])</span><br><span class="line">        # return dp[n-1][0]</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        和上一道题一样，发现这里的状态只需要用到前一个，所以可以使用一个变量优化空间复杂度到O(1)。</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        # n = len(prices)</span><br><span class="line">        # if n == 0:</span><br><span class="line">        #     return 0</span><br><span class="line">        # holder, sailor = -prices[0], 0</span><br><span class="line">        # for i in range(1, n):</span><br><span class="line">        #     tmp_sailor = max(sailor, holder + prices[i])</span><br><span class="line">        #     tmp_holder = max(holder, sailor - prices[i])</span><br><span class="line">        #     holder = tmp_holder</span><br><span class="line">        #     sailor = tmp_sailor</span><br><span class="line">        # return sailor</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        此外本题还有一种偷巧的做法：假设nums是一个递增的数组，例如[1,3,4,6]，则nums[-1] - nums[0]的值和每两个相邻数字的差值之和是相等的。所以买卖股票每次需要在买入后找到后续递增序列的最大值并卖出的问题可以    转换为求相邻数字的差值之和（如果差值大于0则表示有利润）。</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        ans = 0</span><br><span class="line">        for i in range(1, len(prices)):</span><br><span class="line">            if prices[i] - prices[i - 1] &gt; 0:</span><br><span class="line">                ans += prices[i] - prices[i - 1]</span><br><span class="line">        return ans</span><br></pre></td></tr></table></figure>
+
+<h3 id="股票问题3"><a href="#股票问题3" class="headerlink" title="股票问题3"></a>股票问题3</h3><p>给定一个整数数组，其中第 i 个元素代表了第 i 天的股票价格 。</p>
+<p>设计一个算法计算出最大利润。在满足以下约束条件下，你可以尽可能地完成更多的交易（多次买卖一支股票）:</p>
+<p>你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。<br>卖出股票后，你无法在第二天买入股票 (即冷冻期为 1 天)。<br>示例:</p>
+<p>输入: [1,2,3,0,2]<br>输出: 3<br>解释: 对应的交易状态为: [买入, 卖出, 冷冻期, 买入, 卖出]</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">class Solution:</span><br><span class="line">    def maxProfit(self, prices: List[int]) -&gt; int:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        通用动态规划方法解决股票买卖问题。</span><br><span class="line">        设dp[i][j]表示第i天结束时状态为j时的最大利润，j=0表示不持股，j=1表示持股。</span><br><span class="line">        由于需要判断前一天是否卖出过股票来决定当天能不能买入，需要一个标记数组记录某天是否卖出，所以除了标记01之外，还需要标记一个状态为不持股但处于冷冻期。j=2表示不持股且处于冷冻期</span><br><span class="line">        状态转移方程</span><br><span class="line">        当天不持股，且不处于冷冻期, j=0</span><br><span class="line">        1.前一天不持股，且不进行任何操作（包括冷冻期和非冷冻期）</span><br><span class="line">        dp[i][0] = max(dp[i-1][0], dp[i-1][2])</span><br><span class="line">        当天不持股且处于冷冻期, j=2</span><br><span class="line">        1.前一天持股，今天卖出</span><br><span class="line">        dp[i][2] = dp[i-1][1] + prices[i]</span><br><span class="line">        当天持股, j=1</span><br><span class="line">        1.前一天持股且不进行任何操作</span><br><span class="line">        2.前一天不持股且不是冷冻期，买入</span><br><span class="line">        dp[i][1] = max(dp[i-1][1], dp[i-1][0] - prices[i])</span><br><span class="line">        :param prices:</span><br><span class="line">        :return:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        # n = len(prices)</span><br><span class="line">        # if n == 0:</span><br><span class="line">        #     return 0</span><br><span class="line">        # dp = [[0] * 3 for _ in range(n)]</span><br><span class="line">        # dp[0][1] = -prices[0]</span><br><span class="line">        # for i in range(1, n):</span><br><span class="line">        #     dp[i][0] = max(dp[i - 1][0], dp[i - 1][2])</span><br><span class="line">        #     dp[i][2] = dp[i - 1][1] + prices[i]</span><br><span class="line">        #     dp[i][1] = max(dp[i - 1][1], dp[i - 1][0] - prices[i])</span><br><span class="line">        # return max(dp[n-1][0], dp[n-1][2])</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        空间优化：发现上述状态更新过程中依然只用到了前一个状态，可以使用临时变量优化到O(1)</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        n = len(prices)</span><br><span class="line">        if n == 0:</span><br><span class="line">            return 0</span><br><span class="line">        holder, sailor, sailor_freeze = -prices[0], 0, 0</span><br><span class="line">        for i in range(1, n):</span><br><span class="line">            tmp_holder = max(holder, sailor - prices[i])</span><br><span class="line">            tmp_sailor = max(sailor, sailor_freeze)</span><br><span class="line">            tmp_sailor_freeze = holder + prices[i]</span><br><span class="line">            holder = tmp_holder</span><br><span class="line">            sailor = tmp_sailor</span><br><span class="line">            sailor_freeze = tmp_sailor_freeze</span><br><span class="line">        return max(sailor, sailor_freeze)</span><br></pre></td></tr></table></figure>
+
+<h3 id="股票问题4"><a href="#股票问题4" class="headerlink" title="股票问题4"></a>股票问题4</h3><p>给定一个整数数组 prices，其中第 i 个元素代表了第 i 天的股票价格 ；非负整数 fee 代表了交易股票的手续费用。</p>
+<p>你可以无限次地完成交易，但是你每笔交易都需要付手续费。如果你已经购买了一个股票，在卖出它之前你就不能再继续购买股票了。</p>
+<p>返回获得利润的最大值。</p>
+<p>注意：这里的一笔交易指买入持有并卖出股票的整个过程，每笔交易你只需要为支付一次手续费。</p>
+<p>示例 1:</p>
+<p>输入: prices = [1, 3, 2, 8, 4, 9], fee = 2<br>输出: 8<br>解释: 能够达到的最大利润:<br>在此处买入 prices[0] = 1<br>在此处卖出 prices[3] = 8<br>在此处买入 prices[4] = 4<br>在此处卖出 prices[5] = 9<br>总利润: ((8 - 1) - 2) + ((9 - 4) - 2) = 8.<br>注意:</p>
+<p>0 &lt; prices.length &lt;= 50000.<br>0 &lt; prices[i] &lt; 50000.<br>0 &lt;= fee &lt; 50000.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">class Solution:</span><br><span class="line">    def maxProfit(self, prices: List[int], fee: int) -&gt; int:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        依然使用通用动态规划解法。</span><br><span class="line">        定义dp[i][j]为第i天结束后状态为j时的最大利润，j=0表示不持有，j=1表示持有。</span><br><span class="line">        则状态转移方程：</span><br><span class="line">        当天不持有股票：</span><br><span class="line">        1.前一天不持有且不做任何操作</span><br><span class="line">        2.前一天持有，卖出（包含手续费）</span><br><span class="line">        dp[i][0] = max(dp[i-1][0], dp[i-1][1] + prices[i] - fee)</span><br><span class="line">        当天持有股票：</span><br><span class="line">        1.前一天持有股票且不做任何操作</span><br><span class="line">        2.前一天不持有，买入</span><br><span class="line">        dp[i][1] = max(dp[i-1][1], dp[i-1][0] - prices[i])</span><br><span class="line">        最终结果为dp[n][0]</span><br><span class="line">        :param prices:</span><br><span class="line">        :param fee:</span><br><span class="line">        :return:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        # n = len(prices)</span><br><span class="line">        # if n == 0:</span><br><span class="line">        #     return 0</span><br><span class="line">        # dp = [[0] * 2 for _ in range(n)]</span><br><span class="line">        # dp[0][1] = -prices[0]</span><br><span class="line">        # for i in range(1, n):</span><br><span class="line">        #     dp[i][0] = max(dp[i-1][0], dp[i-1][1] + prices[i] - fee)</span><br><span class="line">        #     dp[i][1] = max(dp[i-1][1], dp[i-1][0] - prices[i])</span><br><span class="line">        # return dp[n-1][0]</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        可以发现依然是只使用了前一个状态的信息，可以使用两个变量来维护，从而减少空间复杂度</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        n = len(prices)</span><br><span class="line">        if n == 0:</span><br><span class="line">            return 0</span><br><span class="line">        holder, sailor = -prices[0], 0</span><br><span class="line">        for i in range(1, n):</span><br><span class="line">            tmp_sailor = max(sailor, holder + prices[i] - fee)</span><br><span class="line">            tmp_holder = max(holder, sailor - prices[i])</span><br><span class="line">            sailor = tmp_sailor</span><br><span class="line">            holder = tmp_holder</span><br><span class="line">        return sailor</span><br></pre></td></tr></table></figure>
+
+<h3 id="股票问题5"><a href="#股票问题5" class="headerlink" title="股票问题5"></a>股票问题5</h3><p>给定一个数组，它的第 i 个元素是一支给定的股票在第 i 天的价格。</p>
+<p>设计一个算法来计算你所能获取的最大利润。你最多可以完成 两笔 交易。</p>
+<p>注意: 你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。</p>
+<p>示例 1:</p>
+<p>输入: [3,3,5,0,0,3,1,4]<br>输出: 6<br>解释: 在第 4 天（股票价格 = 0）的时候买入，在第 6 天（股票价格 = 3）的时候卖出，这笔交易所能获得利润 = 3-0 = 3 。<br>     随后，在第 7 天（股票价格 = 1）的时候买入，在第 8 天 （股票价格 = 4）的时候卖出，这笔交易所能获得利润 = 4-1 = 3 。<br>示例 2:</p>
+<p>输入: [1,2,3,4,5]<br>输出: 4<br>解释: 在第 1 天（股票价格 = 1）的时候买入，在第 5 天 （股票价格 = 5）的时候卖出, 这笔交易所能获得利润 = 5-1 = 4 。<br>     注意你不能在第 1 天和第 2 天接连购买股票，之后再将它们卖出。<br>     因为这样属于同时参与了多笔交易，你必须在再次购买前出售掉之前的股票。<br>示例 3:</p>
+<p>输入: [7,6,4,3,1]<br>输出: 0<br>解释: 在这个情况下, 没有交易完成, 所以最大利润为 0。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">class Solution:</span><br><span class="line">    def maxProfit(self, prices: List[int]) -&gt; int:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        使用通用动态规划解法解决买卖股票问题。即使用dp[i][j]表示第i天结束时状态为j的最大利润。j表示是否持股</span><br><span class="line">        但这里要求只能交易两次，所以状态数增加为是否持股*交易次数=2*3=6，所以需要使用一个三维数组进行表示，</span><br><span class="line">        即dp[i][j][k]表示第i天结束时，是否持股并且交易了k次的状态，其中j=0表示不持股，j=1表示持股，k=0,1,2</span><br><span class="line">        则定义状态转移方程为：（这里的交易次数定义为卖出的次数，只有卖出才会认为完成了一次交易）</span><br><span class="line">        当天不持股且交易次数为0：</span><br><span class="line">        1.前一天不持股，交易次数为0，且不进行任何操作</span><br><span class="line">        dp[i][0][0] = dp[i-1][0][0]</span><br><span class="line">        当天持股且交易次数为0</span><br><span class="line">        1.前一天持股，交易次数为0，且不进行任何操作</span><br><span class="line">        2.前一天不持股，交易次数为0，买入</span><br><span class="line">        dp[i][1][0] = max(dp[i-1][1][0], dp[i-1][0][0] - prices[i])</span><br><span class="line">        当天不持股且交易次数为1</span><br><span class="line">        1.前一天不持股，交易次数为1且不进行任何操作</span><br><span class="line">        2.前一天持股，且交易次数为0，卖出</span><br><span class="line">        dp[i][0][1] = max(dp[i-1][0][1], dp[i-1][1][0] + prices[i])</span><br><span class="line">        当天持股且交易次数为1</span><br><span class="line">        1.前一天持股，交易次数为1且不进行任何操作</span><br><span class="line">        2.前一天不持股，交易次数为1且买入</span><br><span class="line">        dp[i][1][1] = max(dp[i-1][1][1], dp[i-1][0][1] - prices[i])</span><br><span class="line">        当天不持股且交易次数为2</span><br><span class="line">        1.前一天不持股，且交易次数为2，不进行任何操作</span><br><span class="line">        2.前一天持股，且交易次数为1，卖出</span><br><span class="line">        dp[i][0][2] = max(dp[i-1][0][2], dp[i-1][1][1] + prices[i])</span><br><span class="line">        当天持股且交易次数为2</span><br><span class="line">        1.前一天不持股，且交易次数为2，不进行操作</span><br><span class="line">        dp[i][1][2] = dp[i-1][1][2]，发现这个状态没用到，所以可以省略</span><br><span class="line"></span><br><span class="line">        实现过程中发现的问题：</span><br><span class="line">        1.初始化，按照状态定义的话只需要dp[0][1][0]=-prices[0]即可，但是通过一个样例[1,2,3,4,5]发现，</span><br><span class="line">        dp[i][0][2]更新时会用到dp[i-1][1][1]+prices[i]的值，如果不为dp[0][1][1]赋初值的话dp[i][0][2]</span><br><span class="line">        可能一直等于当前股价（因为默认为0），导致出现错误，所以dp[0][1][1]只要买入就需要-prices[0]。</span><br><span class="line">        :param prices:</span><br><span class="line">        :return:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        # n = len(prices)</span><br><span class="line">        # dp = [[[0] * 3 for _ in range(2)] for _ in range(n)]</span><br><span class="line">        # dp[0][1][0] = -prices[0]</span><br><span class="line">        # dp[0][1][1] = -prices[0]</span><br><span class="line">        # for i in range(1, n):</span><br><span class="line">        #     dp[i][0][0] = dp[i - 1][0][0]</span><br><span class="line">        #     dp[i][1][0] = max(dp[i - 1][1][0], dp[i - 1][0][0] - prices[i])</span><br><span class="line">        #     dp[i][0][1] = max(dp[i - 1][0][1], dp[i - 1][1][0] + prices[i])</span><br><span class="line">        #     dp[i][1][1] = max(dp[i - 1][1][1], dp[i - 1][0][1] - prices[i])</span><br><span class="line">        #     dp[i][0][2] = max(dp[i - 1][0][2], dp[i - 1][1][1] + prices[i])</span><br><span class="line">        # return dp[n - 1][0][2]</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        空间优化：老规矩，发现每一次的状态更新i只需要用到前一个状态i-1，所以可以使用临时变量记录对应状态。</span><br><span class="line">        并且发现更新时只需要用到5个而不是6个，所以使用对应记录即可。</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        dp0, dp1, dp2, dp3, dp4 = 0, -prices[0], 0, -prices[0], 0</span><br><span class="line">        for i in range(1, len(prices)):</span><br><span class="line">            dp4 = max(dp4, dp3 + prices[i])</span><br><span class="line">            dp3 = max(dp3, dp2 - prices[i])</span><br><span class="line">            dp2 = max(dp2, dp1 + prices[i])</span><br><span class="line">            dp1 = max(dp1, dp0 - prices[i])</span><br><span class="line">        return dp4</span><br></pre></td></tr></table></figure>
+
+<h3 id="股票问题6"><a href="#股票问题6" class="headerlink" title="股票问题6"></a>股票问题6</h3><p>给定一个整数数组 prices ，它的第 i 个元素 prices[i] 是一支给定的股票在第 i 天的价格。</p>
+<p>设计一个算法来计算你所能获取的最大利润。你最多可以完成 k 笔交易。</p>
+<p>注意: 你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。</p>
+<p>示例 1：</p>
+<p>输入：k = 2, prices = [2,4,1]<br>输出：2<br>解释：在第 1 天 (股票价格 = 2) 的时候买入，在第 2 天 (股票价格 = 4) 的时候卖出，这笔交易所能获得利润 = 4-2 = 2 。<br>示例 2：</p>
+<p>输入：k = 2, prices = [3,2,6,5,0,3]<br>输出：7<br>解释：在第 2 天 (股票价格 = 2) 的时候买入，在第 3 天 (股票价格 = 6) 的时候卖出, 这笔交易所能获得利润 = 6-2 = 4 。<br>     随后，在第 5 天 (股票价格 = 0) 的时候买入，在第 6 天 (股票价格 = 3) 的时候卖出, 这笔交易所能获得利润 = 3-0 = 3 。</p>
+<p>提示：</p>
+<p>0 &lt;= k &lt;= 109<br>0 &lt;= prices.length &lt;= 104<br>0 &lt;= prices[i] &lt;= 1000</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line">class Solution:</span><br><span class="line">    def maxProfit(self, k: int, prices: List[int]) -&gt; int:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        依然使用常规动态规划解决此问题。根据上一题的经验，不同的交易次数需要定义相应的状态来表示。</span><br><span class="line">        本题限制最多交易k次，则交易次数有1+k种状态，即[0,k]。所以需要定义2*(k+1)个状态来表示</span><br><span class="line">        当天的利润。</span><br><span class="line">        设dp[i][j][h]表示第i天结束时是否持股以及交易了h次的状态，j=0表示不持股，j=1表示持股。</span><br><span class="line">        并且注意到在状态转移方程定义时存在如下情况</span><br><span class="line">        当天不持股且交易h次</span><br><span class="line">        1.前一天不持股且交易h次，不进行任何操作</span><br><span class="line">        2.前一天持股且交易h-1次，今天卖出</span><br><span class="line">        dp[i][0][h] = max(dp[i-1][0][h], dp[i-1][1][h-1] + prices[i])</span><br><span class="line">        当天持股且交易h次</span><br><span class="line">        1.前一天持股且交易h次，不进行任何操作</span><br><span class="line">        2.前一天不持股且交易h次，买入</span><br><span class="line">        dp[i][1][h] = max(dp[i-1][1][h], dp[i-1][0][h] - prices[i])</span><br><span class="line">        可以看到h其实是由前一个h或h-1状态决定，可以通过循环来实现</span><br><span class="line">        实际提交中出现了k很大的情况，导致内存超过限制，看过之后发现k&lt;=1e9，但由于股票列表长度&lt;=1e4，</span><br><span class="line">        且股票交易只能隔天交易，所以当k&gt;n/2时交易次数的限制实际上是无法约束的，可以理解为无限次交易次数，</span><br><span class="line">        这时就可以使用贪心算法解决。</span><br><span class="line">        不过这个题解依然超时，而且尝试了其余的题解均超时，由于复杂度是O(nk)，极限情况下是O(n^2/2)，所以</span><br><span class="line">        n=1e4过不去。</span><br><span class="line">        :param k:</span><br><span class="line">        :param prices:</span><br><span class="line">        :return:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        # n = len(prices)</span><br><span class="line">        # if n == 0:</span><br><span class="line">        #     return 0</span><br><span class="line">        # if k &gt; n // 2:</span><br><span class="line">        #     ans = 0</span><br><span class="line">        #     for i in range(1, n):</span><br><span class="line">        #         ans += max(0, prices[i] - prices[i - 1])</span><br><span class="line">        #     return ans</span><br><span class="line">        # dp = [[[0] * (k + 1) for _ in range(2)] for _ in range(n)]</span><br><span class="line">        # for i in range(k + 1):</span><br><span class="line">        #     dp[0][1][i] = -prices[0]</span><br><span class="line">        # for i in range(1, n):</span><br><span class="line">        #     dp[i][0][0] = dp[i - 1][0][0]</span><br><span class="line">        #     dp[i][1][0] = max(dp[i - 1][1][0], dp[i - 1][0][0] - prices[i])</span><br><span class="line">        #     for h in range(1, k + 1):</span><br><span class="line">        #         dp[i][0][h] = max(dp[i - 1][0][h], dp[i - 1][1][h - 1] + prices[i])</span><br><span class="line">        #         dp[i][1][h] = max(dp[i - 1][1][h], dp[i - 1][0][h] - prices[i])</span><br><span class="line">        # return dp[n - 1][0][k]</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        这里实现一下空间优化版本，老规矩，状态i更新依然只用到状态i-1。</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        n = len(prices)</span><br><span class="line">        if n == 0:</span><br><span class="line">            return 0</span><br><span class="line">        if k &gt; n // 2:</span><br><span class="line">            ans = 0</span><br><span class="line">            for i in range(1, n):</span><br><span class="line">                ans += max(0, prices[i] - prices[i - 1])</span><br><span class="line">            return ans</span><br><span class="line">        dp = [[0] * (k + 1) for _ in range(2)]</span><br><span class="line">        for i in range(k + 1):</span><br><span class="line">            dp[1][i] = -prices[0]</span><br><span class="line">        for i in range(1, n):</span><br><span class="line">            dp[1][0] = max(dp[1][0], dp[0][0] - prices[i])</span><br><span class="line">            for h in range(1, k + 1):</span><br><span class="line">                dp[1][h] = max(dp[1][h], dp[0][h] - prices[i])</span><br><span class="line">                dp[0][h] = max(dp[0][h], dp[1][h - 1] + prices[i])</span><br><span class="line">        return dp[0][k]</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/algorithm-problem/" rel="tag"># 算法题</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/02/18/%E6%8E%92%E5%BA%8F%E6%80%BB%E7%BB%93/" rel="prev" title="排序总结">
+      <i class="fa fa-chevron-left"></i> 排序总结
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/02/18/%E5%9B%BE%E8%AE%BA%E8%A1%A5%E5%85%85%E4%B9%8B%E6%8B%93%E6%89%91%E6%8E%92%E5%BA%8F/" rel="next" title="图论补充之拓扑排序">
+      图论补充之拓扑排序 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%82%A1%E7%A5%A8%E9%97%AE%E9%A2%981"><span class="nav-number">1.</span> <span class="nav-text">股票问题1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%82%A1%E7%A5%A8%E9%97%AE%E9%A2%982"><span class="nav-number">2.</span> <span class="nav-text">股票问题2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%82%A1%E7%A5%A8%E9%97%AE%E9%A2%983"><span class="nav-number">3.</span> <span class="nav-text">股票问题3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%82%A1%E7%A5%A8%E9%97%AE%E9%A2%984"><span class="nav-number">4.</span> <span class="nav-text">股票问题4</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%82%A1%E7%A5%A8%E9%97%AE%E9%A2%985"><span class="nav-number">5.</span> <span class="nav-text">股票问题5</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%82%A1%E7%A5%A8%E9%97%AE%E9%A2%986"><span class="nav-number">6.</span> <span class="nav-text">股票问题6</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Jiahang Gu</p>
+  <div class="site-description" itemprop="description">认真学习，享受生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JiahangGu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JiahangGu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/fengzhizi76506" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;fengzhizi76506" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jiahang Gu</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

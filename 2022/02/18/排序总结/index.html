@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="常见排序算法总结算法复杂度对比   排序算法 平均时间复杂度 最好情况 最坏情况 空间复杂度 排序方式 稳定性    冒泡排序 $O(n^2)$ $O(n)$ $O(n^2)$ $O(1)$ in-place 稳定   选择排序 $O(n^2)$ $O(n^2)$ $O(n^2)$ $O(1)$ in-place 不稳定   插入排序 $O(n^2)$ $O(n)$ $O(n^2)$ $O(1)$">
+<meta property="og:type" content="article">
+<meta property="og:title" content="排序总结">
+<meta property="og:url" content="http://example.com/2022/02/18/%E6%8E%92%E5%BA%8F%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="菜汤里的咸鱼要翻身">
+<meta property="og:description" content="常见排序算法总结算法复杂度对比   排序算法 平均时间复杂度 最好情况 最坏情况 空间复杂度 排序方式 稳定性    冒泡排序 $O(n^2)$ $O(n)$ $O(n^2)$ $O(1)$ in-place 稳定   选择排序 $O(n^2)$ $O(n^2)$ $O(n^2)$ $O(1)$ in-place 不稳定   插入排序 $O(n^2)$ $O(n)$ $O(n^2)$ $O(1)$">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-02-18T14:49:47.000Z">
+<meta property="article:modified_time" content="2022-02-18T14:58:16.127Z">
+<meta property="article:author" content="Jiahang Gu">
+<meta property="article:tag" content="算法题">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2022/02/18/%E6%8E%92%E5%BA%8F%E6%80%BB%E7%BB%93/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>排序总结 | 菜汤里的咸鱼要翻身</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">菜汤里的咸鱼要翻身</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/18/%E6%8E%92%E5%BA%8F%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          排序总结
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-18 22:49:47 / 修改时间：22:58:16" itemprop="dateCreated datePublished" datetime="2022-02-18T22:49:47+08:00">2022-02-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/algorithm-notes/" itemprop="url" rel="index"><span itemprop="name">算法总结</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="常见排序算法总结"><a href="#常见排序算法总结" class="headerlink" title="常见排序算法总结"></a>常见排序算法总结</h1><h3 id="算法复杂度对比"><a href="#算法复杂度对比" class="headerlink" title="算法复杂度对比"></a>算法复杂度对比</h3><table>
+<thead>
+<tr>
+<th align="center">排序算法</th>
+<th align="center">平均时间复杂度</th>
+<th align="center">最好情况</th>
+<th align="center">最坏情况</th>
+<th align="center">空间复杂度</th>
+<th align="center">排序方式</th>
+<th align="center">稳定性</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">冒泡排序</td>
+<td align="center">$O(n^2)$</td>
+<td align="center">$O(n)$</td>
+<td align="center">$O(n^2)$</td>
+<td align="center">$O(1)$</td>
+<td align="center">in-place</td>
+<td align="center">稳定</td>
+</tr>
+<tr>
+<td align="center">选择排序</td>
+<td align="center">$O(n^2)$</td>
+<td align="center">$O(n^2)$</td>
+<td align="center">$O(n^2)$</td>
+<td align="center">$O(1)$</td>
+<td align="center">in-place</td>
+<td align="center">不稳定</td>
+</tr>
+<tr>
+<td align="center">插入排序</td>
+<td align="center">$O(n^2)$</td>
+<td align="center">$O(n)$</td>
+<td align="center">$O(n^2)$</td>
+<td align="center">$O(1)$</td>
+<td align="center">in-place</td>
+<td align="center">稳定</td>
+</tr>
+<tr>
+<td align="center">希尔排序</td>
+<td align="center">$O(nlgn)$</td>
+<td align="center">$O(nlog^2n)$</td>
+<td align="center">$O(nlog^2n)$</td>
+<td align="center">$O(1)$</td>
+<td align="center">in-place</td>
+<td align="center">不稳定</td>
+</tr>
+<tr>
+<td align="center">归并排序</td>
+<td align="center">$O(nlgn)$</td>
+<td align="center">$O(nlgn)$</td>
+<td align="center">$O(nlgn)$</td>
+<td align="center">$O(n)$</td>
+<td align="center">out-place</td>
+<td align="center">稳定</td>
+</tr>
+<tr>
+<td align="center">快速排序</td>
+<td align="center">$O(nlgn)$</td>
+<td align="center">$O(nlgn)$</td>
+<td align="center">$O(n^2)$</td>
+<td align="center">$O(lgn)$</td>
+<td align="center">in-place</td>
+<td align="center">不稳定</td>
+</tr>
+<tr>
+<td align="center">堆排序</td>
+<td align="center">$O(nlgn)$</td>
+<td align="center">$O(nlgn)$</td>
+<td align="center">$O(nlgn)$</td>
+<td align="center">$O(1)$</td>
+<td align="center">in-place</td>
+<td align="center">不稳定</td>
+</tr>
+<tr>
+<td align="center">计数排序</td>
+<td align="center">$O(n+k)$</td>
+<td align="center">$O(n+k)$</td>
+<td align="center">$O(n+k)$</td>
+<td align="center">$O(k)$</td>
+<td align="center">out-place</td>
+<td align="center">稳定</td>
+</tr>
+<tr>
+<td align="center">桶排序</td>
+<td align="center">$O(n+k)$</td>
+<td align="center">$O(n+k)$</td>
+<td align="center">$O(n^2)$</td>
+<td align="center">$O(n+k)$</td>
+<td align="center">out-place</td>
+<td align="center">稳定</td>
+</tr>
+<tr>
+<td align="center">基数排序</td>
+<td align="center">$O(n\times k)$</td>
+<td align="center">$O(n\times k)$</td>
+<td align="center">$O(n\times k)$</td>
+<td align="center">$O(n+k)$</td>
+<td align="center">out-place</td>
+<td align="center">稳定</td>
+</tr>
+</tbody></table>
+<p>&emsp;&emsp;以下程序均默认为升序排列，排序方式in-place表示是否需要额外数组空间保存临时结果。排序的稳定性则表示，如果具有相等键的若干个对象在同一个序列中，那么排好序的有序序列这些相等键的对象会保留排序之前的相对顺序不变。例如1，2，3，2排好序之后为1，2（第二个），2（第一个），3则说明算法不稳定。</p>
+<h3 id="算法介绍"><a href="#算法介绍" class="headerlink" title="算法介绍"></a>算法介绍</h3><h4 id="冒泡排序"><a href="#冒泡排序" class="headerlink" title="冒泡排序"></a>冒泡排序</h4><p>&emsp;&emsp;冒泡排序名字由来是因为越小的元素会在交换之后慢慢浮到数列的顶端，就如同气泡会在水中上浮到顶端一样。算法流程是重复遍历要排序的数组，如果相邻的两个元素位置相反就要交换，例如升序排序需要交换逆序对，将小的放到前面。<br>&emsp;&emsp;算法原理：1.比较相邻元素，如果第一个大于第二个则交换；2.从开始的一对到最后一对均做同样的操作，每次遍历完成后，最大的数字应该会到数组的最后一位；3.针对除了已经定位的元素重复上述操作（定位指的是已经确定了位置的，第i次遍历可以确定数组最后i位数字的位置）。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">class Solution:</span><br><span class="line">    def bubble_sort(self, nums):</span><br><span class="line">        n = len(nums)</span><br><span class="line">        for i in range(n-1):</span><br><span class="line">            for j in range(n-1-i):</span><br><span class="line">                # 发现不符合序列要求的数字对，将大的冒泡到后面</span><br><span class="line">                if nums[j] &gt; nums[j+1]:</span><br><span class="line">                    nums[j], nums[j+1] = nums[j+1], nums[j]</span><br><span class="line">        return nums</span><br></pre></td></tr></table></figure>
+
+<h4 id="选择排序"><a href="#选择排序" class="headerlink" title="选择排序"></a>选择排序</h4><p>&emsp;&emsp;选择排序的方式为遍历数组，找出当前趟的最小的一个元素，和当前趟的第一个元素交换。当前趟指的是第i趟遍历时从第i-1位元素开始。最终得到一个有序序列。每次选择一个最符合条件的元素放到正确位置，所以叫选择排序。<br>&emsp;&emsp;算法原理：1.遍历数组找出最小的元素位置，和第一个元素交换；2.从第2个元素开始继续上述操作，每次遍历完成后会得到前i个有序元素排列；3.重复操作直到数组有序。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">def select_sort(self, nums):</span><br><span class="line">    n = len(nums)</span><br><span class="line">    for i in range(n-1):</span><br><span class="line">        index = i</span><br><span class="line">        for j in range(i+1, n):</span><br><span class="line">            if nums[j] &lt; nums[index]:</span><br><span class="line">                index = j</span><br><span class="line">        nums[i], nums[index] = nums[index], nums[i]</span><br><span class="line">    return nums</span><br></pre></td></tr></table></figure>
+
+<h4 id="插入排序"><a href="#插入排序" class="headerlink" title="插入排序"></a>插入排序</h4><p>&emsp;&emsp;插入排序的基本思想是将一个元素插入到已经排好序的有序序列中，从而得到一个长度+1的有序序列。在实现方面外层循环记录需要插入的元素，内层循环寻找需要插入的位置，并且将待插入的元素后面的元素统一向后移位。现实中的类似用例为打扑克时需要洗牌，将扑克牌按照点数从小到大排列，在拿手牌的过程中逐个插入有序序列中。<br>&emsp;&emsp;算法原理：1.确定要插入到有序序列中的元素，通过外层循环实现，范围是[1, n-1]；2.内层循环寻找第一个小于该元素的元素位置，则该位置的后一位就是待插入元素的正确位置；3.重复操作直到序列有序。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">def insert_sort(self, nums):</span><br><span class="line">    n = len(nums)</span><br><span class="line">    for i in range(1, n):</span><br><span class="line">        j = i - 1</span><br><span class="line">        key = nums[i]</span><br><span class="line">        while j &gt;= 0 and nums[j] &gt; key:</span><br><span class="line">            nums[j+1] = nums[j]</span><br><span class="line">            j -= 1</span><br><span class="line">        nums[j+1] = key</span><br><span class="line">    return nums</span><br></pre></td></tr></table></figure>
+
+<h4 id="希尔排序"><a href="#希尔排序" class="headerlink" title="希尔排序"></a>希尔排序</h4><p>&emsp;&emsp;希尔排序是插入排序的一种改进版本，又称缩小增量排序。插入排序算法选择一个元素之后每次移动一步并进行复制，导致排序过程中一个元素可能会经过多次复制和移动。希尔排序则将元素按照下标的一定增量对元素进行分组，对每组使用插入排序；并逐次减少增量，从而每组包含的关键词越来越多，但每次插入排序之后该分组的元素会更接近最终有序的结果，相当于每次向最终结果靠近一点。当下标的增量减为1时，整个序列有序。<br>&emsp;&emsp;希尔排序的改进基础：1.插入排序对几乎排好序的序列操作时效率非常高，接近线性；2.插排一般来说低效，因为每次只能将数据移动一位。基于上述点，将数据分组排序，组内有序在对组内合并时可以做到几乎有序并且组内排序时可以做到数据移动多位，加快了移动效率。<br>&emsp;&emsp;算法原理：1.取一个小于n的整数作为第一个增量d，一般为n/2，将全部元素按照下标增量分组，在组内进行插入排序；2.取第二个增量d2=d/2，继续分组做插排，直到增量减为0排序完成。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">def shell_sort(self, nums):</span><br><span class="line">    n = len(nums)</span><br><span class="line">    gap = n // 2</span><br><span class="line">    while gap &gt; 0:</span><br><span class="line">        for i in range(gap, n):</span><br><span class="line">            key = nums[i]</span><br><span class="line">            j = i - gap</span><br><span class="line">            while j &gt;= 0 and nums[j] &gt; key:</span><br><span class="line">                nums[j+gap] = nums[j]</span><br><span class="line">                j -= gap</span><br><span class="line">            nums[j+gap] = key</span><br><span class="line">        gap = gap // 2</span><br><span class="line">    return nums</span><br></pre></td></tr></table></figure>
+
+<h4 id="归并排序"><a href="#归并排序" class="headerlink" title="归并排序"></a>归并排序</h4><p>&emsp;&emsp;归并排序是使用分治法解决排序问题的，具体来说，递归的将数组分割成更小的数组，例如一分为二，然后对分割后的数组进行进一步的分割，或达到最小可排序的数组长度后结束。而对于合并阶段，声明一个临时数组保存排序后的结果，建立待合并数组遍历指针，每次取出其中的较小值放入临时数组中，直到一方遍历完。其后将剩余有数字的数组的剩余所有元素拷贝到临时数组中。最后将临时数组中对应排序完成的部分赋值为原数组。<br>&emsp;&emsp;算法原理：1.如果当前数组长度需要排序（即长度大于1），将数组分为两部分并分别递归排序，否则直接返回结束当前递归；2.对划分后的数组排序完成后对数组进行合并；3.合并操作为遍历两个待合并数组，每次取出最小值赋给临时数组，并在一个数组遍历完成后将另一个数组的剩余元素赋值给临时数组，最终将临时数组拷贝到原数组的对应位置处。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">def merge_sort(self, nums):</span><br><span class="line">    def merge(nums, l, mid, r):</span><br><span class="line">        i = l</span><br><span class="line">        j = mid + 1</span><br><span class="line">        k = l</span><br><span class="line">        while i &lt;= mid and j &lt;= r:</span><br><span class="line">            if nums[i] &gt; nums[j]:</span><br><span class="line">                tmp[k] = nums[j]</span><br><span class="line">                j += 1</span><br><span class="line">            else:</span><br><span class="line">                tmp[k] = nums[i]</span><br><span class="line">                i += 1</span><br><span class="line">            k += 1</span><br><span class="line">        while i &lt;= mid:</span><br><span class="line">            tmp[k] = nums[i]</span><br><span class="line">            k += 1</span><br><span class="line">            i += 1</span><br><span class="line">        while j &lt;= r:</span><br><span class="line">            tmp[k] = nums[j]</span><br><span class="line">            k += 1</span><br><span class="line">            j += 1</span><br><span class="line">        nums[l:r+1] = tmp[l:r+1]</span><br><span class="line"></span><br><span class="line">    def _merge_sort(nums, l, r):</span><br><span class="line">        if l &lt; r:</span><br><span class="line">            mid = (l + r) // 2</span><br><span class="line">            _merge_sort(nums, l, mid)</span><br><span class="line">            _merge_sort(nums, mid+1, r)</span><br><span class="line">            merge(nums, l, mid, r)</span><br><span class="line"></span><br><span class="line">    tmp = [0] * len(nums)</span><br><span class="line">    _merge_sort(nums, 0, len(nums)-1)</span><br><span class="line">    return nums</span><br></pre></td></tr></table></figure>
+
+<h4 id="快速排序"><a href="#快速排序" class="headerlink" title="快速排序"></a>快速排序</h4><p>&emsp;&emsp;快排同样也是利用分治思想解决排序问题，但与归并不同的是，归并是通过构造临时数组保存排好序的结果，并且是在子数组保证有序之后进行合并，而快排则是在数组本身空间中修改，在选定一个元素后，将数组修改为所有小于该元素的元素在该元素之前，而所有大于该元素的元素在该元素之后的状态。在对当前数组做完如此操作之后，这三个部分整体保持有序，然后再对前后两部分继续做如上操作直到数组长度为1.<br>&emsp;&emsp;算法原理：1.对数组进行划分，选出一个元素作为比较的基准（pivot），排列该数组使得所有小于基准的在基准之前，大于基准的在基准之后，这样得到的数组基准处于数组的中位数位置。称为分区操作（partition）；2.递归的对分区后的小于基准和大于基准的子数组进行上述排序操作。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">def quick_sort(self, nums):</span><br><span class="line">    def _partition(nums, l, r):</span><br><span class="line">        pivot = nums[l]</span><br><span class="line">        start = l</span><br><span class="line">        end = r</span><br><span class="line">        while start &lt; end:</span><br><span class="line">            while start &lt; end and nums[end] &gt; pivot:</span><br><span class="line">                end -= 1</span><br><span class="line">            if start &lt; end:</span><br><span class="line">                nums[start] = nums[end]</span><br><span class="line">            while start &lt; end and nums[start] &lt;= pivot:</span><br><span class="line">                start += 1</span><br><span class="line">            if start &lt; end:</span><br><span class="line">                nums[end] = nums[start]</span><br><span class="line">        nums[start] = pivot</span><br><span class="line">        return start</span><br><span class="line"></span><br><span class="line">    def _quick_sort(nums, l, r):</span><br><span class="line">        if l &lt; r:</span><br><span class="line">            mid = _partition(nums, l, r)</span><br><span class="line">            _quick_sort(nums, l, mid-1)</span><br><span class="line">            _quick_sort(nums, mid+1, r)</span><br><span class="line">    _quick_sort(nums, 0, len(nums)-1)</span><br><span class="line">    return nums</span><br></pre></td></tr></table></figure>
+
+<h4 id="堆排序"><a href="#堆排序" class="headerlink" title="堆排序"></a>堆排序</h4><p>&emsp;&emsp;堆排序指的是利用二叉堆进行数组的排序。二叉堆是完全二叉树，即在构造过程中会尽量保持子节点是由左向右填充的。堆的每个节点的值都大于等于其子节点的值（最大堆，最小堆相反），这里以最大堆为例。<br>&emsp;&emsp;堆的存储可以使用数组模拟，下标为i的节点的父节点下标为(i-1)//2，其左右子节点分别为(2<em>i+1)和(2</em>i+2)，因为坐标是从0开始的。数组对应的二叉堆的形状可以考虑成将数组元素逐个填充到一个完全二叉树中。<br>&emsp;&emsp;堆排序有如下操作，保证最大值始终位于根节点：1.最大堆调整（max_heapify），将堆的末端子节点调整为小于父节点的状态。2.创建最大堆（bulid_heap）：将堆中的数据重新排序，使其满足最大堆的性质，通常是加入一个节点后需要调用一次max_heapify；3.堆排序（heap_sort）：每次移除在根节点的数据并记录，并将当前最右的数据移动到根节点重新调整使其保持最大堆性质。<br>&emsp;&emsp;堆排序类似于选择排序，每次从中选择一个最大值放到数组首，但是利用树结构存储子节点小于父节点的性质，在选择最大值后的调整只需要O(lgn)，而选择排序则需要O(n).<br>&emsp;&emsp;算法原理：1.使用数组模拟最大堆的结构；2.对所有非叶子节点进行调整，使其满足最大堆的性质，而非叶子节点的范围是[0,(n-1)//2]；3.取出根节点即最大值并记录，然后将最右边的元素放入根节点中，并进行调整；4.重复步骤3直到得到有序序列，即所有节点都已经取出来。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">def heap_sort(self, nums):</span><br><span class="line">    def max_heapify(start, end):</span><br><span class="line">        # 指向当前节点和子节点</span><br><span class="line">        father = start</span><br><span class="line">        son = 2 * start + 1</span><br><span class="line">        # 保证子节点有效，即没有超过数组范围</span><br><span class="line">        while son &lt;= end:</span><br><span class="line">            # 选择左右子节点中最大的值代替父节点位置</span><br><span class="line">            if son + 1 &lt;= end and nums[son] &lt; nums[son+1]:</span><br><span class="line">                son += 1</span><br><span class="line">            # 已经满足最大堆性质返回</span><br><span class="line">            if nums[father] &gt; nums[son]:</span><br><span class="line">                return</span><br><span class="line">            # 调整节点满足最大堆，并继续向下调整</span><br><span class="line">            nums[father], nums[son] = nums[son], nums[father]</span><br><span class="line">            father = son</span><br><span class="line">            son = 2 * father + 1</span><br><span class="line"></span><br><span class="line">    n = len(nums)</span><br><span class="line">    # 建立最大堆的过程，对所有非叶子节点进行调整，并且从下向上遍历，保证对于某一非叶子节点，其子节点均满足最大堆性质</span><br><span class="line">    for i in range((n-1)//2, -1, -1):</span><br><span class="line">        max_heapify(i, n-1)</span><br><span class="line">    # 每次将根节点（最大值）换到当前数组最后一位，并将最右元素放入根节点进行调整，保证根节点为最大值</span><br><span class="line">    for i in range(n-1, 0, -1):</span><br><span class="line">        nums[0], nums[i] = nums[i], nums[0]</span><br><span class="line">        max_heapify(0, i-1)</span><br><span class="line">    return nums</span><br></pre></td></tr></table></figure>
+
+<h4 id="计数排序"><a href="#计数排序" class="headerlink" title="计数排序"></a>计数排序</h4><p>&emsp;&emsp;计数排序是一种稳定的线性时间排序算法。和名字一样，需要对所有数字出现的次数进行计数，得到所有数字的出现频数之后倒序访问，按照出现频次依次填充到建立的结果数组中即可。因为要对所有数字计数，所以要求数字的出现范围很小，如果出现1-10001000范围的数字则计数排序无法运行，因为这个空间开不下。<br>&emsp;&emsp;算法原理：1.对数组内所有数字出现的次数计数，得到所有数字的出现频数；2.频数数组累加，得到每个数字对应出现在结果数组中的位置+1（如果从0开始索引）;3.遍历原数组对所有数字放到对应的频数数组标记的位置上</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">def count_sort(self, nums):</span><br><span class="line">    min_value, max_value = nums[0], nums[0]</span><br><span class="line">    ans = [-1] * len(nums)</span><br><span class="line">    for i in range(1, len(nums)):</span><br><span class="line">        if min_value &gt; nums[i]:</span><br><span class="line">            min_value = nums[i]</span><br><span class="line">        elif max_value &lt; nums[i]:</span><br><span class="line">            max_value = nums[i]</span><br><span class="line">    count = [0] * (max_value - min_value + 1)</span><br><span class="line">    for i in nums:</span><br><span class="line">        count[i-min_value] += 1</span><br><span class="line">    for i in range(1, len(count)):</span><br><span class="line">        count[i] += count[i-1]</span><br><span class="line">    for num in nums:</span><br><span class="line">        count[num-min_value] -= 1</span><br><span class="line">        ans[count[num-min_value]] = num</span><br><span class="line">    return ans</span><br></pre></td></tr></table></figure>
+
+<h4 id="桶排序"><a href="#桶排序" class="headerlink" title="桶排序"></a>桶排序</h4><p>&emsp;&emsp;桶排序的算法同样采用分治方法，首先构造若干个桶用于存放数组中的部分元素，将数组按照特定方式映射到对应桶中，映射之后的桶之间的元素保证按照桶的顺序是整体有序的，即范围有序。然后对各个桶进行排序得到单桶有序。最后按顺序合并所有桶内数据即得到有序序列。<br>&emsp;&emsp;算法原理：1.按照最大值和最小值生成对应数量的桶，根据数据范围调整，例如可以每个桶存10个数的范围，即max_value//10~min_value//10；2.遍历数组将元素放入到对应桶中，映射函数要和1保持一致；3.对每个桶进行排序，得到桶内有序序列；4.按顺序合并所有桶元素，得到有序序列。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">def bucket_sort(self, nums):</span><br><span class="line">    # 得到最大最小值确定桶的个数</span><br><span class="line">    max_value, min_value = max(nums), min(nums)</span><br><span class="line">    buckets = [[] for _ in range(max_value//10 - min_value//10 + 1)]</span><br><span class="line">    # 根据划分桶的方式映射数字并存入桶</span><br><span class="line">    for num in nums:</span><br><span class="line">        index = num//10 - min_value//10</span><br><span class="line">        buckets[index].append(num)</span><br><span class="line">    nums.clear()</span><br><span class="line">    # 按顺序合并，内部采用插入排序</span><br><span class="line">    for l in buckets:</span><br><span class="line">        nums.extend(self.insert_sort(l))</span><br><span class="line">    return nums</span><br></pre></td></tr></table></figure>
+
+<h4 id="基数排序"><a href="#基数排序" class="headerlink" title="基数排序"></a>基数排序</h4><p>&emsp;&emsp;基数排序是利用数字的基数信息得到对应的键值，将数字根据键值放入到对应的桶中，最终有序合并桶得到有序序列的算法，属于稳定性算法。分为LSD（最低位优先）和MSD（最高位优先），分别表示放入桶中的顺序应该从数字低位还是高位开始。直到所有位的数字都经历过一次排序，将所有桶依次连接起来得到一个有序序列。<br>&emsp;&emsp;算法原理：1.首先求出最大数字的位数，用于确定循环次数；2.根据基数构造对应的桶，通常基数为10；3.从低位开始，取得每个数字的低位数字作为键值，将数字放入桶中；4.依次合并桶中的数组；5.重复34直到所有位数遍历完成。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">def radix_sort(self, nums, radix=10):</span><br><span class="line">    import math</span><br><span class="line">    # 求出数组中最大数的位数，用于确定排序循环次数</span><br><span class="line">    max_digit = math.ceil(math.log(max(nums), radix))</span><br><span class="line">    # 构造存储数字的桶</span><br><span class="line">    bucket = [[] for _ in range(radix)]</span><br><span class="line">    for i in range(max_digit):</span><br><span class="line">        # 将数字根据规则放入对应桶中，这里是取最低位最高位的顺序</span><br><span class="line">        for num in nums:</span><br><span class="line">            bucket[num % (radix ** (i+1)) // (radix ** i)].append(num)</span><br><span class="line">        nums.clear()</span><br><span class="line">        # 按顺序合并</span><br><span class="line">        for l in bucket:</span><br><span class="line">            nums.extend(l)</span><br><span class="line">        bucket = [[] for _ in range(radix)]</span><br><span class="line">    return nums</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/algorithm-problem/" rel="tag"># 算法题</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/02/18/LRUCache/" rel="prev" title="LRUCache">
+      <i class="fa fa-chevron-left"></i> LRUCache
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/02/18/leetcode%E8%82%A1%E7%A5%A8%E4%B8%93%E9%A2%98/" rel="next" title="leetcode股票专题">
+      leetcode股票专题 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95%E6%80%BB%E7%BB%93"><span class="nav-number">1.</span> <span class="nav-text">常见排序算法总结</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%97%E6%B3%95%E5%A4%8D%E6%9D%82%E5%BA%A6%E5%AF%B9%E6%AF%94"><span class="nav-number">1.0.1.</span> <span class="nav-text">算法复杂度对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%97%E6%B3%95%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.0.2.</span> <span class="nav-text">算法介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F"><span class="nav-number">1.0.2.1.</span> <span class="nav-text">冒泡排序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F"><span class="nav-number">1.0.2.2.</span> <span class="nav-text">选择排序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F"><span class="nav-number">1.0.2.3.</span> <span class="nav-text">插入排序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B8%8C%E5%B0%94%E6%8E%92%E5%BA%8F"><span class="nav-number">1.0.2.4.</span> <span class="nav-text">希尔排序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F"><span class="nav-number">1.0.2.5.</span> <span class="nav-text">归并排序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F"><span class="nav-number">1.0.2.6.</span> <span class="nav-text">快速排序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A0%86%E6%8E%92%E5%BA%8F"><span class="nav-number">1.0.2.7.</span> <span class="nav-text">堆排序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%A1%E6%95%B0%E6%8E%92%E5%BA%8F"><span class="nav-number">1.0.2.8.</span> <span class="nav-text">计数排序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A1%B6%E6%8E%92%E5%BA%8F"><span class="nav-number">1.0.2.9.</span> <span class="nav-text">桶排序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E6%95%B0%E6%8E%92%E5%BA%8F"><span class="nav-number">1.0.2.10.</span> <span class="nav-text">基数排序</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Jiahang Gu</p>
+  <div class="site-description" itemprop="description">认真学习，享受生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JiahangGu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JiahangGu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/fengzhizi76506" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;fengzhizi76506" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jiahang Gu</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

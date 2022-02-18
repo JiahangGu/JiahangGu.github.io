@@ -167,6 +167,569 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/18/%E5%B9%B6%E6%9F%A5%E9%9B%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/18/%E5%B9%B6%E6%9F%A5%E9%9B%86/" class="post-title-link" itemprop="url">并查集</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-18 22:52:52 / 修改时间：22:53:22" itemprop="dateCreated datePublished" datetime="2022-02-18T22:52:52+08:00">2022-02-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/algorithm-notes/" itemprop="url" rel="index"><span itemprop="name">算法总结</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>&emsp;&emsp;并查集用来解决元素分组的问题，主要是对一系列不相交集合的管理。支持如下两种操作：</p>
+<ol>
+<li>查找find：查询两个元素是否在同一个集合中；</li>
+<li>合并union：把两个不相交的集合合并为一个集合。</li>
+</ol>
+<p>&emsp;&emsp;举个容易理解的例子：亲戚是一个神奇的种群，亲戚的亲戚就是我的亲戚。在找亲戚的过程中，如果发现一个人，怎么判断是不是亲戚呢？需要有一个代表，这个代表作为整个亲戚的领头人，在判断是否和人属于亲戚关系时，向上查找代表亲戚是谁，如果和自己的代表是同一个人，那么就是亲戚关系。并且，只要是有亲戚关系的（直接或间接，哪怕间接了几千个人），就一定是亲戚关系。<br>&emsp;&emsp;这样在建模方面就是如下的结构：将所有人划分到若干个不相交的集合中，每个集合中的人彼此之间有亲戚关系，而不在一个集合的则不是。在判断两个人是否是亲戚时，只要判断是否属于同一个集合即可。而集合查找最关键的地方则是需要一个领头人，这样在判断是否属于一个集合时不需要遍历所有成员，只需要向上查找比较领头人是否一样即可。可以想象成一个集合对应一个帮派，这个领头人就是掌门，只要掌门是一样的，自然属于同一个帮派。<br>&emsp;&emsp;在查找阶段，如果自己不是掌门，说明自己上级还有人，继续向上查找，如果自己是掌门则直接返回即可。初始化时每个人都是掌门。<br>主要逻辑的代码实现：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">int fa[MAXN];</span><br><span class="line">void init(n): &#123;</span><br><span class="line">	for (int i = 1; i &lt;= n; i++)</span><br><span class="line">		fa[i] = i;</span><br><span class="line">&#125;</span><br><span class="line"># 查询操作:</span><br><span class="line">int find(int x) &#123;</span><br><span class="line">	if (fa[x] == x) return x;</span><br><span class="line">	else return find(fa[x]);</span><br><span class="line">&#125;</span><br><span class="line"># 递归写法查询元素，逐层访问直到自己做自己的掌门。</span><br><span class="line"># 合并操作：</span><br><span class="line">void merge(int i, int j) &#123;</span><br><span class="line">	fa[find(i)] = find(j);</span><br><span class="line">&#125;</span><br><span class="line"># 首先找到两个集合的掌门，然后将前者的掌门设为后者，这样就表示这两者及其附属手下均属于后者的门派。</span><br></pre></td></tr></table></figure>
+
+<h4 id="路径压缩"><a href="#路径压缩" class="headerlink" title="路径压缩"></a>路径压缩</h4>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/02/18/%E5%B9%B6%E6%9F%A5%E9%9B%86/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/18/%E5%9B%BE%E8%AE%BA%E8%A1%A5%E5%85%85%E4%B9%8B%E6%8B%93%E6%89%91%E6%8E%92%E5%BA%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/18/%E5%9B%BE%E8%AE%BA%E8%A1%A5%E5%85%85%E4%B9%8B%E6%8B%93%E6%89%91%E6%8E%92%E5%BA%8F/" class="post-title-link" itemprop="url">图论补充之拓扑排序</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-18 22:52:08 / 修改时间：22:52:37" itemprop="dateCreated datePublished" datetime="2022-02-18T22:52:08+08:00">2022-02-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/algorithm-notes/" itemprop="url" rel="index"><span itemprop="name">算法总结</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>&emsp;&emsp;这篇文章旨在说明如何使用DFS和BFS求解有向图的拓扑排序，如果存在环则拓扑排序不存在。</p>
+<h3 id="BFS"><a href="#BFS" class="headerlink" title="BFS"></a>BFS</h3><p>&emsp;&emsp;BFS特点为从一个点开始，记录其所有的邻接点之后才会进入下一个点继续遍历。而对于拓扑排序来说，一个点的入度决定了这个点在接下来的排序中是否可以作为其余点的前序点，因为只有入度为0的点才可以作为后面序列的起始点，而入度&gt;0的点则表示在他之前还有要依赖的点。以上课为例，上课程A需要先学B，那么A入度为1，只有在B学完之后A入度变为0，此时才可以学习A。通过在循环过程中，将入度为0的点加入到队列中，如果最终存在拓扑排序则可以得到一个序列，这个序列是入度减为0的先后顺序，如果最终没有访问到所有点，则存在环，因为环中的入度始终大于1，就没有入度=0的点也就无法打开缺口，这些点也始终无法进入队列进行后续遍历。<br>伪代码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">edge表示有向边，in_degree表示每个点的入度，q表示循环的队列，ans记录拓扑排序的结果（多个任意返回其一）</span><br><span class="line">q = queue(入度为0的点)</span><br><span class="line">while q:</span><br><span class="line">	node = q.popleft()</span><br><span class="line">	ans.append(node)</span><br><span class="line">	for e in edge[node]:</span><br><span class="line">		in_degree[e] -= 1</span><br><span class="line">		if in_degree[e] == 0:</span><br><span class="line">			q.push(e)</span><br><span class="line">return ans #需要判断是否每个点都访问过</span><br></pre></td></tr></table></figure>
+
+<h3 id="DFS"><a href="#DFS" class="headerlink" title="DFS"></a>DFS</h3>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/02/18/%E5%9B%BE%E8%AE%BA%E8%A1%A5%E5%85%85%E4%B9%8B%E6%8B%93%E6%89%91%E6%8E%92%E5%BA%8F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/18/leetcode%E8%82%A1%E7%A5%A8%E4%B8%93%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/18/leetcode%E8%82%A1%E7%A5%A8%E4%B8%93%E9%A2%98/" class="post-title-link" itemprop="url">leetcode股票专题</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-18 22:51:06 / 修改时间：22:51:45" itemprop="dateCreated datePublished" datetime="2022-02-18T22:51:06+08:00">2022-02-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/algorithm-notes/" itemprop="url" rel="index"><span itemprop="name">算法总结</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>11k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>10 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p><strong>本文是对leetcode上股票专题的总结</strong><br>&emsp;&emsp;买卖股票的专题都可以将买入和卖出分开考虑，买入是负收益，而卖出是正收益。刚开始时只能买入，所以收益为负，在买入之后就有了卖出的权力，可以获得正收益，在每次交易尽可能的降低负收益提高正收益。在使用DP解决问题时，可以维护每一天结束后的累计最大收益，并根据买入卖出的策略分别更新这两个状态，最终得到最大的收益解。</p>
+<h3 id="股票问题1"><a href="#股票问题1" class="headerlink" title="股票问题1"></a>股票问题1</h3><p>给定一个数组，它的第 i 个元素是一支给定股票第 i 天的价格。</p>
+<p>如果你最多只允许完成一笔交易（即买入和卖出一支股票一次），设计一个算法来计算你所能获取的最大利润。</p>
+<p>注意：你不能在买入股票前卖出股票。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/02/18/leetcode%E8%82%A1%E7%A5%A8%E4%B8%93%E9%A2%98/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/18/%E6%8E%92%E5%BA%8F%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/18/%E6%8E%92%E5%BA%8F%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">排序总结</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-18 22:49:47 / 修改时间：22:58:16" itemprop="dateCreated datePublished" datetime="2022-02-18T22:49:47+08:00">2022-02-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/algorithm-notes/" itemprop="url" rel="index"><span itemprop="name">算法总结</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="常见排序算法总结"><a href="#常见排序算法总结" class="headerlink" title="常见排序算法总结"></a>常见排序算法总结</h1><h3 id="算法复杂度对比"><a href="#算法复杂度对比" class="headerlink" title="算法复杂度对比"></a>算法复杂度对比</h3><table>
+<thead>
+<tr>
+<th align="center">排序算法</th>
+<th align="center">平均时间复杂度</th>
+<th align="center">最好情况</th>
+<th align="center">最坏情况</th>
+<th align="center">空间复杂度</th>
+<th align="center">排序方式</th>
+<th align="center">稳定性</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">冒泡排序</td>
+<td align="center">$O(n^2)$</td>
+<td align="center">$O(n)$</td>
+<td align="center">$O(n^2)$</td>
+<td align="center">$O(1)$</td>
+<td align="center">in-place</td>
+<td align="center">稳定</td>
+</tr>
+<tr>
+<td align="center">选择排序</td>
+<td align="center">$O(n^2)$</td>
+<td align="center">$O(n^2)$</td>
+<td align="center">$O(n^2)$</td>
+<td align="center">$O(1)$</td>
+<td align="center">in-place</td>
+<td align="center">不稳定</td>
+</tr>
+<tr>
+<td align="center">插入排序</td>
+<td align="center">$O(n^2)$</td>
+<td align="center">$O(n)$</td>
+<td align="center">$O(n^2)$</td>
+<td align="center">$O(1)$</td>
+<td align="center">in-place</td>
+<td align="center">稳定</td>
+</tr>
+<tr>
+<td align="center">希尔排序</td>
+<td align="center">$O(nlgn)$</td>
+<td align="center">$O(nlog^2n)$</td>
+<td align="center">$O(nlog^2n)$</td>
+<td align="center">$O(1)$</td>
+<td align="center">in-place</td>
+<td align="center">不稳定</td>
+</tr>
+<tr>
+<td align="center">归并排序</td>
+<td align="center">$O(nlgn)$</td>
+<td align="center">$O(nlgn)$</td>
+<td align="center">$O(nlgn)$</td>
+<td align="center">$O(n)$</td>
+<td align="center">out-place</td>
+<td align="center">稳定</td>
+</tr>
+<tr>
+<td align="center">快速排序</td>
+<td align="center">$O(nlgn)$</td>
+<td align="center">$O(nlgn)$</td>
+<td align="center">$O(n^2)$</td>
+<td align="center">$O(lgn)$</td>
+<td align="center">in-place</td>
+<td align="center">不稳定</td>
+</tr>
+<tr>
+<td align="center">堆排序</td>
+<td align="center">$O(nlgn)$</td>
+<td align="center">$O(nlgn)$</td>
+<td align="center">$O(nlgn)$</td>
+<td align="center">$O(1)$</td>
+<td align="center">in-place</td>
+<td align="center">不稳定</td>
+</tr>
+<tr>
+<td align="center">计数排序</td>
+<td align="center">$O(n+k)$</td>
+<td align="center">$O(n+k)$</td>
+<td align="center">$O(n+k)$</td>
+<td align="center">$O(k)$</td>
+<td align="center">out-place</td>
+<td align="center">稳定</td>
+</tr>
+<tr>
+<td align="center">桶排序</td>
+<td align="center">$O(n+k)$</td>
+<td align="center">$O(n+k)$</td>
+<td align="center">$O(n^2)$</td>
+<td align="center">$O(n+k)$</td>
+<td align="center">out-place</td>
+<td align="center">稳定</td>
+</tr>
+<tr>
+<td align="center">基数排序</td>
+<td align="center">$O(n\times k)$</td>
+<td align="center">$O(n\times k)$</td>
+<td align="center">$O(n\times k)$</td>
+<td align="center">$O(n+k)$</td>
+<td align="center">out-place</td>
+<td align="center">稳定</td>
+</tr>
+</tbody></table>
+<p>&emsp;&emsp;以下程序均默认为升序排列，排序方式in-place表示是否需要额外数组空间保存临时结果。排序的稳定性则表示，如果具有相等键的若干个对象在同一个序列中，那么排好序的有序序列这些相等键的对象会保留排序之前的相对顺序不变。例如1，2，3，2排好序之后为1，2（第二个），2（第一个），3则说明算法不稳定。</p>
+<h3 id="算法介绍"><a href="#算法介绍" class="headerlink" title="算法介绍"></a>算法介绍</h3>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/02/18/%E6%8E%92%E5%BA%8F%E6%80%BB%E7%BB%93/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/18/LRUCache/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/18/LRUCache/" class="post-title-link" itemprop="url">LRUCache</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-18 22:49:02 / 修改时间：22:49:26" itemprop="dateCreated datePublished" datetime="2022-02-18T22:49:02+08:00">2022-02-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/algorithm-notes/" itemprop="url" rel="index"><span itemprop="name">算法总结</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>&emsp;&emsp;LRU Cache，最近最少使用缓存。在CPU的缓存机制中，如果要读出一条在cache中没有的数据并存到cache中时，需要淘汰一些已经在cache里的数据来腾出位置。LRU机制就是将最久没有使用过的数据淘汰的策略。<br>&emsp;&emsp;LRU有两个内置操作：</p>
+<ul>
+<li>get(key):如果关键字key存在于缓存中，则获取关键字的值</li>
+<li>put(key, value):如果关键字已存在，变更其数据值，如果不存在，插入该kv对。并且当缓存容量到达上限时，删除之前最久未使用的数据，然后插入新数据。<br>&emsp;&emsp;要求get和put操作都具有O(1)的时间复杂度。<br>&emsp;&emsp;对需求进行分析，首先需要O(1)进行get和put，至少需要一个哈希表。其次是需要满容量时删除最久未使用的数据，则需要存储元素的放入顺序，并且在put之后可以更新到最近使用的位置。通过数组实现的话，put之后要保证最近的元素在最后的位置，但数组删除元素之后需要整体移动到前一个，时间复杂度为O(N)。通过链表可以实现对放入顺序的存储，链表序即为插入顺序，但要实现O(1)删除元素，显然不可实现（因为要拿到该节点的前驱结点）。既然要得到前驱结点才能实现O(1)删除，那使用双向链表即可实现。</li>
+<li>get(key)操作：判断key是否在哈希表中，如果在，返回该值，否则返回不存在</li>
+<li>put(key, value)：判断key是否在哈希表中，如果在，更新value，如果不在，判断是否超出容量，如果达到容量上限，删除链表中第一个节点。将新的value插入到链表最后一个位置。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><span class="line">class LinkNode:</span><br><span class="line">    def __init__(self, val, key):</span><br><span class="line">        self.val = val</span><br><span class="line">        self.key = key</span><br><span class="line">        self.next = None</span><br><span class="line">        self.prev = None</span><br><span class="line"></span><br><span class="line">class DoubleLinkedList:</span><br><span class="line">    def __init__(self):</span><br><span class="line">        self.head = None</span><br><span class="line">        self.tail = None</span><br><span class="line"></span><br><span class="line">    def insert(self, node):</span><br><span class="line">        if not self.head:</span><br><span class="line">            self.head = node</span><br><span class="line">        elif not self.tail:</span><br><span class="line">            self.tail = node</span><br><span class="line">            self.head.next = node</span><br><span class="line">            node.prev = self.head</span><br><span class="line">        else:</span><br><span class="line">            self.tail.next = node</span><br><span class="line">            node.prev = self.tail</span><br><span class="line">            self.tail = node</span><br><span class="line"></span><br><span class="line">    def remove(self, node):</span><br><span class="line">        if node == self.head:</span><br><span class="line">            self.head = node.next</span><br><span class="line">            if self.head:</span><br><span class="line">                self.head.prev = None</span><br><span class="line">        elif node == self.tail:</span><br><span class="line">            self.tail = node.prev</span><br><span class="line">            if self.tail:</span><br><span class="line">                self.tail.next = None</span><br><span class="line">        else:</span><br><span class="line">            tmp = node.prev</span><br><span class="line">            tmp.next = node.next</span><br><span class="line">            node.next.prev = tmp</span><br><span class="line">        node.next = None</span><br><span class="line">        node.prev = None</span><br><span class="line"></span><br><span class="line">    def remove_head(self):</span><br><span class="line">        node = self.head</span><br><span class="line">        self.head = self.head.next</span><br><span class="line">        if self.head:</span><br><span class="line">            self.head.prev = None</span><br><span class="line">        return node</span><br><span class="line"></span><br><span class="line">    def str(self):</span><br><span class="line">        ans = []</span><br><span class="line">        node = self.head</span><br><span class="line">        while node:</span><br><span class="line">            ans.append(node.val)</span><br><span class="line">            node = node.next</span><br><span class="line">        return ans</span><br><span class="line"></span><br><span class="line">class LRUCache:</span><br><span class="line"></span><br><span class="line">    def __init__(self, capacity: int):</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        使用哈希表实现O(1)查询，使用双向链表实现O(1)插入和删除</span><br><span class="line">        查询的时候，首先判断是否存在，如果存在，则将该节点移动到tail的位置，表示是最新访问的</span><br><span class="line">        写入数据时，首先判断容量是否足够，如果够直接放入到最后一位，如果不够，则移除掉head位置，并将新</span><br><span class="line">        结点插入到tail位置。</span><br><span class="line">        上述操作都要反应在哈希表中。</span><br><span class="line">        :param capacity:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        self.len = 0</span><br><span class="line">        self.max_len = capacity</span><br><span class="line">        self.d = dict()</span><br><span class="line">        self.dll = DoubleLinkedList()</span><br><span class="line"></span><br><span class="line">    def get(self, key: int) -&gt; int:</span><br><span class="line">        if key in self.d:</span><br><span class="line">            node = self.d[key]</span><br><span class="line">            self.dll.remove(node)</span><br><span class="line">            self.dll.insert(node)</span><br><span class="line">            return node.val</span><br><span class="line">        else:</span><br><span class="line">            return -1</span><br><span class="line"></span><br><span class="line">    def put(self, key: int, value: int) -&gt; None:</span><br><span class="line">        if key in self.d:</span><br><span class="line">            node = self.d[key]</span><br><span class="line">            node.val = value</span><br><span class="line">            self.dll.remove(node)</span><br><span class="line">            self.dll.insert(node)</span><br><span class="line">            self.d[key] = node</span><br><span class="line">        else:</span><br><span class="line">            if self.len == self.max_len:</span><br><span class="line">                node = self.dll.remove_head()</span><br><span class="line">                k = node.key</span><br><span class="line">                del self.d[k]</span><br><span class="line">                self.len -= 1</span><br><span class="line">            node = LinkNode(value, key)</span><br><span class="line">            self.d[key] = node</span><br><span class="line">            self.dll.insert(node)</span><br><span class="line">            self.len += 1</span><br><span class="line"></span><br><span class="line">    def str(self):</span><br><span class="line">        return self.dll.str()</span><br></pre></td></tr></table></figure></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/18/KMP%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%8C%B9%E9%85%8D%E7%AE%97%E6%B3%95/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -744,478 +1307,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/17/Raft%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Jiahang Gu">
-      <meta itemprop="description" content="认真学习，享受生活">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/02/17/Raft%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Raft笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-02-17 19:59:15 / 修改时间：19:59:55" itemprop="dateCreated datePublished" datetime="2022-02-17T19:59:15+08:00">2022-02-17</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/course-notes/" itemprop="url" rel="index"><span itemprop="name">课程笔记</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>3.1k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>3 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h2><p>作为一个分布式算法，让多台服务器共同合作完成完成记录日志的工作。和单机相比，让多个服务器做几乎相同的工作，最终能保持一致的状态。性能比不过单机，但可以接受，目标是在满足CP的情况下，尽可能提高A</p>
-<h3 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h3><p>代替Paxos算法实现分布式一致性算法，Paxos更加晦涩难懂，导致在工程实现阶段出现很多问题</p>
-<h3 id="复制状态机"><a href="#复制状态机" class="headerlink" title="复制状态机"></a>复制状态机</h3>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/02/17/Raft%E7%AC%94%E8%AE%B0/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/17/MIT6-824%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Jiahang Gu">
-      <meta itemprop="description" content="认真学习，享受生活">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/02/17/MIT6-824%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">MIT6.824笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-02-17 19:55:09 / 修改时间：19:58:51" itemprop="dateCreated datePublished" datetime="2022-02-17T19:55:09+08:00">2022-02-17</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/course-notes/" itemprop="url" rel="index"><span itemprop="name">课程笔记</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>30k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>27 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><h3 id="分布式系统目的"><a href="#分布式系统目的" class="headerlink" title="分布式系统目的"></a>分布式系统目的</h3><ol>
-<li>更高的性能，最好是线性增加</li>
-<li>提供容错，当一台机器故障时另一台可以马上替换</li>
-<li>空间分布，需要两个地区的机器协同工作</li>
-<li>保证安全，将代码分散，并通过网络进行交互</li>
-</ol>
-<h3 id="构建分布式系统的工具"><a href="#构建分布式系统的工具" class="headerlink" title="构建分布式系统的工具"></a>构建分布式系统的工具</h3><ol>
-<li>RPC</li>
-<li>线程</li>
-<li>并发控制</li>
-</ol>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/02/17/MIT6-824%E7%AC%94%E8%AE%B0/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/17/MapReduce%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Jiahang Gu">
-      <meta itemprop="description" content="认真学习，享受生活">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/02/17/MapReduce%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">MapReduce笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-02-17 19:53:46 / 修改时间：19:54:45" itemprop="dateCreated datePublished" datetime="2022-02-17T19:53:46+08:00">2022-02-17</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/course-notes/" itemprop="url" rel="index"><span itemprop="name">课程笔记</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>1.8k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>是一个编程模型，处理和生成超大数据集的算法模型的实现</p>
-<h3 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h3><p>用户首先创建一个Map函数处理一个基于KV对的数据集合，输出中间的基于KV对的数据集合，然后再创建一个Reduce函数用来合并所有具有相同中间Key值的中间Value值</p>
-<h3 id="难点"><a href="#难点" class="headerlink" title="难点"></a>难点</h3>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/02/17/MapReduce%E7%AC%94%E8%AE%B0/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/17/git%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Jiahang Gu">
-      <meta itemprop="description" content="认真学习，享受生活">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/02/17/git%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">git笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-02-17 19:43:15 / 修改时间：20:15:31" itemprop="dateCreated datePublished" datetime="2022-02-17T19:43:15+08:00">2022-02-17</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/course-notes/" itemprop="url" rel="index"><span itemprop="name">课程笔记</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>14k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>13 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>版本控制系统，Version Control System，VCS。复习一下，看看有没有查漏补缺的地方</p>
-<h3 id="实现原理"><a href="#实现原理" class="headerlink" title="实现原理"></a>实现原理</h3><p>其余VCS存储文件原始版本和随时间的差异。git则是在每个版本保存文件的快照，然后保存快照索引。如果文件没改则保留链接指向之前的文件。（文件很大时快照是不是也很大）<br>查看版本间差异时，git会找到两个版本的文件做本地的差异计算。避免连接远程服务器。<br>git在存储数据前计算校验和，通过校验和确保数据没有丢失或损坏。SHA1散列计算。</p>
-<h3 id="文件状态"><a href="#文件状态" class="headerlink" title="文件状态"></a>文件状态</h3><ol>
-<li>未暂存：修改了文件，没保存到数据库</li>
-<li>已暂存：对一个已修改文件的版本标记，包含在下次提交的快照中</li>
-<li>已提交：数据保存在本地数据库</li>
-</ol>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/02/17/git%E7%AC%94%E8%AE%B0/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/17/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BC%BA%E5%A4%B1%E7%9A%84%E6%95%99%E8%82%B2%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Jiahang Gu">
-      <meta itemprop="description" content="认真学习，享受生活">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/02/17/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BC%BA%E5%A4%B1%E7%9A%84%E6%95%99%E8%82%B2%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">计算机缺失的教育笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-02-17 19:41:20 / 修改时间：19:51:22" itemprop="dateCreated datePublished" datetime="2022-02-17T19:41:20+08:00">2022-02-17</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/course-notes/" itemprop="url" rel="index"><span itemprop="name">课程笔记</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>7.7k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>7 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>学习自<a target="_blank" rel="noopener" href="https://missing-semester-cn.github.io/">中文网站</a></p>
-<h2 id="Shell脚本"><a href="#Shell脚本" class="headerlink" title="Shell脚本"></a>Shell脚本</h2><h4 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">foo=bar</span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$foo</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$foo</span>&quot;</span> <span class="comment"># 打印bar</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&#x27;$foo&#x27;</span> <span class="comment"># 打印$foo</span></span><br></pre></td></tr></table></figure>
-
-<p>=旁边不能有空格。<br>‘和”定义字符串，’定义的原义字符串，”定义的字符串中的变量会被替换</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/02/17/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BC%BA%E5%A4%B1%E7%9A%84%E6%95%99%E8%82%B2%E7%AC%94%E8%AE%B0/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1281,7 +1376,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-count">21</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1388,6 +1483,61 @@
 
 
   
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
 
   
 
