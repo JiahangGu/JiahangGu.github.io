@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="二分图设G&#x3D;(V,E)是一个无向图，如果顶点V可分为两个不相交的子集(A,B)，并且图中每条边(i,j)所关联的两个顶点i, j分别属于这两个不同的顶点集(i in A, j in B)，则称G为二分图，即属于同一个顶点集的任意两个点没有相邻的边。染色法判断二分图：     初始设置所有点未染色    随意取出一个未染色的顶点u，把它染成一种颜色    取出与它连接的节点v，如果v未染色则将v染成">
+<meta property="og:type" content="article">
+<meta property="og:title" content="常用图论算法">
+<meta property="og:url" content="http://example.com/2022/02/18/%E5%B8%B8%E7%94%A8%E5%9B%BE%E8%AE%BA%E7%AE%97%E6%B3%95/index.html">
+<meta property="og:site_name" content="菜汤里的咸鱼要翻身">
+<meta property="og:description" content="二分图设G&#x3D;(V,E)是一个无向图，如果顶点V可分为两个不相交的子集(A,B)，并且图中每条边(i,j)所关联的两个顶点i, j分别属于这两个不同的顶点集(i in A, j in B)，则称G为二分图，即属于同一个顶点集的任意两个点没有相邻的边。染色法判断二分图：     初始设置所有点未染色    随意取出一个未染色的顶点u，把它染成一种颜色    取出与它连接的节点v，如果v未染色则将v染成">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-02-18T14:04:16.000Z">
+<meta property="article:modified_time" content="2022-02-18T14:05:15.540Z">
+<meta property="article:author" content="Jiahang Gu">
+<meta property="article:tag" content="算法题">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2022/02/18/%E5%B8%B8%E7%94%A8%E5%9B%BE%E8%AE%BA%E7%AE%97%E6%B3%95/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>常用图论算法 | 菜汤里的咸鱼要翻身</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">菜汤里的咸鱼要翻身</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/18/%E5%B8%B8%E7%94%A8%E5%9B%BE%E8%AE%BA%E7%AE%97%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          常用图论算法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-18 22:04:16 / 修改时间：22:05:15" itemprop="dateCreated datePublished" datetime="2022-02-18T22:04:16+08:00">2022-02-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/algorithm-notes/" itemprop="url" rel="index"><span itemprop="name">算法总结</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="二分图"><a href="#二分图" class="headerlink" title="二分图"></a>二分图</h2><p>设G=(V,E)是一个无向图，如果顶点V可分为两个不相交的子集(A,B)，并且图中每条边(i,j)所关联的两个顶点i, j分别属于这两个不同的顶点集(i in A, j in B)，则称G为二分图，即属于同一个顶点集的任意两个点没有相邻的边。<br>染色法判断二分图：</p>
+<ol>
+<li>   初始设置所有点未染色</li>
+<li>   随意取出一个未染色的顶点u，把它染成一种颜色</li>
+<li>   取出与它连接的节点v，如果v未染色则将v染成与u不同的颜色，如果v已经染色，则判断u和v颜色相同则染色失败，不是二分图，结束</li>
+<li>   遍历所有节点重复步骤3</li>
+</ol>
+<p>以leetcode<a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/is-graph-bipartite/">785.判断二分图</a>为例</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">class Solution:</span><br><span class="line">    def isBipartite(self, graph: List[List[int]]) -&gt; bool:</span><br><span class="line">        col = [0] * len(graph)</span><br><span class="line"></span><br><span class="line">        def dfs(i, color):</span><br><span class="line">            col[i] = color</span><br><span class="line">            for j in graph[i]:</span><br><span class="line">                if col[j] == 0 and not dfs(j, -color):</span><br><span class="line">                    return False</span><br><span class="line">                elif col[j] == color:</span><br><span class="line">                    return False</span><br><span class="line">            return True</span><br><span class="line"></span><br><span class="line">        for i in range(len(graph)):</span><br><span class="line">            if col[i] == 0:</span><br><span class="line">                if not dfs(i, 1):</span><br><span class="line">                    return False</span><br><span class="line">        return True</span><br></pre></td></tr></table></figure>
+
+<h2 id="最小生成树"><a href="#最小生成树" class="headerlink" title="最小生成树"></a>最小生成树</h2><p>在一个给定的无向图G=(V, E)中，(u, v)代表连接顶点u和v的边，而w(u, v)代表此边的权重，若存在T为E的子集且为无循环图，并使得w(T)最小，则称T为G的最小生成树。<br>解决最小生成树问题有Prim和Kruskal算法。</p>
+<h3 id="Prim算法"><a href="#Prim算法" class="headerlink" title="Prim算法"></a>Prim算法</h3><p>在带权连通图中V是所有顶点的集合，U表示已经在最小生成树中的节点，从图中任意一点v开始，此时有U={v}，重复以下操作：找出一点在U，另一点不在U中的边中权值最小的边，将这条边(u,w)加入到已找到的边的集合，并且将点w加入到集合U中。直到U=V时，就得到了最小生成树。<br>算法流程：</p>
+<ol>
+<li>输入：一个加权连通图，其中顶点集合为V，边集合为E；</li>
+<li>初始化：Vnew = {x}，其中x为集合V中的任一结点，Enew = {}，为空；</li>
+<li>重复下列操作，直到Vnew = V:<br> 3.1 在集合E中选取权值最小的边(u, v)，其中u为集合Vnew中的元素，而v不在Vnew集合当中，并且v属于V（如果存在多条满足条件且权值相同的边，任选其一）<br> 3.2 将v加入集合Vnew中，将(u, v)边加入集合Enew中；</li>
+<li>输出：使用集合Vnew和Enew来描述所得到的的最小生成树。</li>
+</ol>
+<p>伪代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">q = PriorityQueue(所有边) #优先队列用于找出最小权值的边</span><br><span class="line">visit = set(所有顶点) #标记待访问的节点集</span><br><span class="line">res = 0 #记录最终的权值</span><br><span class="line">while visit: #如果存在待访问的节点</span><br><span class="line">	dis, pos = q.get()</span><br><span class="line">	if pos not in visit:</span><br><span class="line">		continue 	#已经访问的点跳过</span><br><span class="line">	visit.remove(pos) #访问过的点移除待访问节点集合</span><br><span class="line">	res += dis</span><br><span class="line">return res</span><br></pre></td></tr></table></figure>
+
+<h3 id="Kruskal算法"><a href="#Kruskal算法" class="headerlink" title="Kruskal算法"></a>Kruskal算法</h3><p>算法核心：在带权连通图中V是所有顶点的集合，E是所有边的集合，将E按照权值大小排序，从权值最小的边开始遍历，如果该边连接的两个点在已生成的树中不在同一个联通分量，即加入该边不会产生环，则将该边加入到生成树中，并记录该权值。重复上述操作直到得到生成树。在判断是否属于同一个联通分量时使用并查集进行判断。<br>算法流程：</p>
+<ol>
+<li>记Graph中有v个顶点，e个边</li>
+<li>新建图Graph_new, Graph_new拥有原图中相同的v个顶点，但没有边</li>
+<li>将原图Graph中所有e个边按照权值从小到大排序</li>
+<li>循环：从权值最小的边开始遍历每条边，直至Graph中所有的结点都在同一个连通分量中。如果当前边的两个结点u, v在Graph_new中不属于同一个连通分量，则添加这条边到Graph_new。</li>
+</ol>
+<p>伪代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">def find(x, y) #找到x和y的父节点，即联通分量中的代表节点</span><br><span class="line">def union(x, y) #合并x和y节点到同一个连通分量中</span><br><span class="line">q = PriorityQueue()</span><br><span class="line">q.put(所有边的权值和from, to点) #这样得到所有边的优先队列，保证每次取出的是最小权值的边</span><br><span class="line">cnt_edge = 0 #记录已有的边的个数</span><br><span class="line">res = 0 #记录MST的权值和</span><br><span class="line">while cnt_edge &lt; n - 1: #n个点的树具有n-1个边</span><br><span class="line">	weight, from, to = q.pop()</span><br><span class="line">	if find(from) != find(to): #如果from和to不在同一个连通分量上</span><br><span class="line">		res += weight</span><br><span class="line">		union(from, to)</span><br><span class="line">		cnt_edge += 1</span><br><span class="line">return res</span><br></pre></td></tr></table></figure>
+
+<p>以leetcode<a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/min-cost-to-connect-all-points/">1584.连接所有点的最小费用</a>为例，首先构造点与点之间的曼哈顿距离为权值的无向带权图，然后使用最小生成树算法解决</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"># Kruskal算法</span><br><span class="line">class Solution:</span><br><span class="line">    def minCostConnectPoints(self, points: List[List[int]]) -&gt; int:</span><br><span class="line">        class Node:</span><br><span class="line">            def __init__(self, x, y, dis):</span><br><span class="line">                self.x = x</span><br><span class="line">                self.y = y</span><br><span class="line">                self.dis = dis</span><br><span class="line"></span><br><span class="line">            def __lt__(self, other):</span><br><span class="line">                return self.dis &lt; other.dis</span><br><span class="line"></span><br><span class="line">        def find(x):</span><br><span class="line">            if fa[x] == x:</span><br><span class="line">                return x</span><br><span class="line">            else:</span><br><span class="line">                fa[x] = find(fa[x])</span><br><span class="line">                return fa[x]</span><br><span class="line"></span><br><span class="line">        def union(x, y):</span><br><span class="line">            fax, fay = find(x), find(y)</span><br><span class="line">            if fax != fay:</span><br><span class="line">                fa[fax] = fay</span><br><span class="line"></span><br><span class="line">        import heapq</span><br><span class="line">        edges = []</span><br><span class="line">        fa = [i for i in range(len(points))]</span><br><span class="line">        for i in range(len(points)-1):</span><br><span class="line">            for j in range(i+1, len(points)):</span><br><span class="line">                d = abs(points[i][0] - points[j][0]) + abs(points[i][1] - points[j][1])</span><br><span class="line">                heapq.heappush(edges, Node(i, j, d))</span><br><span class="line">        ans = 0</span><br><span class="line">        cnt_e = 0</span><br><span class="line">        while cnt_e &lt; len(points)-1:</span><br><span class="line">            node = heapq.heappop(edges)</span><br><span class="line">            x, y, dis = node.x, node.y, node.dis</span><br><span class="line">            if find(x) != find(y):</span><br><span class="line">                union(x, y)</span><br><span class="line">                ans += dis</span><br><span class="line">                cnt_e += 1</span><br><span class="line">        return ans</span><br><span class="line"></span><br><span class="line"># Prim算法</span><br><span class="line">class Solution:</span><br><span class="line">    def minCostConnectPoints(self, points: List[List[int]]) -&gt; int:</span><br><span class="line">        from queue import PriorityQueue as PQ</span><br><span class="line">        visit = set([i for i in range(len(points))])</span><br><span class="line">        cal_dis = lambda x, y: abs(x[0] - y[0]) + abs(x[1] - y[1])</span><br><span class="line">        ans = 0</span><br><span class="line">        q = PQ()</span><br><span class="line">        q.put((0, 0))</span><br><span class="line">        while visit:</span><br><span class="line">            weight, pos = q.get()</span><br><span class="line">            if pos not in visit:</span><br><span class="line">                continue</span><br><span class="line">            visit.remove(pos)</span><br><span class="line">            ans += weight</span><br><span class="line">            for i in visit:</span><br><span class="line">                q.put((cal_dis(points[i], points[pos]), i))</span><br><span class="line">        return ans</span><br></pre></td></tr></table></figure>
+
+<h2 id="最短路径问题集合："><a href="#最短路径问题集合：" class="headerlink" title="最短路径问题集合："></a>最短路径问题集合：</h2><p>给定图G=&lt;U,V&gt;，其中U是边的集合，V是点的集合，存在多条顶点u到顶点v的路径（途经若干顶点），从中找出权重最小的一条路径即最短路径。<br>单源最短路径问题：从某固定源点出发，求其到所有其他顶点的最短路径</p>
+<ol>
+<li>无权图：BFS</li>
+<li>有权图：Dijkstra算法<br>多源最短路径问题：求任意两顶点间的最短路径</li>
+<li>Floyd算法</li>
+<li>重复V遍单源最短路径算法</li>
+</ol>
+<h3 id="无权图"><a href="#无权图" class="headerlink" title="无权图"></a>无权图</h3><p>按照BFS从源点逐层扩散遍历顶点的特点，经过k次循环遍历到的顶点到源点的距离为k，同时也是最短路径。<br>伪代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">dist = [] #存储源点s到每个点的距离</span><br><span class="line">path = [] #存储每个点最短路径的前驱顶点，用于打印路径</span><br><span class="line">def bfs(s):</span><br><span class="line">	q = queue()</span><br><span class="line">	enqueue(s, q)</span><br><span class="line">	while !isEmpty(q):</span><br><span class="line">		v = dequeue(q)</span><br><span class="line">		for v的每个邻接点w</span><br><span class="line">			if dist[w] == -1:</span><br><span class="line">				dist[w] = dist[v] + 1</span><br><span class="line">				path[w] = v</span><br><span class="line">				enqueue(w, q)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Dijkstra算法"><a href="#Dijkstra算法" class="headerlink" title="Dijkstra算法"></a>Dijkstra算法</h3><p>设置集合S存放已经访问过的顶点，初始化dist保存源点到各个点的路径（没有边则赋值为无穷），然后每次从集合V-S中选择距离起点s最短的一个顶点记为u，加入集合S，并以u为中间点，优化所有从起点s可以到达的u的邻接点v之间的最短路径（即更新s到v的距离），重复V-1次直到集合S包含所有顶点。<br>伪代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">def dijkstra(s):</span><br><span class="line">	while S!=V:</span><br><span class="line">		v = V-S中距离s最小点</span><br><span class="line">		v加入S</span><br><span class="line">		for v的每个邻接点w:</span><br><span class="line">			if dist[v]+weight[w][v] &lt; dist[w]:</span><br><span class="line">				dist[w] = weight[w][v] + dist[v]</span><br><span class="line">				path[w] = v</span><br></pre></td></tr></table></figure>
+<p>存在的两个问题：1.如何确定V-S中距离s最近的点v？2.如何初始化dist<br>对于第一个问题可以使用遍历所有V-S中顶点的方式，复杂度为O(V)，也可以使用最小堆记录，复杂度为O(lgV)。第二个问题可以初始化s的邻接点为对应权值，非邻接点为无穷。</p>
+<h3 id="Floyd算法"><a href="#Floyd算法" class="headerlink" title="Floyd算法"></a>Floyd算法</h3><p>类似dijkstra算法，同样使用顶点进行中转来优化顶点之间的距离，但不同的是在求任意两个顶点的距离时，一是使用其余所有点进行中转，二是要对所有顶点对执行这一优化过程。<br>伪代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">k = 1…n</span><br><span class="line">	I = 1…n</span><br><span class="line">		j = 1…n</span><br><span class="line">			if w[i][j] &gt; w[i][k] + w[k][j]:</span><br><span class="line">				w[i][j] = w[i][k] + w[k][j]</span><br></pre></td></tr></table></figure>
+<p>上述代码的思想就是：最开始只允许经过1号顶点进行中转，接下来只允许经过1和2号顶点进行中转……允许经过1~n号所有顶点进行中转，求任意两点之间的最短路程。用一句话概括就是：从i号顶点到j号顶点只经过前k号点的最短路程。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/algorithm-problem/" rel="tag"># 算法题</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/02/18/%E8%AE%A1%E7%AE%97%E5%99%A8/" rel="prev" title="计算器">
+      <i class="fa fa-chevron-left"></i> 计算器
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/02/18/%E5%93%88%E5%B8%8C/" rel="next" title="哈希">
+      哈希 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E5%88%86%E5%9B%BE"><span class="nav-number">1.</span> <span class="nav-text">二分图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%80%E5%B0%8F%E7%94%9F%E6%88%90%E6%A0%91"><span class="nav-number">2.</span> <span class="nav-text">最小生成树</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Prim%E7%AE%97%E6%B3%95"><span class="nav-number">2.1.</span> <span class="nav-text">Prim算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Kruskal%E7%AE%97%E6%B3%95"><span class="nav-number">2.2.</span> <span class="nav-text">Kruskal算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84%E9%97%AE%E9%A2%98%E9%9B%86%E5%90%88%EF%BC%9A"><span class="nav-number">3.</span> <span class="nav-text">最短路径问题集合：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A0%E6%9D%83%E5%9B%BE"><span class="nav-number">3.1.</span> <span class="nav-text">无权图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Dijkstra%E7%AE%97%E6%B3%95"><span class="nav-number">3.2.</span> <span class="nav-text">Dijkstra算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Floyd%E7%AE%97%E6%B3%95"><span class="nav-number">3.3.</span> <span class="nav-text">Floyd算法</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Jiahang Gu</p>
+  <div class="site-description" itemprop="description">认真学习，享受生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JiahangGu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JiahangGu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/fengzhizi76506" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;fengzhizi76506" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jiahang Gu</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

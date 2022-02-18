@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="哈希表&amp;emsp;&amp;emsp;散列表也叫哈希表，通过给定的哈希函数计算对应键值，根据得到的键值将查询的key映射到对应的表结构中，实现O(1)的访问。&amp;emsp;&amp;emsp;散列表中每个位置称为slot，从0开始编号，开始散列表为空。常用的散列函数为：  取余法：直接对key取余，模应该是质数以减少冲突 分组求和再取余：将元素分成等长片段，对所有片段求和后取余。 平方取余法：将元素平方后，对平方取">
+<meta property="og:type" content="article">
+<meta property="og:title" content="哈希">
+<meta property="og:url" content="http://example.com/2022/02/18/%E5%93%88%E5%B8%8C/index.html">
+<meta property="og:site_name" content="菜汤里的咸鱼要翻身">
+<meta property="og:description" content="哈希表&amp;emsp;&amp;emsp;散列表也叫哈希表，通过给定的哈希函数计算对应键值，根据得到的键值将查询的key映射到对应的表结构中，实现O(1)的访问。&amp;emsp;&amp;emsp;散列表中每个位置称为slot，从0开始编号，开始散列表为空。常用的散列函数为：  取余法：直接对key取余，模应该是质数以减少冲突 分组求和再取余：将元素分成等长片段，对所有片段求和后取余。 平方取余法：将元素平方后，对平方取">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-02-18T14:06:02.000Z">
+<meta property="article:modified_time" content="2022-02-18T14:06:57.541Z">
+<meta property="article:author" content="Jiahang Gu">
+<meta property="article:tag" content="算法题">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2022/02/18/%E5%93%88%E5%B8%8C/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>哈希 | 菜汤里的咸鱼要翻身</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">菜汤里的咸鱼要翻身</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/18/%E5%93%88%E5%B8%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          哈希
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-18 22:06:02 / 修改时间：22:06:57" itemprop="dateCreated datePublished" datetime="2022-02-18T22:06:02+08:00">2022-02-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/algorithm-notes/" itemprop="url" rel="index"><span itemprop="name">算法总结</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="哈希表"><a href="#哈希表" class="headerlink" title="哈希表"></a>哈希表</h2><p>&emsp;&emsp;散列表也叫哈希表，通过给定的哈希函数计算对应键值，根据得到的键值将查询的key映射到对应的表结构中，实现O(1)的访问。<br>&emsp;&emsp;散列表中每个位置称为slot，从0开始编号，开始散列表为空。<br>常用的散列函数为：</p>
+<ul>
+<li>取余法：直接对key取余，模应该是质数以减少冲突</li>
+<li>分组求和再取余：将元素分成等长片段，对所有片段求和后取余。</li>
+<li>平方取余法：将元素平方后，对平方取余</li>
+<li>字符哈希方法：将每个字符的ascii码求和并取余。</li>
+</ul>
+<p>散列冲突：两个key经过映射后分到同一位置就会产生冲突，常用解决冲突的办法有：</p>
+<ul>
+<li>开放寻址法，即如果当前key分配到的slot存在值，则继续寻找直到找到一个空的slot。寻找方法有：</li>
+<li>线性探测法：每一次只向后搜k个slot，即new_hash_val = (old_hash_val + k) % n，缺点是多个元素有相同的hash value时造成元素聚集，导致冲突概率上升。</li>
+<li>平方探测法：将探测地址改为1,4,9…的序列，即new_hash_val = (old_hash_val + k**2) % n。</li>
+<li>链地址法：将所有具有相同hash_value的key对应的value放在以hash_value为头结点的链表中。相对来说好实现，但是需要空间。<br>Python实现线性探测法<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">class HashTable:</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    self.slots存储键，里面是(key, value)对</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    def __init__(self, n):</span><br><span class="line">        self.size = n</span><br><span class="line">        self.slots = [None] * n</span><br><span class="line"></span><br><span class="line">    def hash(self, key):</span><br><span class="line">        return key % self.size</span><br><span class="line"></span><br><span class="line">    def rehash(self, key, k):</span><br><span class="line">        return (key + k) % self.size</span><br><span class="line"></span><br><span class="line">    def get(self, key):</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        首先进行一次hash映射，如果该slot的key等于给定key则返回，否则继续rehash直到找到给定的key，或者搜索一圈之后都没有即key不存在</span><br><span class="line">        :param key:</span><br><span class="line">        :return:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        first_slot = self.hash(key)</span><br><span class="line">        data = None</span><br><span class="line">        cur_slot = first_slot</span><br><span class="line">        while self.slots[cur_slot]:</span><br><span class="line">            if self.slots[cur_slot][0] == key:</span><br><span class="line">                data = self.slots[cur_slot][1]</span><br><span class="line">                break</span><br><span class="line">            else:</span><br><span class="line">                cur_slot = self.rehash(cur_slot, 3)</span><br><span class="line">            # 找了一圈没有对应key，则说明key不在slot中</span><br><span class="line">            if cur_slot == first_slot:</span><br><span class="line">                break</span><br><span class="line">        return data</span><br><span class="line"></span><br><span class="line">    def put(self, key, value):</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        首先得到key的hash值即对应slot，如果该slot为空则放入，如果是对应key则更新value，否则继续rehash直到slot为空放入，</span><br><span class="line">        或者找到对应key更新</span><br><span class="line">        :param key:</span><br><span class="line">        :param value:</span><br><span class="line">        :return:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        hash_value = self.hash(key)</span><br><span class="line">        if self.slots[hash_value] is None or self.slots[hash_value][0] == key or self.slots[hash_value][0] == -1:</span><br><span class="line">            self.slots[hash_value] = (key, value)</span><br><span class="line">        else:</span><br><span class="line">            nxt_slot = self.rehash(hash_value, 3)</span><br><span class="line">            while self.slots[nxt_slot] is not None and self.slots[nxt_slot][0] != key:</span><br><span class="line">                nxt_slot = self.rehash(nxt_slot, 3)</span><br><span class="line">            self.slots[nxt_slot] = (key, value)</span><br><span class="line"></span><br><span class="line">    def delete(self, key):</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        同理找到存储对应key的slot，如果可以找到则更新该slot为标记（即标记该slot为删除的而不是空的），否则表示删除失败</span><br><span class="line">        :param key:</span><br><span class="line">        :return:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        first_slot = self.hash(key)</span><br><span class="line">        cur_slot = first_slot</span><br><span class="line">        while self.slots[cur_slot]:</span><br><span class="line">            if self.slots[cur_slot][0] == key:</span><br><span class="line">                # 使用-1标记该元素被删除，同时该slot不为空，否则线性探测时会断裂</span><br><span class="line">                self.slots[cur_slot] = (-1, -1)</span><br><span class="line">                return True</span><br><span class="line">            else:</span><br><span class="line">                cur_slot = self.rehash(cur_slot, 3)</span><br><span class="line">            # 找了一圈没有对应key，则说明key不在slot中</span><br><span class="line">            if cur_slot == first_slot:</span><br><span class="line">                return False</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="Trie字典树"><a href="#Trie字典树" class="headerlink" title="Trie字典树"></a>Trie字典树</h2><p>&emsp;&emsp;又称单词查找树，Trie树，是一种树形结构，是一种哈希树的变种。典型应用是用于统计，排序和保存大量的字符串（但不仅限于字符串），所以经常被搜索引擎系统用于文本词频统计。它的优点是：利用字符串的公共前缀来减少查询时间，最大限度地减少无谓的字符串比较，查询效率比哈希树高。<br>&emsp;&emsp;实现方式为n叉树，除根结点外每一个节点只有一个字符，从根节点到某一结点的路径的字符为此节点对应字符串，保证每个节点所有子节点字符都不相同。<br>应用：<br>最长公共前缀：两个串的最长公共前缀即节点的公共祖先个数。 —摘抄百度百科<br>伪代码：</p>
+<ul>
+<li>插入单词W到树的函数：从根节点开始，如果root节点没有一条标识为当前字符指向子节点的边，就创建一个这样的节点和边，然后移动到子节点上，如果存在就直接移动到对应字符子节点上，插入完成后标记最后的新建节点为终结点。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">insert(W):</span><br><span class="line">	p = root</span><br><span class="line">	for i = 1…len(W):</span><br><span class="line">		if p.children(W[i]) == null: 没有标识为W[i]的边</span><br><span class="line">			p.addChild(W[i], new Node())</span><br><span class="line">	    p = p.children(W[i])</span><br><span class="line">p.markEndPoint() 标记P为终结节点</span><br></pre></td></tr></table></figure></li>
+<li>查询操作：从根节点开始，按照要查找的单词遍历当前单词的字符移动到子节点，如果该节点为终节点，说明该单词在树中，如果无路可走或者最终不是终节点，就不在树中。<br>伪代码：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">search(W):</span><br><span class="line">	p = root</span><br><span class="line">	for i = 1…len(W):</span><br><span class="line">		if P.children(W[i]) == null</span><br><span class="line">			return False</span><br><span class="line">		p = P.children(W[i])</span><br><span class="line">	if p is not endpoint:</span><br><span class="line">		return False</span><br><span class="line">	return True</span><br></pre></td></tr></table></figure>
+Python实现字典树<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">class Node:</span><br><span class="line">    def __init__(self, c):</span><br><span class="line">        self.c = c</span><br><span class="line">        self.son = dict()</span><br><span class="line">        self.end = False</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">class WordDictionary:</span><br><span class="line"></span><br><span class="line">    def __init__(self):</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        Initialize your data structure here.</span><br><span class="line">        在字典树的基础上实现一个回溯算法，即如果碰到搜索的字符含有.，则.对应的位置应该搜索该节点的所有子节点。</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        self.root = Node(0)</span><br><span class="line"></span><br><span class="line">    def addWord(self, word: str) -&gt; None:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        Adds a word into the data structure.</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        head = self.root</span><br><span class="line">        for i in range(len(word)):</span><br><span class="line">            if word[i] in head.son:</span><br><span class="line">                head = head.son[word[i]]</span><br><span class="line">            else:</span><br><span class="line">                node = Node(word[i])</span><br><span class="line">                head.son[word[i]] = node</span><br><span class="line">                head = node</span><br><span class="line">        head.end = True</span><br><span class="line"></span><br><span class="line">    def search(self, word: str) -&gt; bool:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        Returns if the word is in the data structure. A word could contain the dot character &#x27;.&#x27; to represent any one letter.</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        def dfs(head, target):</span><br><span class="line">            if len(target) == 0:</span><br><span class="line">                return head.end</span><br><span class="line">            if target[0] == &#x27;.&#x27;:</span><br><span class="line">                for k, v in head.son.items():</span><br><span class="line">                    if dfs(v, target[1:]):</span><br><span class="line">                        return True</span><br><span class="line">            elif target[0] in head.son:</span><br><span class="line">                return dfs(head.son[target[0]], target[1:])</span><br><span class="line">            return False</span><br><span class="line"></span><br><span class="line">        head = self.root</span><br><span class="line">        return dfs(head, word)</span><br></pre></td></tr></table></figure>
+<h2 id="Rabin-Karp字符串编码"><a href="#Rabin-Karp字符串编码" class="headerlink" title="Rabin-Karp字符串编码"></a>Rabin-Karp字符串编码</h2>&emsp;&emsp;Rabin-Karp是一种将字符串映射成整数的编码方式，可以看作一种哈希算法。假设字符串包含字符种类不超过M，那么可以选择一个大于等于M的整数base，将字符串看作是base进制的整数，将其转换为十进制数，就得到了字符串对应的编码。<br>&emsp;&emsp;举例：s=abca，包含3种字符，取base=9，则s看作九进制数(0120)9，转换位十进制为99，即abca编码为99。编码公式和进制转换公式类似。<br>&emsp;&emsp;结论：两个字符串s和t相等，当且仅当他们的长度相等且编码值相等。<br>&emsp;&emsp;但字符串很长时会存在整数类型存储不下的情况，这时可以取一个大的质数如1E9+7然后取模，使其保持在整数类型范围内。对于hash映射冲突的问题在此几乎不需要考虑，因为概率非常低，只要MOD选的足够大。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/algorithm-problem/" rel="tag"># 算法题</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/02/18/%E5%B8%B8%E7%94%A8%E5%9B%BE%E8%AE%BA%E7%AE%97%E6%B3%95/" rel="prev" title="常用图论算法">
+      <i class="fa fa-chevron-left"></i> 常用图论算法
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/02/18/KMP%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%8C%B9%E9%85%8D%E7%AE%97%E6%B3%95/" rel="next" title="KMP字符串匹配算法">
+      KMP字符串匹配算法 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%93%88%E5%B8%8C%E8%A1%A8"><span class="nav-number">1.</span> <span class="nav-text">哈希表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Trie%E5%AD%97%E5%85%B8%E6%A0%91"><span class="nav-number">2.</span> <span class="nav-text">Trie字典树</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Rabin-Karp%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%BC%96%E7%A0%81"><span class="nav-number">3.</span> <span class="nav-text">Rabin-Karp字符串编码</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Jiahang Gu</p>
+  <div class="site-description" itemprop="description">认真学习，享受生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JiahangGu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JiahangGu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/fengzhizi76506" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;fengzhizi76506" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jiahang Gu</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>
