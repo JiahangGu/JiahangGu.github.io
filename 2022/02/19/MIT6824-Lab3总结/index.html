@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="尝试着写下 目标：建立一个容错的kv存储服务。service应该在大多数服务器存活的时候继续服务。 service的三个服务：put(k, v)放数据，append(key, arg)追加，如果key不存在则等于put。get(k)查询。 客户端需要和Clerk通信，clerk管理者和server的交互RPC task1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MIT6824-Lab3总结">
+<meta property="og:url" content="http://example.com/2022/02/19/MIT6824-Lab3%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="菜汤里的咸鱼要翻身">
+<meta property="og:description" content="尝试着写下 目标：建立一个容错的kv存储服务。service应该在大多数服务器存活的时候继续服务。 service的三个服务：put(k, v)放数据，append(key, arg)追加，如果key不存在则等于put。get(k)查询。 客户端需要和Clerk通信，clerk管理者和server的交互RPC task1">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-02-19T09:58:00.000Z">
+<meta property="article:modified_time" content="2022-02-19T10:09:53.133Z">
+<meta property="article:author" content="Jiahang Gu">
+<meta property="article:tag" content="MIT6.824">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2022/02/19/MIT6824-Lab3%E6%80%BB%E7%BB%93/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>MIT6824-Lab3总结 | 菜汤里的咸鱼要翻身</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">菜汤里的咸鱼要翻身</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/19/MIT6824-Lab3%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MIT6824-Lab3总结
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-19 17:58:00 / 修改时间：18:09:53" itemprop="dateCreated datePublished" datetime="2022-02-19T17:58:00+08:00">2022-02-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/labs-notes/" itemprop="url" rel="index"><span itemprop="name">实验笔记</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>尝试着写下</p>
+<p>目标：建立一个容错的kv存储服务。service应该在大多数服务器存活的时候继续服务。</p>
+<p>service的三个服务：put(k, v)放数据，append(key, arg)追加，如果key不存在则等于put。get(k)查询。</p>
+<p>客户端需要和Clerk通信，clerk管理者和server的交互RPC</p>
+<h3 id="task1"><a href="#task1" class="headerlink" title="task1"></a>task1</h3><p>clerk发送RPC到关联着raft leader的server。</p>
+<p>如果clerk发送到主节点，并成功提交，会得到响应。否则会得到错误响应，此时应该继续重试提交</p>
+<p>提示：</p>
+<ol>
+<li>server调用Start之后，应该等raft完成多数提交。在PutAppend和Get提交命令后，需要持续读applyCh</li>
+<li>Get操作也放在log中，保证读到的数据不过时。</li>
+</ol>
+<p>初步设想流程，以put为例：</p>
+<ol>
+<li>客户端提交put</li>
+<li>server收到k-v数据，调用raft.Start，将k-v提交到log中，同时读applyCh</li>
+<li>从applyCh中读到后，表示该数据被提交，更新到server的map，返回给client更新成功。</li>
+<li>如果返回失败，客户端重新执行操作。如果客户端不知道哪个是leader或者无法访问对应server节点，换个节点执行</li>
+</ol>
+<p>存在的问题：</p>
+<ol>
+<li>如何保证幂等性。论文指出的方案是，客户端对每个指令一个唯一序列号，然后server跟踪每条指令最新的序列号和响应，如果来的指令序列号已被执行，则立即返回结果。（需要每个server都维护吗？如果leader提交之后响应之前崩溃，客户端提交到新领导人，新领导人必须从自己的log中识别出该条指令已经执行。）因此，每个server节点需要持续监听applyCh，对提交的指令在本地执行，更新状态。log是按序apply的，应该不需要记录提交顺序。最简单的方式就是序列号递增。</li>
+<li>在得到applyMsg之后，怎么确定应该和哪次调用联系起来。这里忽略了一个点，在Start调用后会返回这条指令在log的预定位置，这个索引在commit之后是唯一的。可以使用map映射该索引到一个数据存储位，得到applyMsg之后，可以根据索引放入，并在RPC响应函数那里接收。可以使用通道达到这种即时生成、使用的目的（通道机制还是不熟悉，没办法一开始就想到使用特点）</li>
+</ol>
+<p>刚刚发现DPrintf。。。直接改Debug参数就可以忽略所有log，裂开（学习到了这个技巧，之前居然从来没注意过）</p>
+<p>实现中遇到的问题：</p>
+<ol>
+<li>记录调用关系的opReplyCh的通道触发panic，通道已关闭，原因是在放数据到通道前后没有加锁，导致在handle函数放数据之前被关闭。加锁解决（不过在得到数据前应该阻塞吧，为什么还会先向下执行）</li>
+<li>在提交第1个log后，所有的follower将数据发送到channel，但server端没有取出来，导致后续log一直无法同步。进一步定位在server的取Msg消息并处理的函数中，在构造reply后放入到通道后卡了，PutAppend函数中没有从通道里取出数据。突然想到，客户端只与leader交互，说明follower不应该有这个通道啊，所以follower得到数据后只是更新自己的状态，不需要响应client，对应的传输通道也是空，不应该放进去。</li>
+<li><code>TestSpeed3A</code>过不去，要求每个op处理时间在30ms，但我的需要300ms，应该在lab2的实现有性能问题，暂时跳过</li>
+<li><code>TestUnreliable3A</code>失败，报错存在重复提交的log。检查log发现存在同一个version多次提交，但判断提交是否过期的时候没有考虑到相同的情况。添加等号即可</li>
+<li><code>TestOnePartition3A</code>失败，照着log捋了一遍，发现这个test做的事情是，将server和client分区，少量节点分区为p2，多数为p1，提交顺序是全区13，p1更新为14，p2的一个更新15，另一个get，然后恢复网络，全区提交16。报错是：得到值16，但期望是15。一开始没有理解结果为什么是15，觉得p2更新时不会更新到多数派，而且version更小，后续16更新后就是最终值。再仔细看了log后发现，client提交15之后应该在失败后持续提交，但log中没有后续。而且15的提交client是2，16的提交client是1，version不冲突。因此问题是client没有持续提交15.对比log，果然15在第一次start后再也没有出现。原因是少数区的leader提交后，一直无法commit，也就无法提交到applyCh，对应的server无法返回，client没有结果，因而无法继续提交，即start提交的没有被raft应用，所以在server的通道阻塞。需要机制保证解开阻塞，例如超时一秒钟后返回失败，或raft主动提交一条applyMsg激活该通道，然后消除被阻塞的通道。</li>
+<li><code>TestPersistPartition3A</code>失败，报错是通道是nil，无法关闭。这里才想到有种可能性是，提交后刚好一秒处理完，然后关闭对应通道，但是在将数据放到通道之前一秒到了，会进入select超时分支，这是两个函数同时删除处理Reply信息的通道。如果加锁，可以解决这个问题。</li>
+<li><code>TestPersistPartitionUnreliableLinearizable3A</code>卡住了，跑了半小时都没通过。不确定卡住的原因，较难排查。这里尝试下主动刷新通道的方式。</li>
+<li>修改之后-race报错<code>kv.opReplyCh[idx]同时操作，检查后发现报错map同时读写，应该在锁定时声明变量索引对应ch，而不是直接赋值</code>。此外，打印log也要放在lock里。</li>
+<li>全部通过。（此前Lab2存在性能问题，比推荐的要高0.3秒。所以从网上找了份通过lab2的，避免对lab3的学习造成影响。在测试无误后，再换成之前的版本，发现many client的样例无法通过，speed测试的时候要求33ms，自己实现的需要130ms，后续有时间再尝试优化）</li>
+</ol>
+<h3 id="3B"><a href="#3B" class="headerlink" title="3B"></a>3B</h3><p>实现server的快照，使用Snapshot()和CondInstallSnapshot()</p>
+<p>关键点：</p>
+<ol>
+<li>maxraftstate记录应该生成快照的阈值，可以使用persister.RaftStateSize()得到大小。达到阈值要使用Snapshot()。如果maxraftstate=-1，无需生成快照。</li>
+<li>当server重启时，需要从persister中恢复快照状态。在KVStart初始化之后调用一次恢复，在每次收到applyMsg中的Snapshot消息从传来的snapshot数据中恢复。</li>
+<li>什么时候应该写快照以及应该写什么？在putAppend操作后接近阈值时写，需要使用记录的状态来帮助检测去重。去重应该将versionRecord写到快照。因而快照写的是kv表和版本表</li>
+</ol>
+<p>问题：</p>
+<ol>
+<li>又陷入了对lab中快照的理解困境。在lab2中，根据config.go中的applierSnap描述，当写入的cmd数量到阈值（10）后，将最新的命令作为snapshot []byte变量写入。而CondInstallSnapshot调用的时候则是取出Snapshot数据，判断是否能做快照。这有个问题，比如在一个服务器重启后加入集群，本地状态为空，leader传的时候只是把snapshot传过去，而自己的所有log都存在persister.raftstate里，只读snapshot没有完整的log，为什么就可以做到复制log不会产生遗漏？</li>
+<li>在这里也一样，我需要保存的是kvserver的kv数据以及版本表，用于恢复。仔细思考下，这个服务的关键就是数据，版本表和raft都是保证数据一致性，在kvserver中应该保存这两个，并且可以从中恢复，无需考虑raft在其中是如何复制的。raft只要能同步状态就行，raftstate数据server层不需要管。因而，在putAppend之后且达到阈值时，将kv表和版本表作为snapshot调用。此外，在applyCh收到快照的复制RPC后，应该调用CondInstallSnapshot判断是否可以保存快照。</li>
+</ol>
+<p>在群里问了大佬，解释的和后来理解的差不多：snapshot的目的不是为了完全同步raft节点的状态，而是为了在上层应用挂掉重启后快速从快照中恢复，并且使用剩余的少量log快速同步状态机。所以snapshot []byte中保存的是上层应用的数据，然后发送给raft节点保存，同时将已经提交过的log，在状态机完全同步过的log移除节省空间。</p>
+<p>当前调用逻辑是，server发起写Snapshot，等发送快照RPC后，发起CondInstallSnapshot，follower判断可以接收后，保存上层应用的数据，将applied过的log全部截掉。上层应用只需要使用自己的数据，对于raft的log完全不关心。以redis为例的话，就是snapshot发送的是redis的rdb文件，不包括任何raft的数据。对于raft节点中log的保存，是为了做持久化，在重启后可以参与投票等，跟上层应用没啥关系。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/MIT6-824/" rel="tag"># MIT6.824</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/02/19/MIT6824-Lab2%E6%80%BB%E7%BB%93/" rel="prev" title="MIT6824-Lab2总结">
+      <i class="fa fa-chevron-left"></i> MIT6824-Lab2总结
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/02/19/MIT6824-Lab4%E6%80%BB%E7%BB%93/" rel="next" title="MIT6824-Lab4总结">
+      MIT6824-Lab4总结 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#task1"><span class="nav-number">1.</span> <span class="nav-text">task1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3B"><span class="nav-number">2.</span> <span class="nav-text">3B</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Jiahang Gu</p>
+  <div class="site-description" itemprop="description">认真学习，享受生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JiahangGu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JiahangGu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/fengzhizi76506" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;fengzhizi76506" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jiahang Gu</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

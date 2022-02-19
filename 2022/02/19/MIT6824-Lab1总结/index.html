@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Mit 6.824作业1笔记启动docker 1docker run -it -v D:&#x2F;learning&#x2F;mit6824:&#x2F;home golang &#x2F;bin&#x2F;bash  go设置代理 12go env -w GO111MODULE&#x3D;ongo env -w GOPROXY&#x3D;https:&#x2F;&#x2F;goproxy.io,direct">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MIT6824-Lab1总结">
+<meta property="og:url" content="http://example.com/2022/02/19/MIT6824-Lab1%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="菜汤里的咸鱼要翻身">
+<meta property="og:description" content="Mit 6.824作业1笔记启动docker 1docker run -it -v D:&#x2F;learning&#x2F;mit6824:&#x2F;home golang &#x2F;bin&#x2F;bash  go设置代理 12go env -w GO111MODULE&#x3D;ongo env -w GOPROXY&#x3D;https:&#x2F;&#x2F;goproxy.io,direct">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/mit6824/lab1-1.jpg">
+<meta property="article:published_time" content="2022-02-19T09:57:29.000Z">
+<meta property="article:modified_time" content="2022-02-19T10:08:45.838Z">
+<meta property="article:author" content="Jiahang Gu">
+<meta property="article:tag" content="MIT6.824">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/mit6824/lab1-1.jpg">
+
+<link rel="canonical" href="http://example.com/2022/02/19/MIT6824-Lab1%E6%80%BB%E7%BB%93/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>MIT6824-Lab1总结 | 菜汤里的咸鱼要翻身</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">菜汤里的咸鱼要翻身</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/19/MIT6824-Lab1%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MIT6824-Lab1总结
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-19 17:57:29 / 修改时间：18:08:45" itemprop="dateCreated datePublished" datetime="2022-02-19T17:57:29+08:00">2022-02-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/labs-notes/" itemprop="url" rel="index"><span itemprop="name">实验笔记</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="Mit-6-824作业1笔记"><a href="#Mit-6-824作业1笔记" class="headerlink" title="Mit 6.824作业1笔记"></a>Mit 6.824作业1笔记</h2><p>启动docker</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -it -v D:/learning/mit6824:/home golang /bin/bash</span><br></pre></td></tr></table></figure>
+
+<p>go设置代理</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">go <span class="built_in">env</span> -w GO111MODULE=on</span><br><span class="line">go <span class="built_in">env</span> -w GOPROXY=https://goproxy.io,direct</span><br></pre></td></tr></table></figure>
+
+<p>按照流程运行，得到rpc的样例结果</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">go build -race -buildmode=plugin ../mrapps/wc.go</span><br><span class="line">go run -race mrcoordinator.go pg-*.txt</span><br><span class="line">go run -race mrworker.go wc.so</span><br><span class="line">reply.Y 100</span><br></pre></td></tr></table></figure>
+
+<p>从中得知目的要修改coordinator.go中的Coordinator，使得具备控制worker分发任务监控进度的功能，并在MakeCoordinator中修改对应实例化的程序，修改Done为在所有worker任务完成后返回true</p>
+<p>worker.go中，Worker加载mapf和reducef完成对应的任务，完成后通过rpc方式通知协调器，</p>
+<p>rpc.go中需要定义rpc协议中用到的args和reply结构</p>
+<p>开始没有什么头绪，参考<a target="_blank" rel="noopener" href="https://www.fatalerrors.org/a/mit6.824-2020-lab1-mapreduce-implementation.html">他人实现</a>中的架构解释</p>
+<p><img src="/images/mit6824/lab1-1.jpg" alt="img"></p>
+<p>纠正了之前理解的mapReduce的误解</p>
+<ol>
+<li>map任务对应一个输入，输出则是有nReduce个，对于每个key求对应hash后模nReduce以决定应该放入哪个文件，这样在reduce时只需要对应reduce序号的任务对map输出的中间文件做汇总，最终将所有reduce输出的文件拼接即可，因为多个reduce输出文件的key是正交的。此前理解的是map对应输出每个输入的K-V仅一个文件，由reduce使用类似分治的方式对所有map输出做merge，其实体现不出这样并行计算的优势，因为每次merge还要对所有输出做一次遍历，如果文件过大也无法在单机实现。</li>
+</ol>
+<p>worker的工作流程：</p>
+<ol>
+<li>从协调器获得任务，对任务分类，如果为map任务，处理输入，输出多个中间文件</li>
+<li>如果为reduce任务，从所有输入文件中汇总key，然后排序做reduce，输出到一个文件</li>
+<li>如果为空，则表示当前尚无任务可做，等待</li>
+<li>上述任务完成均需要通过rpc调用通知协调器该任务已完成，因此需要特定task的id来唯一识别</li>
+</ol>
+<p>coordinator的工作流程：</p>
+<ol>
+<li>根据输入文件初始化配置，在得到worker的请求时，如果存在map任务则分配，并记录到对应的id-&gt;Task映射</li>
+<li>如果map任务均完成，分配reduce任务，并记录</li>
+<li>在任务启动后，设置定时器监控该任务是否在设定时间内执行完成，若没有完成，恢复该任务，并在下次worker请求时重新分配</li>
+<li>当map任务完成时，初始化所有的reduce任务，便于后续分配</li>
+<li>当所有的reduce任务完成后，返回work已完成，退出</li>
+</ol>
+<p>结构定义如下</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Coordinator <span class="keyword">struct</span> &#123;</span><br><span class="line">	<span class="comment">// Your definitions here.</span></span><br><span class="line">	mapTasks               []*Task <span class="comment">//记录所有map任务，索引作为对应任务的标识</span></span><br><span class="line">	reduceTasks            []*Task <span class="comment">//记录所有reduce任务，索引作为对应任务的标识</span></span><br><span class="line">	nReduce                <span class="type">int</span>     <span class="comment">//配置的reduce任务数</span></span><br><span class="line">	reduceInited           <span class="type">bool</span>    <span class="comment">//reduce是否初始化，对应于map任务全部成功后执行</span></span><br><span class="line">	incompletedMapTasks    <span class="type">int</span>     <span class="comment">//未完成的map任务</span></span><br><span class="line">	incompletedReduceTasks <span class="type">int</span></span><br><span class="line">	mux                    sync.Mutex</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Task <span class="keyword">struct</span> &#123;</span><br><span class="line">	state       <span class="type">string</span>   <span class="comment">//pending, running, completed</span></span><br><span class="line">	taskId      <span class="type">int</span>      <span class="comment">//唯一标识任务的id，用于判断任务是否完成</span></span><br><span class="line">	taskType    <span class="type">string</span>   <span class="comment">//map, reduce, none</span></span><br><span class="line">	inputFiles  []<span class="type">string</span> <span class="comment">//输入文件，map任务只有一个输入</span></span><br><span class="line">	outputFiles []<span class="type">string</span> <span class="comment">//输出文件，reduce任务只有一个输出</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在上述结构体+流程的基础上，实现分布式MapReduce的框架</p>
+<p>协调器分配任务策略：<br>根据当前未完成的任务数，判断应该分配map或reduce任务遍历所有任务，找出还未分配的任务，加载到rpc的reply结构体中，并设置该任务状态为running，然后启动一个定时器，用于检验后续是否完成该任务，可通过&lt;-time.After(timeOut)，定时器的逻辑即为判断对应任务状态是否为完成</p>
+<p>协调器完成任务的调用：<br>需要一个rpc调用在worker完成后激活判断对应任务种类，并将该任务状态改为完成，并记录对应的输出文件，修改未完成任务个数如果map任务完成，而reduce尚未开始，则初始化reduce任务，即将所有的map输出构造到对应的reduce任务中</p>
+<p>worker执行流程：<br>循环从协调器处获得任务根据种类执行不同的操作Map或Reduce，在完成后记录对应的输出文件，rpc调用协调器的完成任务接口通知协调器该任务完成</p>
+<p>遇到的问题：</p>
+<ol>
+<li>每次执行结束都会输出dialing:dial unix /var/tmp/824-mr-0: connect: connection refused，是worker连接协调器，但协调器任务完成已主动退出，正常</li>
+<li>执行test-mr.sh，报错无法识别’\r’，vi打开sh，设置set ff=unix，将windows编码改为unix</li>
+<li>执行test-mr.sh，第一个测试样例无法通过，添加日志检查对应的中间输出，发现在定时器处对应任务依然为running，此时会认为超时，修改为待分配状态，导致后续出现了重复分配，任务7,8未被分配，最终结果缺少了该文件。将超时期限由10秒改为60秒解决该问题。但其实单个worker用不到这么久，尚未找到解决办法。go打印时差<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">t1 := time.Now()</span><br><span class="line">elapsed := time.Since(t1)</span><br></pre></td></tr></table></figure>
+次日，打印出所有的任务耗费时间，发现存在如下情况：<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">2021/11/28 02:16:41 map cost time elapsed=9.557061717s</span><br><span class="line">2021/11/28 02:17:03 map cost time elapsed=31.472844696s</span><br><span class="line">2021/11/28 02:17:05 map cost time elapsed=33.565677192s</span><br><span class="line">2021/11/28 02:17:23 map cost time elapsed=42.190564988s</span><br><span class="line">2021/11/28 02:17:37 map cost time elapsed=33.744602191s</span><br><span class="line">2021/11/28 02:17:47 map cost time elapsed=42.574513422s</span><br><span class="line">2021/11/28 02:18:12 map cost time elapsed=49.403154321s</span><br><span class="line">2021/11/28 02:18:27 reduce cost time elapsed=1.650590437s</span><br><span class="line">2021/11/28 02:18:27 reduce cost time elapsed=1.345025522s</span><br><span class="line">2021/11/28 02:18:29 reduce cost time elapsed=1.46399568s</span><br><span class="line">2021/11/28 02:18:29 reduce cost time elapsed=1.286021279s</span><br><span class="line">2021/11/28 02:18:31 reduce cost time elapsed=1.81932167s</span><br><span class="line">2021/11/28 02:18:31 reduce cost time elapsed=2.031704767s</span><br><span class="line">2021/11/28 02:18:32 reduce cost time elapsed=1.753231571s</span><br><span class="line">2021/11/28 02:18:32 reduce cost time elapsed=1.700857172s</span><br></pre></td></tr></table></figure>
+可能是map任务本身耗费时间久，在docker中需要花费30s+，导致设定时间内无法完成但上述情况依然存在不足，当任务耗费时长大于定时器时，后续的任务应该也不受影响，当前实现无法得到正确记过。在rpc调用的完成任务函数中，对到来的任务进行判断，只有完成的任务当前状态不等于“已完成”才修改对应状态和未完成任务数，这样在该任务超时重发时，原先的任务完成并修改状态后，后续任务不会更改未完成任务数，不会提前结束，导致后续任务未分配。修改后通过测试</li>
+</ol>
+<p>— wc test: PASS</p>
+<p>go -race参数，用于对程序进行竞态分析</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">WARNING: DATA RACEWrite at 0x00c0000b0c40 by goroutine 35:  </span><br><span class="line">6.824/mr.(*Coordinator).CompleteTask()      </span><br><span class="line">/home/6.824/src/mr/coordinator.go:113 +0x764  runtime.call32()      </span><br><span class="line">/usr/local/go/src/runtime/asm_amd64.s:626 +0x48  reflect.Value.Call()      </span><br><span class="line">/usr/local/go/src/reflect/value.go:339 +0xd7  net/rpc.(*service).call()      </span><br><span class="line">/usr/local/go/src/net/rpc/server.go:377 +0x28c  net/rpc.(*Server).ServeCodec·dwrap·4()      </span><br><span class="line">/usr/local/go/src/net/rpc/server.go:474 +0x16b</span><br><span class="line">Previous <span class="built_in">read</span> at 0x00c0000b0c40 by main goroutine:  6.824/mr.(*Coordinator).Done()      </span><br><span class="line">/home/6.824/src/mr/coordinator.go:184 +0xf9  main.main()      </span><br><span class="line">/home/6.824/src/main/mrcoordinator.go:27 +0xd6</span><br></pre></td></tr></table></figure>
+<p>-race会启动多个协程来寻找冲突，比如上述就是在coordinator.go:113的地方会写，但是此时有个协程正在读coordinator.go:184</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/MIT6-824/" rel="tag"># MIT6.824</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/02/18/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D-%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0/" rel="prev" title="人月神话-持续更新">
+      <i class="fa fa-chevron-left"></i> 人月神话-持续更新
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/02/19/MIT6824-Lab2%E6%80%BB%E7%BB%93/" rel="next" title="MIT6824-Lab2总结">
+      MIT6824-Lab2总结 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Mit-6-824%E4%BD%9C%E4%B8%9A1%E7%AC%94%E8%AE%B0"><span class="nav-number">1.</span> <span class="nav-text">Mit 6.824作业1笔记</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Jiahang Gu</p>
+  <div class="site-description" itemprop="description">认真学习，享受生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JiahangGu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JiahangGu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/fengzhizi76506" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;fengzhizi76506" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jiahang Gu</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>
