@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="本文参考自博客 静态代理、JDK动态代理和CGLIB动态代理静态代理在程序运行之前，提前写好被代理方法的代理类，编译后运行。在程序运行前，class已经存在定义接口 123public interface Target &amp;#123;    public String execute();&amp;#125;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分布式架构总结">
+<meta property="og:url" content="http://example.com/2022/02/21/%E5%88%86%E5%B8%83%E5%BC%8F%E6%9E%B6%E6%9E%84%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="菜汤里的咸鱼要翻身">
+<meta property="og:description" content="本文参考自博客 静态代理、JDK动态代理和CGLIB动态代理静态代理在程序运行之前，提前写好被代理方法的代理类，编译后运行。在程序运行前，class已经存在定义接口 123public interface Target &amp;#123;    public String execute();&amp;#125;">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-02-21T04:13:55.000Z">
+<meta property="article:modified_time" content="2022-02-21T04:14:28.894Z">
+<meta property="article:author" content="Jiahang Gu">
+<meta property="article:tag" content="面经">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2022/02/21/%E5%88%86%E5%B8%83%E5%BC%8F%E6%9E%B6%E6%9E%84%E6%80%BB%E7%BB%93/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>分布式架构总结 | 菜汤里的咸鱼要翻身</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">菜汤里的咸鱼要翻身</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/%E5%88%86%E5%B8%83%E5%BC%8F%E6%9E%B6%E6%9E%84%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          分布式架构总结
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-21 12:13:55 / 修改时间：12:14:28" itemprop="dateCreated datePublished" datetime="2022-02-21T12:13:55+08:00">2022-02-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本文参考自<a target="_blank" rel="noopener" href="https://thinkwon.blog.csdn.net/article/details/105870730">博客</a></p>
+<h3 id="静态代理、JDK动态代理和CGLIB动态代理"><a href="#静态代理、JDK动态代理和CGLIB动态代理" class="headerlink" title="静态代理、JDK动态代理和CGLIB动态代理"></a>静态代理、JDK动态代理和CGLIB动态代理</h3><h5 id="静态代理"><a href="#静态代理" class="headerlink" title="静态代理"></a>静态代理</h5><p>在程序运行之前，提前写好被代理方法的代理类，编译后运行。在程序运行前，class已经存在<br>定义接口</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public interface Target &#123;</span><br><span class="line">    public String execute();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实现接口</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public class TargetImpl implements Target &#123;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public String execute() &#123;</span><br><span class="line">        System.out.println(&quot;TargetImpl execute！&quot;);</span><br><span class="line">        return &quot;execute&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代理类</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">public class Proxy implements Target &#123;</span><br><span class="line">    private Target target;</span><br><span class="line"></span><br><span class="line">    public Proxy(Target target) &#123;</span><br><span class="line">        this.target = target;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public String execute() &#123;</span><br><span class="line">        System.out.println(&quot;perProcess&quot;);</span><br><span class="line">        String result = this.target.execute();</span><br><span class="line">        System.out.println(&quot;postProcess&quot;);</span><br><span class="line">        return result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>测试类</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public class ProxyTest &#123;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line"></span><br><span class="line">        Target target = new TargetImpl();</span><br><span class="line">        Proxy p = new Proxy(target);</span><br><span class="line">        String result = p.execute();</span><br><span class="line">        System.out.println(result);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>静态代理需要针对被代理的方法提前写好代理类，如果被代理方法非常多则要写很多代码，对此通过动态代理进行补充</p>
+<h5 id="JDK动态代理"><a href="#JDK动态代理" class="headerlink" title="JDK动态代理"></a>JDK动态代理</h5><p>通过反射机制，主要通过Proxy和InvocationHandler实现，运行时动态生成所需代理的class<br>接口</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public interface Target &#123;</span><br><span class="line">    public String execute();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实现类</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public class TargetImple implements Target &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public String execute() &#123;</span><br><span class="line">        System.out.println(&quot;TargetImpl execute！&quot;);</span><br><span class="line">        return &quot;execute&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代理类</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">import java.lang.reflect.InvocationHandler;</span><br><span class="line">import java.lang.reflect.Method;</span><br><span class="line"></span><br><span class="line">public class DynamicProxyHandler implements InvocationHandler&#123;</span><br><span class="line"></span><br><span class="line">    private Target target;</span><br><span class="line"></span><br><span class="line">    public DynamicProxyHandler(Target target) &#123;</span><br><span class="line">        this.target = target;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable &#123;</span><br><span class="line">        System.out.println(&quot;========before==========&quot;);</span><br><span class="line">        Object result = method.invoke(target,args);</span><br><span class="line">        System.out.println(&quot;========after===========&quot;);</span><br><span class="line">        return result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>测试类</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">import java.lang.reflect.Proxy;</span><br><span class="line"></span><br><span class="line">public class DynamicProxyTest &#123;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        Target target = new TargetImpl();</span><br><span class="line">        DynamicProxyHandler handler = new DynamicProxyHandler(target);</span><br><span class="line">        Target proxySubject = (Target) Proxy.newProxyInstance(TargetImpl.class.getClassLoader(),TargetImpl.class.getInterfaces(),handler);</span><br><span class="line">        String result = proxySubject.execute();</span><br><span class="line">        System.out.println(result);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>JDK动态代理和静态代理都需要定义接口才能实现，而cglib可以解决这个问题</p>
+<h5 id="CGLIB代理"><a href="#CGLIB代理" class="headerlink" title="CGLIB代理"></a>CGLIB代理</h5><p>采用底层的字节码技术，通过字节码技术为一个类创建子类，并在子类中采用方法拦截的技术拦截所有父类方法的调用，顺势织入横切逻辑。<br>目标类</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public class Target &#123;</span><br><span class="line"></span><br><span class="line">    public String execute() &#123;</span><br><span class="line">        String message = &quot;-----------test------------&quot;;</span><br><span class="line">        System.out.println(message);</span><br><span class="line">        return message;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通用代理类</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">import net.sf.cglib.proxy.MethodInterceptor;</span><br><span class="line">import net.sf.cglib.proxy.MethodProxy;</span><br><span class="line"></span><br><span class="line">import java.lang.reflect.Method;</span><br><span class="line"></span><br><span class="line">public class MyMethodInterceptor implements MethodInterceptor&#123;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable &#123;</span><br><span class="line">        System.out.println(&quot;&gt;&gt;&gt;&gt;MethodInterceptor start...&quot;);</span><br><span class="line">        Object result = proxy.invokeSuper(obj,args);</span><br><span class="line">        System.out.println(&quot;&gt;&gt;&gt;&gt;MethodInterceptor ending...&quot;);</span><br><span class="line">        return &quot;result&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>测试类</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">import net.sf.cglib.proxy.Enhancer;</span><br><span class="line"></span><br><span class="line">public class CglibTest &#123;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        System.out.println(&quot;***************&quot;);</span><br><span class="line">        Target target = new Target();</span><br><span class="line">        CglibTest test = new CglibTest();</span><br><span class="line">        Target proxyTarget = (Target) test.createProxy(Target.class);</span><br><span class="line">        String res = proxyTarget.execute();</span><br><span class="line">        System.out.println(res);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public Object createProxy(Class targetClass) &#123;</span><br><span class="line">        Enhancer enhancer = new Enhancer();</span><br><span class="line">        enhancer.setSuperclass(targetClass);</span><br><span class="line">        enhancer.setCallback(new MyMethodInterceptor());</span><br><span class="line">        return enhancer.create();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代理对象生成过程由Enhancer类实现，步骤为</p>
+<ol>
+<li>生成代理类Class的二进制字节码</li>
+<li>通过Class.forName加载二进制字节码，生成Class对象</li>
+<li>通过反射机制获取实例构造，并初始化代理类对象</li>
+</ol>
+<h3 id="秒杀系统设计"><a href="#秒杀系统设计" class="headerlink" title="秒杀系统设计"></a>秒杀系统设计</h3><p>业务特点：</p>
+<ol>
+<li>高并发：时间极短、瞬时用户量大</li>
+<li>库存量少：只有极少用户能买到</li>
+<li>业务简单</li>
+<li>恶意请求，数据库压力大</li>
+</ol>
+<p>解决方案</p>
+<ol>
+<li>前端：页面资源静态化，使用校验码防止秒杀器干扰</li>
+<li>nginx：检验恶意请求，转发请求，负载均衡；动静分离；gzip压缩，减少静态文件传输的体积，节省带宽</li>
+<li>业务层：集群，多台机器处理，提高并发能力</li>
+<li>redis：集群保证高可用性，持久化数据；分布式锁；缓存热点数据</li>
+<li>mq：削峰限流，MQ积压订单，保护处理层的负载，消费端根据自己消费能力取消息，可控制下游压力</li>
+<li>数据库：读写分离，拆分事务提高并发度</li>
+</ol>
+<p>秒杀系统设计小结</p>
+<ol>
+<li>设计原则：前台请求尽量少，后台数据尽量少，调用链路尽量短，尽量不要有单点</li>
+<li>高并发方法：访问拦截、分流、动静分离</li>
+<li>数据方法：减库存、热点、异步、限流降级</li>
+<li>访问拦截思路：通过CDN和缓存技术，尽量把访问拦截在离用户更近的层，尽可能过滤掉无效请求</li>
+<li>分流主要思路：通过分布式集群技术，多台机器处理，提高并发能力</li>
+</ol>
+<h3 id="分布式概述"><a href="#分布式概述" class="headerlink" title="分布式概述"></a>分布式概述</h3><h5 id="分布式"><a href="#分布式" class="headerlink" title="分布式"></a>分布式</h5><p>为了解决单个物理服务器容量和性能瓶颈问题而采用的优化手段，将业务拆分并在不同机器上运行，服务之间通过远程调用协同工作，对外提供服务。<br>水平扩展：可以添加机器分摊流量<br>垂直扩展：将不同业务需求分发到不同的机器上</p>
+<h5 id="集群"><a href="#集群" class="headerlink" title="集群"></a>集群</h5><p>指多台不同的服务器部署相同应用或服务模块，构成一个集群。<br>特点</p>
+<ol>
+<li>可扩展性：集群中的服务节点，可以动态添加机器，从而增加集群的处理能力</li>
+<li>高可用性：如果某节点发生故障，则该节点对应的服务可以被其他节点接管</li>
+</ol>
+<p>能力：</p>
+<ol>
+<li>负载均衡：能把任务均衡地分布到集群环境下的计算和网络资源</li>
+<li>集群容错：当系统中用到集群环境，集群服务调用失败后，服务框架需要能够再底层自动容错</li>
+</ol>
+<h3 id="分布式系统设计理念"><a href="#分布式系统设计理念" class="headerlink" title="分布式系统设计理念"></a>分布式系统设计理念</h3><h5 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h5><p>提升系统整体性能和吞吐量，并尽量保证分布式系统的容错性。</p>
+<h5 id="设计思路"><a href="#设计思路" class="headerlink" title="设计思路"></a>设计思路</h5><ol>
+<li>中心化<br>使用两个角色，一个角色负责分发任务，并要保证任务相对均衡，另一个负责干活，如果挂了会由其他节点继续处理任务。<br>问题：1）master出问题系统会瘫痪，需要保证高可用性，可以使用主从备份；2）master要能调节整个系统所有节点</li>
+<li>去中心化<br>大家角色一样，由节点来自由选择中心，例如投票</li>
+</ol>
+<h5 id="CAP原理"><a href="#CAP原理" class="headerlink" title="CAP原理"></a>CAP原理</h5><ol>
+<li>Consistency一致性，指数据在多个副本之间能保持一致</li>
+<li>Availability可用性，指系统提供的服务必须一直处于可用状态，每次请求都能获取到非错响应（可能不是最新）</li>
+<li>Partition tolerance分区容错性，分布式系统遇到任何分区故障时，仍然能对外提供满足一致性和可用性的服务</li>
+</ol>
+<p>CAP只能满足CP或AP</p>
+<h5 id="BASE理论"><a href="#BASE理论" class="headerlink" title="BASE理论"></a>BASE理论</h5><p>核心思想：即使无法做到强一致性，但每个应用可以根据自身业务特点，采用适当方式使系统达到最终一致性，即牺牲数据一致性满足高可用性，可以部分数据不可用或不一致，但保证系统整体主要可用</p>
+<ol>
+<li>Basically Available基本可用，分布式系统出现不可预知故障的时候，允许损失部分可用性</li>
+<li>Soft-State软状态，允许系统中的数据存在中间状态，且中间状态不影响系统的整体可用性，允许数据同步时存在延时</li>
+<li>Eventually Consistent最终一致性，所有数据副本，经过一段时间同步后，最终到达一致的状态</li>
+</ol>
+<h5 id="一致性hash算法"><a href="#一致性hash算法" class="headerlink" title="一致性hash算法"></a>一致性hash算法</h5><p>具有均衡性、持久性的映射特点。常规hash函数为线性，当集群数量发生变化时，之前映射会全部失效。<br>算法原理：</p>
+<ol>
+<li>将整个哈希值空间组织成一个虚拟圆环，假设为0~2^32-1</li>
+<li>将各个服务器使用hash进行一次映射，例如选择ip地址，确定在哈希环上的位置</li>
+<li>然后使用数据key同样hash到环上，从该位置沿环顺时针走，第一台遇到的服务器就是应该定位的服务器</li>
+</ol>
+<p>当插入节点时：仅是新增加的服务器和沿逆时针方向走遇到的第一个服务器之间的数据，重定向到新增的服务器<br>删除节点时：仅是被删除的服务器和沿逆时针方向走遇到的第一个服务器之间的数据，重定向到被删除服务器的下一个服务器</p>
+<h3 id="数据一致性理论"><a href="#数据一致性理论" class="headerlink" title="数据一致性理论"></a>数据一致性理论</h3><p>分布式系统中，每个节点的数据更新，整个集群都需要知道，并且执行对应操作保持一致。面临的问题有：</p>
+<ol>
+<li>消息传递异步无序：现实网络不是一个可靠的信道，存在消息延时、丢失，节点间消息传递可能不能保持同步有序</li>
+<li>节点宕机：下线且长时间不可恢复</li>
+<li>节点宕机恢复：宕机一段时间后恢复，较为常见</li>
+<li>网络分化：网络链路出现问题，将N个节点隔离为多个节点</li>
+<li>拜占庭问题：节点或宕机或逻辑失败，甚至不按套路出牌抛出干扰决议的信息。例如脑裂出现两个leader</li>
+</ol>
+<h4 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h4><h5 id="副本"><a href="#副本" class="headerlink" title="副本"></a>副本</h5><p>当前通过复制技术进行分布式系统的一致性保证，可以在节点故障时启用副本继续提供服务，但也带来数据不一致的问题</p>
+<h5 id="协调者"><a href="#协调者" class="headerlink" title="协调者"></a>协调者</h5><p>分布式操作中，为保证一致性，需要一个中间者能够时刻感知到该事务在其他环境中的执行情况，以决定当前事务请求是提交还是回滚。相当于大脑的位置，通过RPC探知和控制实际执行事务的副本的状态和操作。协调者也可能宕机，所以也需要副本提供可用性</p>
+<h5 id="分布式协议"><a href="#分布式协议" class="headerlink" title="分布式协议"></a>分布式协议</h5><ol>
+<li>两阶段提交2PC：分为协调者和参与者。第一阶段PreCommit：准备（投票）阶段，协调者发起一个提议，分别询问各参与者是否接受；第二阶段doCommit：提交（执行）阶段，协调者根据参与者的反馈，提交或终止事务，只要有一个参与者不同意就终止</li>
+<li>三阶段提交3PC：引入了超时机制，加入了新的新的CanCommit阶段。第一阶段CanCommit：协调者想参与者发送commit请求，参与者如果可以提交就返回Yes，否则返回No。1）事务询问：协调者向参与者发送CanCommit请求，询问是否可以执行事务提交操作，然后开始等待参与者的响应。2）响应反馈：参与者收到请求后，认为自己可以执行则返回Yes，并进入预备状态，否则返回No。第二阶段PreCommit：协调者根据参与者CanCommit的反应来决定是否可以进行事务的PreCommit操作，若获得No，则终止，否则：1）发送预提交请求：协调者向参与者发送PreCommit请求，并进入Prepared阶段；2）事务预提交：参与者接收到PreCommit请求后，会执行事务操作，并将undo和redo信息记录到事务日志中。3）响应反馈：如果参与者成功执行了事务操作，则返回ACK，同时开始等待最终指令。第三阶段DoCommit：该阶段进行真正的事务提交，若没收到ACK响应则中断回滚；如果收到则：1）发送提交请求：将从预提交状态进入提交状态，并向所有参与者发送DoCommit请求；2）事务提交：参与者收到DoCommit请求后，执行正式的事务提交，并在完成事务提交之后释放所有事务资源；3）响应反馈：事务提交完之后，向协调者发送ACK响应；4）完成事务：协调者收到所有参与者的ACK后，完成事务</li>
+</ol>
+<h5 id="选举和租约"><a href="#选举和租约" class="headerlink" title="选举和租约"></a>选举和租约</h5><ol>
+<li>选举：Raft算法，通常有2*f+1个服务器，一次选举过程只有得到至少f+1张选票才能当选leader，当选成功后将自身状态同步到follower。具体可参考读书笔记</li>
+<li>租约：每次只有一个节点能获得租约，到期后如果正常执行则续发租约，如果异常则等到租约超时重新选结点发租约。保障了同时只有一个节点执行操作。</li>
+</ol>
+<h3 id="数据一致性模型"><a href="#数据一致性模型" class="headerlink" title="数据一致性模型"></a>数据一致性模型</h3><ol>
+<li>强一致性：更新操作完成之后，任何多个后续进程的访问都会返回最新的更新过的值。对用户最友好，但对性能影响较大</li>
+<li>弱一致性：系统不保证更新之后的访问都能得到最新的值，即不承诺立即可以读到最新的值，也不会具体承诺多久之后可以读到，但会尽可能保证在某个时间级别之后，可以让数据达到一致性状态。</li>
+<li>最终一致性：弱一致性的特定形式。保证在没有后续更新的前提下，最终返回上一次更新的值。没有故障前提下，不一致的窗口和时间主要受通信延迟、系统负载和副本个数影响。例如DNS</li>
+</ol>
+<h3 id="RPC"><a href="#RPC" class="headerlink" title="RPC"></a>RPC</h3><p>远程过程调用协议，是一种通过网络从远程计算机程序上请求服务，而不需要了解底层网络技术的协议。使得程序能像访问本地系统资源一样，去访问远端系统资源。关键点在于：通信协议、序列化、资源描述、服务框架、性能、语言支持等。即，从一台机器通过参数传递的方式调用另一台机器上的一个函数或方法，并得到返回的结果</p>
+<h5 id="RPC架构组件"><a href="#RPC架构组件" class="headerlink" title="RPC架构组件"></a>RPC架构组件</h5><ol>
+<li>客户端：服务调用方（消费者）</li>
+<li>客户端存根（stub）：存放服务器地址信息，将客户端的请求参数根据信息打包成网络消息，再通过网络传输发送给服务器</li>
+<li>服务器存根：接收客户端发送过来的请求消息并进行解包，然后再调用本地服务进行处理</li>
+<li>服务端：服务的真正提供者</li>
+</ol>
+<h5 id="调用过程"><a href="#调用过程" class="headerlink" title="调用过程"></a>调用过程</h5><ol>
+<li>客户端通过调用本地服务的方式调用需要消费的服务</li>
+<li>客户端存根接收到调用请求后负责将方法、入参等信息序列化成能够进行网络传输的消息体</li>
+<li>客户端存根找到远程的服务地址，将消息通过网络发送给服务端</li>
+<li>服务端存根收到消息后进行解码（反序列化操作）</li>
+<li>服务端存根根据解码结果调用本地的服务进行相关处理</li>
+<li>本地服务执行具体业务逻辑并将处理结果返回给服务端存根</li>
+<li>服务端存根将返回结果重新打包成消息，并通过网络发送到客户端存根</li>
+<li>客户端存根收到消息，进行解码</li>
+<li>客户端得到结果</li>
+</ol>
+<p>RPC框架的目标是将2-8步封装起来，使得类似调用本地服务一样</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/interview/" rel="tag"># 面经</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/02/21/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E9%9D%A2%E8%AF%95%E9%A2%98/" rel="prev" title="操作系统面试题">
+      <i class="fa fa-chevron-left"></i> 操作系统面试题
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/02/21/%E6%A6%82%E7%8E%87%E9%97%AE%E9%A2%98/" rel="next" title="概率问题">
+      概率问题 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E4%BB%A3%E7%90%86%E3%80%81JDK%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86%E5%92%8CCGLIB%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">静态代理、JDK动态代理和CGLIB动态代理</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E4%BB%A3%E7%90%86"><span class="nav-number">1.0.1.</span> <span class="nav-text">静态代理</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#JDK%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86"><span class="nav-number">1.0.2.</span> <span class="nav-text">JDK动态代理</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#CGLIB%E4%BB%A3%E7%90%86"><span class="nav-number">1.0.3.</span> <span class="nav-text">CGLIB代理</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A7%92%E6%9D%80%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1"><span class="nav-number">2.</span> <span class="nav-text">秒杀系统设计</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E6%A6%82%E8%BF%B0"><span class="nav-number">3.</span> <span class="nav-text">分布式概述</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F"><span class="nav-number">3.0.1.</span> <span class="nav-text">分布式</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4"><span class="nav-number">3.0.2.</span> <span class="nav-text">集群</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E7%90%86%E5%BF%B5"><span class="nav-number">4.</span> <span class="nav-text">分布式系统设计理念</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%9B%AE%E6%A0%87"><span class="nav-number">4.0.1.</span> <span class="nav-text">目标</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF"><span class="nav-number">4.0.2.</span> <span class="nav-text">设计思路</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#CAP%E5%8E%9F%E7%90%86"><span class="nav-number">4.0.3.</span> <span class="nav-text">CAP原理</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#BASE%E7%90%86%E8%AE%BA"><span class="nav-number">4.0.4.</span> <span class="nav-text">BASE理论</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7hash%E7%AE%97%E6%B3%95"><span class="nav-number">4.0.5.</span> <span class="nav-text">一致性hash算法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E4%B8%80%E8%87%B4%E6%80%A7%E7%90%86%E8%AE%BA"><span class="nav-number">5.</span> <span class="nav-text">数据一致性理论</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">5.1.</span> <span class="nav-text">解决方案</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%89%AF%E6%9C%AC"><span class="nav-number">5.1.1.</span> <span class="nav-text">副本</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8D%8F%E8%B0%83%E8%80%85"><span class="nav-number">5.1.2.</span> <span class="nav-text">协调者</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E5%8D%8F%E8%AE%AE"><span class="nav-number">5.1.3.</span> <span class="nav-text">分布式协议</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%80%89%E4%B8%BE%E5%92%8C%E7%A7%9F%E7%BA%A6"><span class="nav-number">5.1.4.</span> <span class="nav-text">选举和租约</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E4%B8%80%E8%87%B4%E6%80%A7%E6%A8%A1%E5%9E%8B"><span class="nav-number">6.</span> <span class="nav-text">数据一致性模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RPC"><span class="nav-number">7.</span> <span class="nav-text">RPC</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#RPC%E6%9E%B6%E6%9E%84%E7%BB%84%E4%BB%B6"><span class="nav-number">7.0.1.</span> <span class="nav-text">RPC架构组件</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%B0%83%E7%94%A8%E8%BF%87%E7%A8%8B"><span class="nav-number">7.0.2.</span> <span class="nav-text">调用过程</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Jiahang Gu</p>
+  <div class="site-description" itemprop="description">认真学习，享受生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">51</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JiahangGu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JiahangGu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/fengzhizi76506" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;fengzhizi76506" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jiahang Gu</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

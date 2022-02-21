@@ -29,11 +29,11 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/images/RaftNotes/badCase1.png">
 <meta property="og:image" content="http://example.com/images/zooKeeper/linear.png">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/20200907195303645.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1BldGVyX2NQYW4=,size_16,color_FFFFFF,t_70#pic_center">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/20200907195224730.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1BldGVyX2NQYW4=,size_16,color_FFFFFF,t_70#pic_center">
-<meta property="og:image" content="https://mit-public-courses-cn-translatio.gitbook.io/~/files/v0/b/gitbook-28427.appspot.com/o/assets%2F-MAkokVMtbC7djI1pgSw%2F-MFm4umOtKBcv00JRuuU%2F-MFn6neq6Rc5VapzQF40%2Fimage.png?alt=media&token=8565a162-47f5-4f4b-b893-613aa8aad366">
-<meta property="og:image" content="https://mit-public-courses-cn-translatio.gitbook.io/~/files/v0/b/gitbook-28427.appspot.com/o/assets%2F-MAkokVMtbC7djI1pgSw%2F-MFuJRt3Jts5mw0kTCdD%2F-MFwwQu0gml2wioq39yR%2Fimage.png?alt=media&token=c9e88f71-36a2-4701-94af-5b7f310339cb">
-<meta property="og:image" content="https://mit-public-courses-cn-translatio.gitbook.io/~/files/v0/b/gitbook-28427.appspot.com/o/assets%2F-MAkokVMtbC7djI1pgSw%2F-MGDMi39kJWJ6Q51aoWN%2F-MGDRH_A0-tcJKtfjbh4%2Fimage.png?alt=media&token=b72f3ccb-8bbb-46b6-8c82-9681cbd856fe">
+<meta property="og:image" content="http://example.com/images/mit6824/course/note1.png">
+<meta property="og:image" content="http://example.com/images/mit6824/course/note2.png">
+<meta property="og:image" content="http://example.com/images/mit6824/course/note3.png">
+<meta property="og:image" content="http://example.com/images/mit6824/course/note4.png">
+<meta property="og:image" content="http://example.com/images/mit6824/course/note5.png">
 <meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211219162617873.png">
 <meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211219171343582.png">
 <meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211219181932368.png">
@@ -54,7 +54,7 @@
 <meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211222214257574.png">
 <meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20211222215834987.png">
 <meta property="article:published_time" content="2022-02-17T11:55:09.000Z">
-<meta property="article:modified_time" content="2022-02-19T10:05:35.112Z">
+<meta property="article:modified_time" content="2022-02-21T05:17:06.752Z">
 <meta property="article:author" content="Jiahang Gu">
 <meta property="article:tag" content="MIT6.824">
 <meta name="twitter:card" content="summary">
@@ -228,7 +228,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-02-19 18:05:35" itemprop="dateModified" datetime="2022-02-19T18:05:35+08:00">2022-02-19</time>
+                <time title="修改时间：2022-02-21 13:17:06" itemprop="dateModified" datetime="2022-02-21T13:17:06+08:00">2022-02-21</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -517,7 +517,7 @@
 <p>注意，2和3的wait都表示可能是一个sleep，需要经过watch事件的通知才能回到循环的起始位置，而不是一直不停的循环</p>
 <h2 id="链复制"><a href="#链复制" class="headerlink" title="链复制"></a>链复制</h2><h3 id="旧的链复制"><a href="#旧的链复制" class="headerlink" title="旧的链复制"></a>旧的链复制</h3><p>一些服务器按照链排列，第一个称为head，最后一个是tail。</p>
 <p>写请求总是发送给head，head收到请求后更新本地，并传递给链的下一个。直到tail执行完成，链式返回所有的中间结点直到head，返回客户端请求已完成。<br>读请求发到tail，直接根据自己的当前状态来回复。因为除非一个请求到达tail，否则不会提交，所以在tail中读取到的数据一定是已提交过的，即系统中最新的有效数据</p>
-<p><img src="https://img-blog.csdnimg.cn/20200907195303645.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1BldGVyX2NQYW4=,size_16,color_FFFFFF,t_70#pic_center" alt="链式复制"></p>
+<p><img src="/images/mit6824/course/note1.png" alt="链式复制"></p>
 <h3 id="故障恢复"><a href="#故障恢复" class="headerlink" title="故障恢复"></a>故障恢复</h3><ol>
 <li>head挂了，则下一个结点成为新的head。不需要做其他操作。对于处理中的请求：如果已发送到第二个节点，则不会因为head挂停止转发；如果转发之前就挂了，则后续服务器不知道这个请求，依然保持一致</li>
 <li>tail挂了，则前一个节点成为新的tail，因为必然知道之前tail的所有信息</li>
@@ -534,7 +534,7 @@
 <li>故障恢复更简单</li>
 <li>CRAQ具有更高的延迟，因为需要所有的服务器均完成写请求并确认，如果存在某个服务器当前资源少，完成请求的时间较长，则整个系统都需要等待，属于是木桶装水由最短的那个边决定。而Raft则只要较快的大多数完成即可提交，并且保证该数据不会丢失。</li>
 </ol>
-<h3 id="改进的CRAQ"><a href="#改进的CRAQ" class="headerlink" title="改进的CRAQ"></a>改进的CRAQ</h3><p><img src="https://img-blog.csdnimg.cn/20200907195224730.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1BldGVyX2NQYW4=,size_16,color_FFFFFF,t_70#pic_center" alt="CRAQ工作原理"></p>
+<h3 id="改进的CRAQ"><a href="#改进的CRAQ" class="headerlink" title="改进的CRAQ"></a>改进的CRAQ</h3><p><img src="/images/mit6824/course/note2.png" alt="CRAQ工作原理"></p>
 <p>主要改进点在于，CRAQ使得所有节点均可以处理读操作，因为目前只读的系统广泛使用，比如访问网站，需要响应给用户对应的网站内容。同时又能够提供强一致性，不能降低延时，但可以增加系统的吞吐量</p>
 <p>改进点：</p>
 <ol>
@@ -592,7 +592,7 @@
 <p>存储服务器内存放的是自身磁盘page的cache，和对应的log。当一个写请求到来时，会追加记录log，但不会立即修改cache，当有读请求需要返回该page数据时，会应用所有log到page数据，并写入到磁盘，并将最新的page的数据返回给读取的服务器。同时在page的cache中删除对应log列表，更新cache。</p>
 <p>Quorum Read可以避免。通过记录每一次write操作写到对应存储服务器的log编号，在每次读取数据可以得知该数据在所有存储服务器中的最新数据所在位置，挑选最新的服务器进行读取，可以得到更小的读代价。</p>
 <h3 id="数据分片"><a href="#数据分片" class="headerlink" title="数据分片"></a>数据分片</h3><p>Amazon将数据库的数据分割存储到多组存储服务器上，每组6个副本，每份数据10GB。这些10GB的数据逻辑上作为多个分组，但物理上仍在一个服务器上，可能有几TB的硬盘容量，如果服务器挂了，受限于单个磁盘的写入速度，传输TB级别的数据是非常慢的，以至于无法接受。采用的优化方案是，假设挂的服务器上有100个数据库，找到100个不同的存储服务器，每一个分配一个数据块，并行分发数据，则恢复速度增加了100倍，总的来说就是打散，将数据在物理上分为不同的服务器，这样可以增加磁盘的并行写入速度。这样需要记录一个数据到分组的表单，在每次修改请求到来时，根据表单查找对应的分组，并只将log发送到对应分组。</p>
-<p><img src="https://mit-public-courses-cn-translatio.gitbook.io/~/files/v0/b/gitbook-28427.appspot.com/o/assets%2F-MAkokVMtbC7djI1pgSw%2F-MFm4umOtKBcv00JRuuU%2F-MFn6neq6Rc5VapzQF40%2Fimage.png?alt=media&token=8565a162-47f5-4f4b-b893-613aa8aad366" alt="img"></p>
+<p><img src="/images/mit6824/course/note3.png" alt="img"></p>
 <p>一个服务器上可能存储的是多个不同的分组的数据，如果该服务器挂掉，每一个分组的数据选择一个独立的物理服务器负责恢复，使用N个服务器可以得到N倍的性能提升</p>
 <h2 id="Fragnipani-分布式文件系统"><a href="#Fragnipani-分布式文件系统" class="headerlink" title="Fragnipani 分布式文件系统"></a>Fragnipani 分布式文件系统</h2><h3 id="整体架构"><a href="#整体架构" class="headerlink" title="整体架构"></a>整体架构</h3><p>网络文件系统。联合少量的工作站，每个用户使用自己的工作站读写文件时产生的更改可以同步的共享到其他工作站。</p>
 <p>组成：</p>
@@ -623,7 +623,7 @@
 <li>工作站2请求目录/a的锁，锁服务器查看lock表发现在工作站1，发送收回锁的req给工作站1，此时工作站1如果锁处于空闲，将数据回写到petal，并回复释放响应给锁服务器。如果不是空闲，则直到工作站1的修改请求完成并且写回到petal服务器后，才回复释放响应。</li>
 <li>锁服务器收到释放响应后，重新将锁分配给工作站2</li>
 </ol>
-<p><img src="https://mit-public-courses-cn-translatio.gitbook.io/~/files/v0/b/gitbook-28427.appspot.com/o/assets%2F-MAkokVMtbC7djI1pgSw%2F-MFuJRt3Jts5mw0kTCdD%2F-MFwwQu0gml2wioq39yR%2Fimage.png?alt=media&token=c9e88f71-36a2-4701-94af-5b7f310339cb" alt="img"></p>
+<p><img src="/images/mit6824/course/note4.png" alt="img"></p>
 <p>上述只是排它锁的工作流程，还有共享的读锁，可以由多个工作站同时持有来读取文件。</p>
 <p>此外，如果没有其他工作站读取文件，上述机制会导致数据永远不会写入到petal服务器中，但实际实现中，为了防止本地工作站修改的文件内容在崩溃后丢失，每隔30秒会将所有修改的数据写回到petal中，即使崩溃最多丢失30秒的数据。</p>
 <h3 id="原子性"><a href="#原子性" class="headerlink" title="原子性"></a>原子性</h3><p>数据库风格的事务系统，以锁为核心。</p>
@@ -670,7 +670,7 @@
 </ol>
 <h3 id="两阶段提交"><a href="#两阶段提交" class="headerlink" title="两阶段提交"></a>两阶段提交</h3><p>要么参与的服务器都执行了操作，要么都没有执行。<br>分为事务协调者和服务器，协调者首先向对应的服务器发送prepare通知，服务器查看自身状态决定是否能完成并回复给协调者，当都响应后，协调者根据投票结果决定是否提交，如果可以提交则发送提交请求给所有服务器，并且事务参与者回复ACK说知道了需要提交。如果存在服务器回复不能执行，则协调者发送停止事务请求，通知其余服务器停止提交</p>
 <p>对于并发运行的多个事务，也许有多个事务协调者。此时需要知道每个消息对应的是哪个事务，因此持有数据的服务器会维护一个锁的表，记录锁被哪个事务持有，因此事务也需要ID，简称TID</p>
-<p><img src="https://mit-public-courses-cn-translatio.gitbook.io/~/files/v0/b/gitbook-28427.appspot.com/o/assets%2F-MAkokVMtbC7djI1pgSw%2F-MGDMi39kJWJ6Q51aoWN%2F-MGDRH_A0-tcJKtfjbh4%2Fimage.png?alt=media&token=b72f3ccb-8bbb-46b6-8c82-9681cbd856fe" alt="img"></p>
+<p><img src="/images/mit6824/course/note5.png" alt="img"></p>
 <p>参与者无论是收到提交还是中止请求，都会释放对应数据的锁。</p>
 <h3 id="故障场景"><a href="#故障场景" class="headerlink" title="故障场景"></a>故障场景</h3><p>假设协调者X，和事务参与者A, B<br>场景1：B可能在回复X的prepare消息之前崩溃。此时B可以单方面停止事务，因为X不可能提交事务。一种恢复方法是，重启后内存中的数据都清除，有关事务的信息都丢失了，无法恢复，此时根本不需要关注事务，因为都没有执行过。<br>场景2：B在回复X Yes之后崩溃。X很有可能会提交事务，所以A可能已经执行事务，为保证一致性，B需要先将log持久化存储到磁盘上，故障重启后通过查看log，可以发现在一个事务中，根据log执行redo。所有故障恢复貌似都是使用WAL的机制<br>场景3：B在收到提交请求之后崩溃了。此时B完成了修改，并将数据持久化到了磁盘，重启后不需要做任何事。协调者可以因为没收到ACK再次发送提交消息，而B重启后内存中没有事务的信息，对于不知道的事务的提交消息，B仅仅ACK，因为如果此时B重启后没有事务信息则表示事务已在本地提交并在内存中删除相关状态。<br>场景4：X在发送提交消息之前崩溃，则没有参与者提交事务，重启后直接恢复到之前状态<br>场景5：X发送完一个或多个提交消息之后崩溃，则不允许它忘记相关的事务。所以X需要先将事务信息写入到log并持久化存储到磁盘中，重启后可以读硬盘恢复事务信息<br>场景6：X发送了prepare，但没有收到所有的Yes、No信息，此时可以重新发送一轮prepare消息，但可能会永远等待一个长时间下线的参与者，我们希望可以避免这种情况。所以可以单方面终止事务，并发送一轮终止消息。如果参与者重启后，向协调者发送关于自己崩溃前的事务的消息，则协调者发现自己不知道这个事务，可以告诉X应该终止<br>场景7：B收到了prepare，并回复yes，但没有收到提交消息，此时不允许参与者单方面终止事务，必须等待X的响应，哪怕是无限等待。直到X被修复，并重新启动流程，比如发送commit到B。此时B一直持有锁，阻塞其他对相关数据的请求</p>
 <h3 id="两阶段提交协议原理"><a href="#两阶段提交协议原理" class="headerlink" title="两阶段提交协议原理"></a>两阶段提交协议原理</h3><p>决策是在一个单一的实例，即事务协调者完成的。A或B都不能决定对事务的走向，也不会交互达成一致。只有协调者可以决定，且协调者是一个单一的实例。</p>
@@ -968,20 +968,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-count">51</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">7</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">20</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

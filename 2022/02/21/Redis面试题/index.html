@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="** 字典和跳跃表原理分析字典：dictht是一个散列表结构，使用拉链法解决哈希冲突。Redis的字典dict中包含两个哈希表dictht，为了方便进行rehash操作。在扩容时将其中一个dictht上的键值对rehash到另一个dictht上，完成后释放空间并交换。rehash不是一次性完成，而是采用渐进方式，避免一次性执行过多rehash操作给服务器带来过大负担。渐进式rehash通过记录di">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis面试题">
+<meta property="og:url" content="http://example.com/2022/02/21/Redis%E9%9D%A2%E8%AF%95%E9%A2%98/index.html">
+<meta property="og:site_name" content="菜汤里的咸鱼要翻身">
+<meta property="og:description" content="** 字典和跳跃表原理分析字典：dictht是一个散列表结构，使用拉链法解决哈希冲突。Redis的字典dict中包含两个哈希表dictht，为了方便进行rehash操作。在扩容时将其中一个dictht上的键值对rehash到另一个dictht上，完成后释放空间并交换。rehash不是一次性完成，而是采用渐进方式，避免一次性执行过多rehash操作给服务器带来过大负担。渐进式rehash通过记录di">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-02-21T04:19:19.000Z">
+<meta property="article:modified_time" content="2022-02-21T05:05:22.562Z">
+<meta property="article:author" content="Jiahang Gu">
+<meta property="article:tag" content="面经">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2022/02/21/Redis%E9%9D%A2%E8%AF%95%E9%A2%98/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Redis面试题 | 菜汤里的咸鱼要翻身</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">菜汤里的咸鱼要翻身</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/Redis%E9%9D%A2%E8%AF%95%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Redis面试题
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-21 12:19:19 / 修改时间：13:05:22" itemprop="dateCreated datePublished" datetime="2022-02-21T12:19:19+08:00">2022-02-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="字典和跳跃表原理分析"><a href="#字典和跳跃表原理分析" class="headerlink" title="** 字典和跳跃表原理分析"></a>** 字典和跳跃表原理分析</h3><p>字典：dictht是一个散列表结构，使用拉链法解决哈希冲突。Redis的字典dict中包含两个哈希表dictht，为了方便进行rehash操作。在扩容时将其中一个dictht上的键值对rehash到另一个dictht上，完成后释放空间并交换。rehash不是一次性完成，而是采用渐进方式，避免一次性执行过多rehash操作给服务器带来过大负担。<br>渐进式rehash通过记录dict的rehashidx完成，从0开始，每执行一次rehash都会递增。rehash期间每次对字典执行添加、删除、查找或更新操作时执行一次渐进式rehash。渐进式rehash导致字典中数据分散在两个dictht上，查找操作也需要到对应的dictht去执行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">typedef struct dict &#123;</span><br><span class="line">    dictType *type;</span><br><span class="line">    void *privdata;</span><br><span class="line">    dictht ht[2];</span><br><span class="line">    long rehashidx;  //等于-1时不处于渐进式rehash期间</span><br><span class="line">    unsigned long iterators;</span><br><span class="line">&#125;dict;</span><br></pre></td></tr></table></figure>
+
+<p>跳跃表：是有序集合的底层实现之一，基于多指针有序链表实现，可以看成多个有序链表。<br>跳跃表结构示意如下：<br>entry -&gt;                                                      end<br>entry -&gt; 7 -&gt;                         25 -&gt;             53 -&gt; end<br>entry -&gt; 7 -&gt;       13 -&gt; 15 -&gt;       25 -&gt;       42 -&gt; 53 -&gt; end<br>entry -&gt; 7 -&gt; 11 -&gt; 13 -&gt; 15 -&gt; 22 -&gt; 25 -&gt; 30 -&gt; 42 -&gt; 53 -&gt; end<br>查找时从上层指针开始查找，找到对应的区间之后再到下一层去寻找<br>与红黑树等平衡树比较，跳跃表具有以下优点：</p>
+<ol>
+<li>插入速度非常快速，因为不需要旋转等操作维护平衡性</li>
+<li>更容易实现</li>
+<li>支持无锁操作</li>
+</ol>
+<h3 id="使用场景"><a href="#使用场景" class="headerlink" title="*** 使用场景"></a>*** 使用场景</h3><ol>
+<li>计数器：可以对String进行自增自减运算，从而实现计数器功能。Redis这种内存型数据库的读写性能非常高，很适合存储频繁读写的计数量。</li>
+<li>缓存：将热点数据放到内存中，设置内存的最大使用量以及淘汰策略来保证缓存的命中率。</li>
+<li>查找表：例如DNS记录就很适合使用Redis存储。查找表和缓存类似，但查找表的内容不能失效，但缓存可以</li>
+<li>消息队列：List是一个双向链表，可以通过lpush和rpop写入和读取消息，但最好使用kafka、RabbitMQ等消息中间件</li>
+<li>会话缓存：可以使用Redis来统一存储多台应用服务器的会话信息</li>
+<li>分布式锁实现：分布式场景下，无法使用单机环境的锁对多个节点上的进程进行同步。可以使用Redis自带的SETNX命令实现分布式锁，还可以使用官方提供的RedLock分布式锁实现</li>
+<li>其他：Set可以实现交集、并集等操作，实现共同好友；ZSet可以实现有序性操作，实现排行榜</li>
+</ol>
+<h3 id="与-Memchached-的比较"><a href="#与-Memchached-的比较" class="headerlink" title="*** 与 Memchached 的比较"></a>*** 与 Memchached 的比较</h3><p>二者都是非关系型数据库，有以下不同：</p>
+<ol>
+<li>数据类型：Memcached仅支持字符串类型，而Redis支持五种不同的数据类型，可以更灵活地解决问题</li>
+<li>数据持久化：Redis支持两种持久化策略：RDB快照和AOF日志，而Memcached不支持持久化</li>
+<li>分布式：Memcached不支持分布式，只能通过在客户端使用一致性哈希来实现分布式存储，在存储和查询时都需要先在客户端计算一次数据所在的节点。而Redis Cluster支持分布式</li>
+<li>内存管理机制：1）Redis中并不是所有数据都一直存储在内存中，可以将一些很久没用的value交换到磁盘，而Memcached的数据会一直在内存中；2）Memcached将内存分割成特定长度的块来存储数据，以完全解决内存碎片的问题，但内存利用率不高</li>
+</ol>
+<h3 id="数据淘汰机制"><a href="#数据淘汰机制" class="headerlink" title="* 数据淘汰机制"></a>* 数据淘汰机制</h3><p>当内存使用量超过最大内存使用量时，进行数据淘汰，有6种策略</p>
+<ol>
+<li>volatile-lru: 从已设置过期时间的数据集中挑选最近最少使用的数据淘汰</li>
+<li>volatile-ttl: 从已设置过期时间的数据集中挑选将要过期的数据淘汰</li>
+<li>volatile-random: 从已设置过期时间的数据集中任意选择数据淘汰</li>
+<li>allkeys-lru: 从所有数据集中挑选最近最少使用的数据淘汰</li>
+<li>allkeys-random: 从所有数据集中任意挑选数据进行淘汰</li>
+<li>noeviction: 禁止淘汰数据</li>
+</ol>
+<p>缓存数据时，可以设置内存最大使用量为热点数据占用内存量，然后启用allkeys-lru策略淘汰数据。<br>Redis4.0引入lfu策略，通过统计访问频率，淘汰访问频率最少的键值对</p>
+<h3 id="RDB-和-AOF-持久化机制"><a href="#RDB-和-AOF-持久化机制" class="headerlink" title="** RDB 和 AOF 持久化机制"></a>** RDB 和 AOF 持久化机制</h3><p>Redis是内存型数据库，为了保证数据在断电后不丢失，需要将内存的数据持久化到硬盘上<br>RDB持久化：将某个时间点的所有数据存到硬盘上。可以将快照复制到其他服务器从而创建具有相同数据的服务器副本，如果系统发生故障会丢失最后一次创建快照之后的数据。如果数据量很大，保存快照的时间会很长<br>AOF持久化：将写命令添加到AOF文件（Append Only File）的末尾。使用AOF持久化需要设置同步选项确保写命令同步到磁盘的时机。因为对文件写入并不会马上将内容同步到磁盘上，而是先存储到缓冲区，由操作系统决定什么时候同步到磁盘。选项：</p>
+<ol>
+<li>always：每个写命令都同步，但会严重降低服务器的性能</li>
+<li>everysec：每秒同步一次，可以保证系统崩溃时只丢失一秒的数据，并且Redis每秒执行一次同步对服务器性能几乎不影响</li>
+<li>no：让操作系统决定何时同步，不会提升服务器性能，也会增加系统崩溃时丢失的数据量</li>
+</ol>
+<p>随着服务器写请求的增多，AOF文件越来越大，Redis提供了AOF重写的特性能去除AOF文件中的冗余写命令</p>
+<h3 id="事件驱动模型"><a href="#事件驱动模型" class="headerlink" title="** 事件驱动模型"></a>** 事件驱动模型</h3><p>Redis服务器是事件驱动程序</p>
+<ol>
+<li>文件事件：服务器通过套接字与客户端或其他服务器进行通信，文件事件就是对套接字操作的抽象。Redis使用Reactor模式开发了自己的网络事件处理器，使用IO多路复用来同时监听多个套接字，并将到达的事件传送给文件事件分派器，分派器会根据套接字产生的事件类型调用相应的事件处理器</li>
+<li>时间事件：服务器有些操作需要在给定的时间点执行，时间事件就是对定时操作的抽象。分为：1）定时事件：是让一段程序在指定的时间内执行一次；2）周期性事件：让一段程序每隔指定时间执行一次。Redis将整个时间事件放入无序链表中，通过遍历整个链表查找已到达的时间事件，并调用相应的事件处理器</li>
+</ol>
+<p>事件调度与执行：服务器需要不断监听文件事件的套接字才能得到待处理的文件事件，但不能一直监听，否则时间事件不能在规定时间内执行，因此监听时间应根据距离现在最近的时间事件来决定，由aeProcessEvents函数负责，伪码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">def aeProcessEvents():</span><br><span class="line">    # 获取到达时间离当前时间最接近的时间事件</span><br><span class="line">    time_event = aeSearchNearestTimer()</span><br><span class="line">    # 计算最接近的时间事件距离到达还有多少毫秒</span><br><span class="line">    remain_ms = time_event.when - now()</span><br><span class="line">    # 如果时间已到达，remain_ms可能为负数，设为0</span><br><span class="line">    if remain_ms &lt; 0:</span><br><span class="line">        remain_ms = 0</span><br><span class="line">    # 根据remain_ms的值创建timeval</span><br><span class="line">    timeval = create_timeval_with_ms(remain_ms)</span><br><span class="line">    # 阻塞并等待文件事件产生，最大阻塞时间由timeval决定</span><br><span class="line">    aeApiPoll(timeval)</span><br><span class="line">    # 处理所有已产生的文件事件</span><br><span class="line">    processFileEvents()</span><br><span class="line">    # 处理所有已到达的时间事件</span><br><span class="line">    processTimeEvents()</span><br><span class="line"></span><br><span class="line"># Redis服务器主函数</span><br><span class="line">def main():</span><br><span class="line">    init_server()</span><br><span class="line">    while server_is_not_shutdown():</span><br><span class="line">        aeProcessEvent()</span><br><span class="line">    clean_server()</span><br></pre></td></tr></table></figure>
+
+<h3 id="主从复制原理"><a href="#主从复制原理" class="headerlink" title="* 主从复制原理"></a>* 主从复制原理</h3><p>通过使用slaveof host port命令让一个服务器成为另一个服务器的从服务器，一个从服务器只能有一个主服务器，并且不支持主主复制<br>连接过程：</p>
+<ol>
+<li>主服务器创建快照文件，发送给从服务器，并在发送期间使用缓冲区记录执行的写命令，快照文件发送完毕之后，开始向从服务器发送存储在缓冲区中的写命令</li>
+<li>从服务器丢弃所有旧数据，载入主服务器发来的快照文件，之后从服务器开始接收主服务器发来的写命令</li>
+<li>主服务器每执行一次写命令，就向从服务器发送相同的写命令</li>
+</ol>
+<p>随着负载上升主服务器可能无法很快更新所有从服务器，或重新连接和重新同步从服务器导致系统超载。为了解决这个问题，可以创建一个中间层来分担主服务器的复制工作。<br>使用哨兵监听集群中的服务器，并在主服务器进入下线状态时自动从从服务器中选举出新的主服务器</p>
+<h3 id="集群与分布式"><a href="#集群与分布式" class="headerlink" title="*** 集群与分布式"></a>*** 集群与分布式</h3><p>分布式是将业务系统进行拆分，即分布式的每一个节点都是实现不同的功能；集群是一组协同工作的服务实体，用以提供比单一服务实体更具扩展性和可用性的服务平台。简单说，分布式以缩短单个任务的执行时间来提升效率，集群则是通过提高单位时间内执行的任务数来提升效率<br>Redis集群模式：<br>主从模式：数据库分两类：主数据库和从数据库。有如下特点：</p>
+<ol>
+<li>主数据库可以进行读写操作，当读写操作导致数据变化时会自动将数据同步给从数据库</li>
+<li>从数据库一般只读，并且接收主数据库同步过来的数据</li>
+<li>一个master可以拥有多个slave，但一个slave只能对应一个master</li>
+<li>slave挂了不影响其他slave的读和master的读和写，重启后会将数据从master同步来</li>
+<li>master挂了不影响slave的读，但redis不再提供写服务，master重启后重新提供写</li>
+<li>master挂了不会在slave节点重新选择一个master</li>
+</ol>
+<p>Sentinel模式：哨兵监控redis集群的运行状态，特点：</p>
+<ol>
+<li>sentinel模式建立在主从模式的基础上，如果只有一个Redis节点则无意义</li>
+<li>master挂了后，sentinel会在slave中选一个master，并修改配置文件，修改其他slave的配置文件指向新的master</li>
+<li>master重启后不再是master，而是作为slave接收新master的同步数据</li>
+<li>sentinel是一个进程也可能挂掉，会启动多个sentinel形成集群</li>
+<li>多sentinel配置时，sentinel之间也会自动监控</li>
+<li>主从模式配置密码时，sentinel会同步将配置信息修改到配置文件</li>
+<li>一个sentinel可以监控多个主从Redis，也可以监控同一个Redis</li>
+<li>sentinel最好不要和Redis部署在同一台机器</li>
+<li>使用sentinel时，客户端连接sentinel，由sentinel提供具体可提供服务的Redis实现</li>
+</ol>
+<p>Redis Cluster模式：用以解决单机Redis容量有限的问题，（当数据量过大到一台服务器放不下）将Redis的数据根据一定的规则分配到多台机器。结合sentinel和主从模式的特点，可以新增减少机器灵活管理。特点：</p>
+<ol>
+<li>多个Redis节点网络互联，数据共享</li>
+<li>所有节点都是一主一从，其中从不提供服务，作为备用</li>
+<li>不支持同时处理多个key，因为需要把key均匀分布在各个节点上，并发量很高时同时创建k-v会降低性能并导致不可预测的行为</li>
+<li>支持在线增加、删除节点</li>
+<li>客户端可以连接任何一个主节点进行读写</li>
+</ol>
+<p>分布式：将数据划分为多个部分，存储到多台机器里。有范围分片（维护一张范围映射表，代价高）和哈希分片（CRC32哈希函数将键转为数字并对实例数量求模）。两种方案：</p>
+<ol>
+<li>客户端分区方案：客户端使用一致性哈希算法决定数据分布在哪个节点。优点：不使用第三方中间件，分区逻辑可控，配置简单，节点间无关联，容易线性扩展，灵活性强。缺点：客户端无法动态增删服务节点，客户端自行维护分发逻辑，客户端之间无法连接共享，造成连接浪费</li>
+<li>代理分区方案：客户端发送请求到代理组件，由代理解析并将请求转发到正确节点。优点：简化客户端分布式逻辑，客户端透明接入，切换成本低，转发和存储分离。缺点：多了一层代理层，加重了架构部署复杂度和性能损耗。主流方案由Twemproxy和Codis</li>
+</ol>
+<h3 id="事务原理"><a href="#事务原理" class="headerlink" title="** 事务原理"></a>** 事务原理</h3><p>redis事务就是一次性、顺序性、排他性的执行一个队列中的一系列命令<br>一个事务包含了多个命令，服务器在执行事务期间，不会改去执行其他客户端的命令请求。<br>事务中的多个命令一次性发给服务器，减少客户端和服务器的通信次数提升性能。Redis最简单的事务实现方式是使用MULTI和EXEC将事务操作包围起来。<br>Redis事务采用乐观锁，为了提高性能减少客户端的等待，主要包括WATCH、UNWATCH、MULTI、EXEC和DISCARD命令。<br>实现原理：Redis通过WATCH命令监听当前事务数据是否被修改，如果修改则整个事务终止。WATCH会保存对应的watch key，中途key被修改则对应所有客户端标志位置为CLIENT_DIRTY_CAS，表示数据被修改，执行EXEC时被中断。UNWATCH移除key。MULTI命令将客户端的标志位置为CLIENT_MULTI，表示处于MULTI状态，后续命令（除事务命令外）被保存到一个列表里，直到EXEC或者DISCARD，如果中途出现语法错误，将flag置为CLIENT_DIRTY_EXEC，后续执行EXEC时，如果flags存在CLIENT_DIRTY_CAS或CLIENT_DIRTY_EXEC则整个事务终止</p>
+<h3 id="线程安全问题"><a href="#线程安全问题" class="headerlink" title="*** 线程安全问题"></a>*** 线程安全问题</h3><p>Redis是单线程程序，所以线程安全。因为Redis基于内存操作，CPU不是瓶颈，且单线程容易实现。<br>单线程为什么这么快：</p>
+<ol>
+<li>Redis基于内存，读写速度非常快</li>
+<li>Redis单线程避免上下文切换和竞争条件</li>
+<li>Redis使用多路复用处理并发连接。非阻塞IO采用epoll实现，将epoll读、写、关闭、连接操作转化成事件。</li>
+</ol>
+<p>性能好的原因：</p>
+<ol>
+<li>不需要各种锁的性能消耗</li>
+<li>单线程多进程集群方案</li>
+<li>CPU消耗少，不存在多线程切换。如果CPU成为瓶颈或不想让其他CPU闲置，可以多起几个Redis进程</li>
+</ol>
+<h3 id="五大数据类型和使用场景"><a href="#五大数据类型和使用场景" class="headerlink" title="* 五大数据类型和使用场景"></a>* 五大数据类型和使用场景</h3><ol>
+<li>String：k-v，value可以是string或数字。常用命令：get, set, incr, decr, mset, mget, strlen, append。使用场景：计数器（incr, decr）、分布式锁（setnt，expirt，del）、存放session（expire）</li>
+<li>List：字符串列表。常用命令：lpush、lpop、lrange、lrem、llen、ltrim。使用场景：消息队列（lpush、lpop）。特点是链表，两端插入数据效率更高</li>
+<li>Hahs：键值对集合。常用命令：hget、hset、hgetall、hkeys、hdel、hlen。使用场景：存储对象信息</li>
+<li>Set：集合，无序不重复。常用命令：sadd、spop、smembers、srem、sinter（交集）、sunion（并集）、sdiff（差）、sismembers、scard、smove。使用场景：共同关注，随机展示，黑名单</li>
+<li>Sorted Set（Zset）：有序集合。常用命令：zadd、zrange、zscore、zrevrange、arangebyscore</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/interview/" rel="tag"># 面经</a>
+              <a href="/tags/Redis/" rel="tag"># Redis</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/02/21/Redis%E6%80%BB%E7%BB%93/" rel="prev" title="Redis总结">
+      <i class="fa fa-chevron-left"></i> Redis总结
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/02/21/Spring%E6%80%BB%E7%BB%93/" rel="next" title="Spring总结">
+      Spring总结 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%97%E5%85%B8%E5%92%8C%E8%B7%B3%E8%B7%83%E8%A1%A8%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90"><span class="nav-number">1.</span> <span class="nav-text">** 字典和跳跃表原理分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">2.</span> <span class="nav-text">*** 使用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8E-Memchached-%E7%9A%84%E6%AF%94%E8%BE%83"><span class="nav-number">3.</span> <span class="nav-text">*** 与 Memchached 的比较</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%B7%98%E6%B1%B0%E6%9C%BA%E5%88%B6"><span class="nav-number">4.</span> <span class="nav-text">* 数据淘汰机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RDB-%E5%92%8C-AOF-%E6%8C%81%E4%B9%85%E5%8C%96%E6%9C%BA%E5%88%B6"><span class="nav-number">5.</span> <span class="nav-text">** RDB 和 AOF 持久化机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E6%A8%A1%E5%9E%8B"><span class="nav-number">6.</span> <span class="nav-text">** 事件驱动模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E5%8E%9F%E7%90%86"><span class="nav-number">7.</span> <span class="nav-text">* 主从复制原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E4%B8%8E%E5%88%86%E5%B8%83%E5%BC%8F"><span class="nav-number">8.</span> <span class="nav-text">*** 集群与分布式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8B%E5%8A%A1%E5%8E%9F%E7%90%86"><span class="nav-number">9.</span> <span class="nav-text">** 事务原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98"><span class="nav-number">10.</span> <span class="nav-text">*** 线程安全问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%94%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E5%92%8C%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">11.</span> <span class="nav-text">* 五大数据类型和使用场景</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Jiahang Gu</p>
+  <div class="site-description" itemprop="description">认真学习，享受生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">51</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JiahangGu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JiahangGu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/fengzhizi76506" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;fengzhizi76506" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jiahang Gu</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

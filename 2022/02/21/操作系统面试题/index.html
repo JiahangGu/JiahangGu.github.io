@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="*表示重要程度，题目摘抄自Cyc2018，答案为自己的理解 *** 进程和线程的本质区别，以及各自的使用场景区别：  资源：进程是资源分配的基本单位，但线程不拥有资源，线程可以访问隶属进程的资源 调度：线程是独立调度的基本单位，在同一进程中，线程的切换不会引起进程切换，从一个进程中的线程切换到另一个进程中的线程时，会引起进程切换 系统开销：创建或撤销进程时，系统要分配或回收资源，开销远大于创建或撤">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统面试题">
+<meta property="og:url" content="http://example.com/2022/02/21/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E9%9D%A2%E8%AF%95%E9%A2%98/index.html">
+<meta property="og:site_name" content="菜汤里的咸鱼要翻身">
+<meta property="og:description" content="*表示重要程度，题目摘抄自Cyc2018，答案为自己的理解 *** 进程和线程的本质区别，以及各自的使用场景区别：  资源：进程是资源分配的基本单位，但线程不拥有资源，线程可以访问隶属进程的资源 调度：线程是独立调度的基本单位，在同一进程中，线程的切换不会引起进程切换，从一个进程中的线程切换到另一个进程中的线程时，会引起进程切换 系统开销：创建或撤销进程时，系统要分配或回收资源，开销远大于创建或撤">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-02-21T04:13:10.000Z">
+<meta property="article:modified_time" content="2022-02-21T04:13:32.049Z">
+<meta property="article:author" content="Jiahang Gu">
+<meta property="article:tag" content="面经">
+<meta property="article:tag" content="OS">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2022/02/21/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E9%9D%A2%E8%AF%95%E9%A2%98/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>操作系统面试题 | 菜汤里的咸鱼要翻身</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">菜汤里的咸鱼要翻身</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E9%9D%A2%E8%AF%95%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          操作系统面试题
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-21 12:13:10 / 修改时间：12:13:32" itemprop="dateCreated datePublished" datetime="2022-02-21T12:13:10+08:00">2022-02-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>10k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>9 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>*表示重要程度，题目摘抄自<a target="_blank" rel="noopener" href="https://github.com/liguigui/CyC2018-CS-Notes">Cyc2018</a>，答案为自己的理解</p>
+<h4 id="进程和线程的本质区别，以及各自的使用场景"><a href="#进程和线程的本质区别，以及各自的使用场景" class="headerlink" title="*** 进程和线程的本质区别，以及各自的使用场景"></a>*** 进程和线程的本质区别，以及各自的使用场景</h4><p>区别：</p>
+<ol>
+<li>资源：进程是资源分配的基本单位，但线程不拥有资源，线程可以访问隶属进程的资源</li>
+<li>调度：线程是独立调度的基本单位，在同一进程中，线程的切换不会引起进程切换，从一个进程中的线程切换到另一个进程中的线程时，会引起进程切换</li>
+<li>系统开销：创建或撤销进程时，系统要分配或回收资源，开销远大于创建或撤销线程时的开销。进程切换时需要保存当前执行进程的环境并设置新调度进程的环境，而切换线程时只需保存和设置少量寄存器，开销很小</li>
+<li>通信：线程间可以通过直接读写同一进程中的数据进行通信，而进程通信需要借助IPC</li>
+</ol>
+<p>使用场景：<br>多线程相比于多进程占用内存少、CPU利用率高，创建销毁切换都较简单，速度快，同步复杂。<br>多进程相比于多线程共享数据复杂，需要进程间通信，但同步简单。<br>进程之间互不影响，但一个线程挂掉将导致整个进程挂掉。<br>多进程适合多核、多机分布，多线程适合多核分布。</p>
+<h4 id="进程状态"><a href="#进程状态" class="headerlink" title="* 进程状态"></a>* 进程状态</h4><ol>
+<li>就绪状态：等待被调度</li>
+<li>运行状态：占用资源运行</li>
+<li>阻塞状态：等待资源</li>
+<li>终止状态：运行完毕</li>
+</ol>
+<p>就绪态和运行态可以相互转换；就绪态获得CPU时间后转为运行态，运行态在分配的CPU时间片用完后转化为就绪态。<br>运行态缺少需要的资源（CPU时间除外）转为阻塞态。</p>
+<h4 id="进程调度算法的特点以及使用场景"><a href="#进程调度算法的特点以及使用场景" class="headerlink" title="*** 进程调度算法的特点以及使用场景"></a>*** 进程调度算法的特点以及使用场景</h4><p>针对不同环境下调度算法目标不同，需要分不同使用场景讨论。</p>
+<ol>
+<li><p>批处理系统，目标是保证吞吐量和周转时间（从提交到终止的时间）。<br>1）先来先服务FCFS：非抢占式，按照请求的顺序进行调度。有利于长作业，因为短作业要等前面的长作业执行完毕才能执行<br>2）短作业优先SJF：非抢占式，按照估计运行时间最短的顺序调度。长作业可能处于一直等待的状态，造成饿死现象<br>3）最短剩余时间优先SRTN：最短作业优先的抢占式版本，按剩余运行时间的顺序调度。如果新作业到达并且运行时间少于当前进程的剩余时间，则挂起当前进程，运行新进程</p>
+</li>
+<li><p>交互式系统，目标是快速地响应提高用户交互体验<br>1）时间片轮转：将所有就绪进程按FCFS原则排成一个队列，每次调度取出队首进程执行一个CPU时间片。时间片用完时，停止该进程，并送往就绪队列末尾，继续取出队首进程执行。但效率和时间片大小有关，当时间片过小，切换进程太频繁，开销增大，如果过大，则实时性得不到保证。<br>2）优先级调度：为每个进程分配一个优先级，按优先级调度。为防止低优先级的进程永远无法调度，可以随时间推移增加等待进程的优先级<br>3）多级反馈队列：多级队列主要考虑需要连续执行多个时间片的进程，设置了多个队列，每个队列时间片大小不同，进程在第一个队列分到的时间没有执行完会移动到下一个队列。最低时间片的队列优先级最高，只有上一个队列没有进程排队才会调度当前队列的进程。是时间片轮转和优先级调度算法的结合。</p>
+</li>
+</ol>
+<h4 id="线程实现的方式"><a href="#线程实现的方式" class="headerlink" title="* 线程实现的方式"></a>* 线程实现的方式</h4><ol>
+<li>用户级线程：仅存在于用户空间中，线程所有操作无需利用系统调用来实现。用户进程利用线程库来控制线程。</li>
+<li>内核级线程：建立和销毁由操作系统负责，通过系统调用完成。所有进程的线程都是依靠内核实现。</li>
+</ol>
+<p>Java实现线程的方式：</p>
+<ol>
+<li>继承Thread类，自定义run()方法，并通过start()启动新线程执行run</li>
+<li>实现Runnable接口，自定义run方法，并实例化一个Thread，将实现Runnable接口的类传入Thread，通过start()启动，相比继承Thread的方法，可以继承其余类。</li>
+<li>通过Callable和FutureTask创建线程。首先创建Callable接口的实现类，并实现call()；然后使用FutureTask类包装Callable对象；使用FutureTask对象作为Thread的target创建并启动线程，可以通过FutureTask对象的get()获取子线程执行结束的返回值</li>
+<li>通过线程池创建线程。降低资源损耗，提高系统响应速度，提高线程的可管理性</li>
+</ol>
+<h4 id="协程的作用"><a href="#协程的作用" class="headerlink" title="** 协程的作用"></a>** 协程的作用</h4><p>协程是一种特殊的用户级线程，在执行过程中，可以通过调用某个方法，主动交出控制权。并且在适当的时候继续返回执行。因此没有线程切换的开销，具有较高的执行效率。此外不需要多线程的锁机制，协程中控制共享资源不加锁，只判断资源状态。<br>可以使用多进程+协程的实现方式利用多核CPU，既充分利用多核，又充分发挥协程的高效率.<br>总之：</p>
+<ol>
+<li>协程由用户调度</li>
+<li>协程比线程更安全</li>
+<li>协程使用异步机制</li>
+</ol>
+<h4 id="常见进程同步问题"><a href="#常见进程同步问题" class="headerlink" title="** 常见进程同步问题"></a>** 常见进程同步问题</h4><ol>
+<li><p>生产者与消费者问题<br>一组生产者和消费者共享一块缓冲区，只有缓冲区不满时，生产者进程可以将消息放入缓冲区，只有缓冲区不为空时，消费者才能从中取出消息。缓冲区是临界资源。<br>需要记录缓冲区中消息的数量，使用信号量统计，empty记录缓冲区剩余可用的数量，不为0才可以放入消息，full记录缓冲区已用的数量，不为0才可以取消息。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">typedef int semaphore;</span><br><span class="line">semaphore mutex = 1;</span><br><span class="line">semaphore empty = N;</span><br><span class="line">semaphore full = 0;</span><br><span class="line"></span><br><span class="line">void producer() &#123;</span><br><span class="line">    while (true) &#123;</span><br><span class="line">        int item = produce_item();</span><br><span class="line">        down(empty);</span><br><span class="line">        down(mutex);</span><br><span class="line">        insert(item);</span><br><span class="line">        up(mutex);</span><br><span class="line">        up(full);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void consumer() &#123;</span><br><span class="line">    while (true) &#123;</span><br><span class="line">        down(full);</span><br><span class="line">        down(mutex);</span><br><span class="line">        int item = get();</span><br><span class="line">        consume(item);</span><br><span class="line">        up(mutex);</span><br><span class="line">        up(empty);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>读者-写者问题<br>允许多个进程同时对数据进行读操作，但不允许读写以及写写同时发生。有3种情况<br>读者优先：只要有读者，写者就得不到资源，容易造成写者饥饿</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">int count = 0;</span><br><span class="line">semaphore data_mutex = 1;  //数据锁</span><br><span class="line">semaphore count_mutex = 1;    //count锁</span><br><span class="line"></span><br><span class="line">void writer() &#123;</span><br><span class="line">    while (true) &#123;</span><br><span class="line">        down(data_mutex);</span><br><span class="line">        write;</span><br><span class="line">        up(data_mutex);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void reader() &#123;</span><br><span class="line">    while (true) &#123;</span><br><span class="line">        down(count_mutex);</span><br><span class="line">        if (count == 0) &#123;</span><br><span class="line">            down(data_mutex);</span><br><span class="line">        &#125;</span><br><span class="line">        count++;</span><br><span class="line">        up(count_mutex);</span><br><span class="line">        read();</span><br><span class="line">        down(count_mutex);</span><br><span class="line">        count--;</span><br><span class="line">        if (count == 0) &#123;</span><br><span class="line">            up(data_mutex);</span><br><span class="line">        &#125;</span><br><span class="line">        up(count_mutex);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>读写公平：写者只会等待比他先到的读者使用完资源。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">int readCount = 0;     //记录访问资源的读者数量</span><br><span class="line">semaphore resourceAccess = 1;</span><br><span class="line">semaphore readCountAccess = 1;</span><br><span class="line">semaphore serviceQueue = 1;     //读写抢占锁</span><br><span class="line"></span><br><span class="line">void writer() &#123;</span><br><span class="line">    while (true) &#123;</span><br><span class="line">        down(serviceQueue);</span><br><span class="line">        down(resourceAccess);</span><br><span class="line">        up(serviceQueue);</span><br><span class="line">        write();</span><br><span class="line">        up(resourceAccess);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void reader() &#123;</span><br><span class="line">    while (true) &#123;</span><br><span class="line">        down(serviceQueue);</span><br><span class="line">        down(readCountAccess);</span><br><span class="line">        if (readCount == 0) &#123;</span><br><span class="line">            down(resourceAccess);</span><br><span class="line">        &#125;</span><br><span class="line">        readCount++;</span><br><span class="line">        up(serviceQueue);</span><br><span class="line">        up(readCountAccess);</span><br><span class="line">        read();</span><br><span class="line">        down(readCountAccess);</span><br><span class="line">        readCount--;</span><br><span class="line">        if (readCount == 0) &#123;</span><br><span class="line">            up(resourceAccess);</span><br><span class="line">        &#125;</span><br><span class="line">        up(readCountAccess);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>写者优先，当有写者等待读取资源，读者就得不到资源，易造成读者饥饿。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">int readCount = 0, writeCount = 0;</span><br><span class="line">semaphore rMutex = 1, wMutex = 1, readLock = 1, resource = 1;</span><br><span class="line"></span><br><span class="line">void writer() &#123;</span><br><span class="line">    while (true) &#123;</span><br><span class="line">        down(wMutex);</span><br><span class="line">        if (writeCount == 0) &#123;</span><br><span class="line">            down(readLock);    //有写者就不释放</span><br><span class="line">        &#125;</span><br><span class="line">        writeCount++;</span><br><span class="line">        up(wMutex);</span><br><span class="line">        down(resource);    //写互斥，资源需要加锁</span><br><span class="line">        write();</span><br><span class="line">        up(resource);</span><br><span class="line">        down(wMutex);</span><br><span class="line">        writeCount--;</span><br><span class="line">        if (writeCount == 0) &#123;</span><br><span class="line">            up(readLock);</span><br><span class="line">        &#125;</span><br><span class="line">        up(wMutex);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void reader() &#123;</span><br><span class="line">    while (true) &#123;</span><br><span class="line">        down(readLock);</span><br><span class="line">        down(rMutex);</span><br><span class="line">        if (readCount == 0) &#123;</span><br><span class="line">            down(resource);</span><br><span class="line">        &#125;</span><br><span class="line">        readCount++;</span><br><span class="line">        up(rMutex);</span><br><span class="line">        up(readLock);</span><br><span class="line">        read();</span><br><span class="line">        down(rMutex);</span><br><span class="line">        readCount--;</span><br><span class="line">        if (readCount == 0) &#123;</span><br><span class="line">            up(resource);</span><br><span class="line">        &#125;</span><br><span class="line">        up(rMutex);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>哲学家进餐问题<br>哲学家围着一张圆桌，前面放着食物。每个哲学家生活只有思考和吃饭。当吃饭时需要先拿起左右两边的两根筷子，且一次只能拿起一根。<br>如果同时拿起左边筷子可能形成死锁。<br>解决方法1：对所有筷子加锁，每次一个人拿起左右两根。缺点是效率低，每次只能一个人动<br>方法2：必须同时拿起左右两根筷子，并且只有在两个邻居没进餐的情况下允许进餐</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">final int N = 5;</span><br><span class="line">final int THINKING = 0;</span><br><span class="line">final int HUNGRY = 1;</span><br><span class="line">final int EATING = 2;</span><br><span class="line">int state[N];</span><br><span class="line">semaphore mutex = 1;</span><br><span class="line">semaphore s[N];</span><br><span class="line"></span><br><span class="line">int left(int i) &#123;</span><br><span class="line">    return (i + N - 1) % N;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int right(int i) &#123;</span><br><span class="line">    return (i + 1) % N;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void philosopher(int i) &#123;</span><br><span class="line">    while (true) &#123;</span><br><span class="line">        think();</span><br><span class="line">        take_two(i);</span><br><span class="line">        eat();</span><br><span class="line">        put_two(i);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void take_two(int i) &#123;</span><br><span class="line">    down(mutex);</span><br><span class="line">    state[i] = HUNGRY;</span><br><span class="line">    test(i);</span><br><span class="line">    up(mutex);</span><br><span class="line">    down(s[i]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void put_two(int i) &#123;</span><br><span class="line">    down(mutex);</span><br><span class="line">    state[i] = THINKING;</span><br><span class="line">    test(left(i));</span><br><span class="line">    test(right(i));</span><br><span class="line">    up(mutex);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void test(int i) &#123;</span><br><span class="line">    if (state[i] == HUNGRY &amp;&amp; state[left(i)] != EATING &amp;&amp; state[right(i)] != EATING) &#123;</span><br><span class="line">        state[i] = EATING;</span><br><span class="line">        up(s[i]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h4 id="进程通信方法的特点以及使用场景"><a href="#进程通信方法的特点以及使用场景" class="headerlink" title="*** 进程通信方法的特点以及使用场景"></a>*** 进程通信方法的特点以及使用场景</h4><ol>
+<li>管道：通过调用pipe()创建，fd[0]用于读,fd[1]用于写。具有以下限制：1）只支持半双工通信（单向交替传输）；2）只能在父子进程或兄弟进程中使用。用于交互时需要写方关闭fd[0]，读方关闭fd[1]，形成单工通信。web服务器tinyhttpd形成的通信结构使用管道</li>
+<li>FIFO：命名管道，去除了管道只能在父子进程使用的限制。有两种用途：1）shell命令使用FIFO将数据从一条管道传送到另一条管道，无须创建中间的临时文件；2）可用于客户-服务器应用程序中，FIFO用作汇聚点，在客户进程和服务器进程之间传递数据，例如多个客户进程可以将请求写入到一个服务器进程的FIFO中，服务器进程取出请求根据客户进程id返回响应。</li>
+<li>消息队列：消息的链接表，存储在内核中，有消息队列标识符。相比FIFO有以下优点：1）可以独立于读写进程存在，避免了FIFO中同步管道的打开和关闭时可能产生的困难；2）避免了FIFO的同步阻塞问题，不需要进程自己提供同步方法；3）读进程可以根据消息类型有选择地接收消息，不像FIFO那样都要接收。</li>
+<li>信号量：是一个计数器，用于为多个进程提供对共享数据对象地访问。为获得共享资源，需要测试控制该资源的信号量，若为正则可以使用资源，并将信号量减1。否则若信号量为0，则进程休眠，直到信号量大于0，进程被唤醒。</li>
+<li>共享存储：允许多个进程共享一个给定的存储区，数据不需要在进程间复制，是最快的IPC。通过信号量来同步对共享存储的访问。若服务器进程正在将数据放入存储区，则在此完成之前，客户进程不应该去取数据。</li>
+<li>socket通信：实现跨主机进程通信</li>
+</ol>
+<p>IPC优缺点比较：</p>
+<ol>
+<li>如果用户传递的信息少，或只是为了发出某些行为。信号是一种间接有效的通信方式</li>
+<li>无名管道和命名管道的区别在于单向通信以及关联的进程</li>
+<li>消息队列允许任意进程通过共享队列进行进程间通信，并由系统调用函数实现消息发送和接收之间的同步，使得用户在使用消息队列通信时不需要考虑同步问题，使用方便。但消息队列中消息的复制需要耗费CPU时间，不适宜信息量大或频繁操作的场合。</li>
+<li>消息队列可以实现多对多，并需要在内存中实现，而管道可以在内存或磁盘上实现。</li>
+<li>共享内存无需复制，可以处理信息量大的情况，但需要考虑同步问题。</li>
+</ol>
+<h4 id="死锁必要条件，解决死锁策略，能写出和分析死锁的代码，能说明在数据库管理系统或者-Java-中如何解决死锁"><a href="#死锁必要条件，解决死锁策略，能写出和分析死锁的代码，能说明在数据库管理系统或者-Java-中如何解决死锁" class="headerlink" title="*** 死锁必要条件，解决死锁策略，能写出和分析死锁的代码，能说明在数据库管理系统或者 Java 中如何解决死锁"></a>*** 死锁必要条件，解决死锁策略，能写出和分析死锁的代码，能说明在数据库管理系统或者 Java 中如何解决死锁</h4><p>死锁必要条件：</p>
+<ol>
+<li>互斥：每个资源要么已经分配了一个进程，要么就是可用的</li>
+<li>占有和等待：已经得到了某个资源的进程可以不释放当前资源再请求新的资源</li>
+<li>不可抢占：已经分配给一个进程的资源不能强制性地被抢占，它只能被占有的进程显式地释放</li>
+<li>环路等待：有两个及以上的进程组成一条环路，该环路中的每个进程都在等待下一个进程占有的资源。</li>
+</ol>
+<p>解决策略：</p>
+<ol>
+<li>鸵鸟策略：假装问题没有发生。因为解决问题的代价可能很高。当死锁不会对用户造成很大影响或发生概率很低时，可以采用鸵鸟策略。</li>
+<li>死锁检测与死锁恢复：不阻止死锁发生，当检测到死锁发生时，采取措施恢复。检测方法有两种：1）每种类型一个资源的死锁检测，当存在环路时即检测到死锁发生。2）每种类型多个资源的死锁检测，记录所有进程请求的资源量和占有的资源量，为满足条件的进程分配资源，完成后释放所有占用资源，直到所有进程执行完或当前空闲资源量无法满足任一进程的要求。恢复方法有3种：1）利用抢占恢复；2）利用回滚恢复；3）通过杀死进程恢复</li>
+<li>死锁预防：运行之前预防发生死锁。1）破坏互斥条件，例如只有一个进程真正请求资源；2）破坏占有和等待条件：例如可以规定进程执行前一次性请求所需的全部资源；3）破坏不可抢占条件；4）破环环路等待：资源统一编号，进程只能按编号顺序请求资源</li>
+<li>死锁避免：定义安全状态：没有死锁发生，并且即使所有进程突然请求对资源的最大需求，也存在某种调度次序能够使得每一个进程运行完毕。银行家算法就是判断进程请求的资源满足后是否会进入不安全状态，如果是就拒绝，否则予以分配。</li>
+</ol>
+<p>数据库管理系统，常见死锁原因：</p>
+<ol>
+<li>事务之间对资源访问顺序的交替：用户A访问表A请求B，用户B访问表B请求A。解决方案：调整程序访问表顺序，或者同时请求所有资源</li>
+<li>并发修改同一记录：没有一次性申请所有权限的锁导致。解决方案：1）乐观锁，要实现写-写并发；2）悲观锁，开销大</li>
+<li>索引不当导致死锁：事务执行全表扫描，行级锁升级为表级锁，多个事务容易产生死锁。解决方案：SQL不要使用太复杂的多表查询；对于全表扫描的SQL语句建立索引优化。</li>
+</ol>
+<p>避免死锁的方案：</p>
+<ol>
+<li>固定顺序访问表和行</li>
+<li>大事务拆分成小事务</li>
+<li>同一个事务中，尽可能一次锁定所需要的所有资源</li>
+<li>降低隔离级别</li>
+<li>为表添加合理的索引</li>
+</ol>
+<p>Java造成死锁的原因：</p>
+<ol>
+<li>一个代码块中嵌套获得锁，并且以不同顺序请求相同的锁。</li>
+<li>在同步代码块中调用了外部的同步方法</li>
+</ol>
+<p>解决方案：</p>
+<ol>
+<li>保证请求锁的顺序一致</li>
+<li>让原子操作的范围最小化，避免在同步代码块中调用外部的同步方法</li>
+</ol>
+<h4 id="虚拟内存的作用，分页系统实现虚拟内存原理"><a href="#虚拟内存的作用，分页系统实现虚拟内存原理" class="headerlink" title="*** 虚拟内存的作用，分页系统实现虚拟内存原理"></a>*** 虚拟内存的作用，分页系统实现虚拟内存原理</h4><p>虚拟内存目的是为了让物理内存扩充成更大的逻辑内存，从而让程序获得更多的可用内存。提供了三个能力：</p>
+<ol>
+<li>缓存：将主存视为一个存储在磁盘上的地址空间的高速缓存，在主存中只保存活动区域，并根据需要在磁盘和主存之间来回传送数据。当程序引用到不在物理内存中的页时，由硬件执行必要的映射，将缺失部分装入物理内存并重新执行失败的指令</li>
+<li>为每个进程提供了一致的地址空间，简化内存管理。虚拟内存可以为进程提供独立的内存空间并引入多层的页表结构将虚拟内存翻译成物理内存，进程之间可以共享物理内存减少开销，也能简化程序的链接、装载以及内存分配过程。</li>
+<li>保护每个进程的地址空间不被其他进程破坏。可以控制进程对物理内存的访问，隔离不同进程的访问权限，提高系统的安全性</li>
+</ol>
+<p>每个程序拥有自己的地址空间，这个地址空间被分割成多个块，每一块称为一页，内存管理单元管理地址空间和物理内存的转换，页表中存储着页（程序地址空间）和页框（物理内存空间）的映射表。虚拟地址分为页面号和偏移量，通过页面号映射到实际的页框地址，拼接上偏移量即可得到物理地址。每个进程都具有一个页表，多个虚拟页表可以将虚拟内存映射到同一个共享的物理内存上</p>
+<h4 id="页面置换算法的原理，特别是-LRU-的实现原理，最好能手写，再说明它在-Redis-等作为缓存置换算法"><a href="#页面置换算法的原理，特别是-LRU-的实现原理，最好能手写，再说明它在-Redis-等作为缓存置换算法" class="headerlink" title="*** 页面置换算法的原理，特别是 LRU 的实现原理，最好能手写，再说明它在 Redis 等作为缓存置换算法"></a>*** 页面置换算法的原理，特别是 LRU 的实现原理，最好能手写，再说明它在 Redis 等作为缓存置换算法</h4><ol>
+<li>最佳算法（OPT）：被换出的页面最长时间内不再被访问，可以保证最低的缺页率。但由于页面多久不访问未知，只是理论算法</li>
+<li>最近最久未使用（LRU）：将最近最久未使用的页换出。</li>
+<li>最近未使用（NRU）：每个页面2个状态为R、M，被访问时设置R=1，被修改时M=1，R会定时清零。缺页中断时，随机从类编号最小的R=0的类中挑选一个并替换。</li>
+<li>先进先出（FIFO）：替换的页面是最先进入的</li>
+<li>第二次机会算法：当页面被访问时设置R=1，需要替换时，搜索最老的页面，如果R=0则替换，R=1则置为0，并放入链表尾当作最近访问的页面</li>
+<li>时钟：使用环形链表将页面连接起来，使用一个指针指向最老的页面</li>
+</ol>
+<p>LRU缓存方式在Redis中也有使用，voltile-lru从已设置过期时间的数据集中挑选最近最少使用的数据淘汰，allkeys-lru从主数据集中挑选最近最少使用的数据淘汰。</p>
+<h4 id="比较分页与分段的区别"><a href="#比较分页与分段的区别" class="headerlink" title="** 比较分页与分段的区别"></a>** 比较分页与分段的区别</h4><p>分页是将地址空间划分为固定大小的页，每一页再与物理内存映射。分段是将每个表分成段，一个段构成一个独立的地址空间，每个段长度不同，可以动态增长。<br>区别：</p>
+<ol>
+<li>对程序员的透明性：分页透明，但分段需要程序员显式划分每个段</li>
+<li>地址空间的维度：分页是一维地址空间，分段是二维的</li>
+<li>大小是否可以改变：页的大小不可变，段的大小可以动态改变</li>
+<li>出现原因：分页主要用于实现虚拟内存，从而获得更大的地址空间；分段主要是为了使程序和数据可以被划分到逻辑上独立的地址空间并且有助于共享和保护</li>
+</ol>
+<h4 id="分析静态链接的不足，以及动态链接的特点"><a href="#分析静态链接的不足，以及动态链接的特点" class="headerlink" title="*** 分析静态链接的不足，以及动态链接的特点"></a>*** 分析静态链接的不足，以及动态链接的特点</h4><p>静态链接的问题：</p>
+<ol>
+<li>当静态库更新时那么整个程序都要重新进行链接</li>
+<li>对于printf这种标准函数库，如果每个程序都要有代码，极大浪费资源</li>
+</ol>
+<p>动态链接的特点：</p>
+<ol>
+<li>在给定的文件系统中一个库只有一个文件，所有引用该库的可执行目标文件都共享这个文件，不会被复制到引用它的可执行文件中</li>
+<li>在内存中，一个共享库的.text节（已编码程序的机器代码）的一个副本可以被不同的正在运行的进程共享</li>
+</ol>
+<h4 id="文件系统的原理，特别是-inode-和-block。数据恢复原理"><a href="#文件系统的原理，特别是-inode-和-block。数据恢复原理" class="headerlink" title="** 文件系统的原理，特别是 inode 和 block。数据恢复原理"></a>** 文件系统的原理，特别是 inode 和 block。数据恢复原理</h4><p>组成有4种：</p>
+<ol>
+<li>inode：一个文件占用一个inode，记录文件的属性，同时记录此文件的内容所在的bolck编号，不包括文件名</li>
+<li>block：记录文件的内容，文件太大时，会占用多个block</li>
+<li>superblock：记录文件系统的整体信息，包括inode和block的总量、使用量和剩余量，以及文件系统的格式与相关信息</li>
+<li>block bitmap：记录block是否被使用的位图</li>
+</ol>
+<p>对于Ext2文件系统，要读取文件内容时，先在inode中找到所有block，然后读出来。block有1K、2K和4K，不同大小限制了单个文件和文件系统的最大大小。一个block只能被一个文件使用。inode大小固定为128bytes，每个文件仅会占用一个inode。一个inode可存储的block有限，无法直接映射，因此引入间接、双间接引用，让inode记录更多的block块引用，<br>通过向文件系统中引入日志功能，可以利用日志来修复文件系统。</p>
+<p>数据恢复：数据是以链式存储的方式存放在硬盘的数据区，当删除文件时，只是对硬盘的目录区进行操作，数据区没有改动，恢复数据就是对分区的数据区和目录区重新扫描，从目录区找回某个文件起始位置等属性，然后从数据区找出文件数据形成文件。</p>
+<h4 id="硬链接与软链接的区别"><a href="#硬链接与软链接的区别" class="headerlink" title="*** 硬链接与软链接的区别"></a>*** 硬链接与软链接的区别</h4><p>硬链接又称实体链接，在目录中创建一个条目，记录着文件名和inode编号，即指向源文件的inode。硬链接只能在同一文件系统的文件之间进行链接，不能对目录进行链接。如果删除指向的源文件，则硬链接文件仍存在，并且保留了原有文件内容，可以防止误操作而错误删除文件。ln默认创建硬链接<br>软链接又称符号链接，保存着源文件所在的绝对路径，读取时会定位到源文件上。可以为目录创建。源文件被删除时软链接打不开。应用有：一是方便管理，例如把一个复杂路径下的文件链接到一个简单路径下方便访问；二是解决磁盘空间不足的情况，将一个剩余空间多的文件系统中的目录链接到空间不足的文件系统中。</p>
+<h4 id="能够使用常用的命令，比如-cat-文件内容查看、find-搜索文件，以及-cut、sort-等管线命令。了解-grep-和-awk-的作用"><a href="#能够使用常用的命令，比如-cat-文件内容查看、find-搜索文件，以及-cut、sort-等管线命令。了解-grep-和-awk-的作用" class="headerlink" title="** 能够使用常用的命令，比如 cat 文件内容查看、find 搜索文件，以及 cut、sort 等管线命令。了解 grep 和 awk 的作用"></a>** 能够使用常用的命令，比如 cat 文件内容查看、find 搜索文件，以及 cut、sort 等管线命令。了解 grep 和 awk 的作用</h4><ol>
+<li>cat -n filename，打印文件内容，-n打印行号</li>
+<li>find [basedir] [option]，文件搜索，可以使用文件属性和权限搜索。1）时间：-mtime n；n天前那天修改过的文件；2）-uid n; -gid n; -user name; -group name; -nouser; -nogroup；3）-name filename; -size SIZE; -type TYPE; -perm mode；搜索权限等于mode的文件；-perm -mode：权限包含mode的文件</li>
+<li>cut对数据进行切分，取出想要的部分。-d：分隔符；-f：经过-d分隔后，使用-f n取出第n个区间；-c：以字符为单位取出区间</li>
+<li>sort用于排序，sort [-fbMnrtuk] [file or stdin]，-f：忽略大小写；-b：忽略最前面的空格；-M：以月份名字排序；-n：使用数字；-r：反向排序；-u：unique；-t：分隔符，默认tab；-k：指定排序区间</li>
+<li>grep：使用正则表达式进行全局查找并打印。grep [-acinv] [–color=auto] 字符串 filename。-c：统计个数；-i：忽略大小写；-n：输出行号；-v：反向选择，显示没有给定字符串的那行</li>
+<li>awk：每次处理一行，最小单位是字段。awk ‘条件类型1 {动作1}…’ filename</li>
+</ol>
+<p>cut、sort、grep和awk均可使用管道以前一个指令的结果作为输入</p>
+<h4 id="僵尸进程与孤儿进程的区别，从-SIGCHLD-分析产生僵尸进程的原因"><a href="#僵尸进程与孤儿进程的区别，从-SIGCHLD-分析产生僵尸进程的原因" class="headerlink" title="*** 僵尸进程与孤儿进程的区别，从 SIGCHLD 分析产生僵尸进程的原因"></a>*** 僵尸进程与孤儿进程的区别，从 SIGCHLD 分析产生僵尸进程的原因</h4><p>孤儿进程：父进程退出时子进程还在运行，则这些子进程成为孤儿进程，会被init进程收养并完成子进程的状态收集工作，不会对系统造成危害。<br>僵尸进程：一个子进程的进程描述符在子进程退出时不会释放，只有父进程通过wait()获取子进程信息后才会释放。如果子进程退出而父进程没有调用wait()，则子进程的进程描述符仍在系统中，称为僵尸进程。<br>子进程结束时会产生SIGCHLD信号给父进程，包含子进程的信息，如果父进程fork生成了多个子进程，子进程同时退出，但父进程只调用一次wait()，则最后一个子进程被销毁，而其余子进程成为僵尸进程。合理的做法是循环调用wait()收集所有子进程的SIGCHLD信号</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/interview/" rel="tag"># 面经</a>
+              <a href="/tags/OS/" rel="tag"># OS</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/02/21/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E6%80%BB%E7%BB%93/" rel="prev" title="操作系统总结">
+      <i class="fa fa-chevron-left"></i> 操作系统总结
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/02/21/%E5%88%86%E5%B8%83%E5%BC%8F%E6%9E%B6%E6%9E%84%E6%80%BB%E7%BB%93/" rel="next" title="分布式架构总结">
+      分布式架构总结 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%9B%E7%A8%8B%E5%92%8C%E7%BA%BF%E7%A8%8B%E7%9A%84%E6%9C%AC%E8%B4%A8%E5%8C%BA%E5%88%AB%EF%BC%8C%E4%BB%A5%E5%8F%8A%E5%90%84%E8%87%AA%E7%9A%84%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">*** 进程和线程的本质区别，以及各自的使用场景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%9B%E7%A8%8B%E7%8A%B6%E6%80%81"><span class="nav-number">2.</span> <span class="nav-text">* 进程状态</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%9B%E7%A8%8B%E8%B0%83%E5%BA%A6%E7%AE%97%E6%B3%95%E7%9A%84%E7%89%B9%E7%82%B9%E4%BB%A5%E5%8F%8A%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">3.</span> <span class="nav-text">*** 进程调度算法的特点以及使用场景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E5%AE%9E%E7%8E%B0%E7%9A%84%E6%96%B9%E5%BC%8F"><span class="nav-number">4.</span> <span class="nav-text">* 线程实现的方式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%8F%E7%A8%8B%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-number">5.</span> <span class="nav-text">** 协程的作用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E8%BF%9B%E7%A8%8B%E5%90%8C%E6%AD%A5%E9%97%AE%E9%A2%98"><span class="nav-number">6.</span> <span class="nav-text">** 常见进程同步问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%9B%E7%A8%8B%E9%80%9A%E4%BF%A1%E6%96%B9%E6%B3%95%E7%9A%84%E7%89%B9%E7%82%B9%E4%BB%A5%E5%8F%8A%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">7.</span> <span class="nav-text">*** 进程通信方法的特点以及使用场景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AD%BB%E9%94%81%E5%BF%85%E8%A6%81%E6%9D%A1%E4%BB%B6%EF%BC%8C%E8%A7%A3%E5%86%B3%E6%AD%BB%E9%94%81%E7%AD%96%E7%95%A5%EF%BC%8C%E8%83%BD%E5%86%99%E5%87%BA%E5%92%8C%E5%88%86%E6%9E%90%E6%AD%BB%E9%94%81%E7%9A%84%E4%BB%A3%E7%A0%81%EF%BC%8C%E8%83%BD%E8%AF%B4%E6%98%8E%E5%9C%A8%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%E6%88%96%E8%80%85-Java-%E4%B8%AD%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E6%AD%BB%E9%94%81"><span class="nav-number">8.</span> <span class="nav-text">*** 死锁必要条件，解决死锁策略，能写出和分析死锁的代码，能说明在数据库管理系统或者 Java 中如何解决死锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%9A%84%E4%BD%9C%E7%94%A8%EF%BC%8C%E5%88%86%E9%A1%B5%E7%B3%BB%E7%BB%9F%E5%AE%9E%E7%8E%B0%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E5%8E%9F%E7%90%86"><span class="nav-number">9.</span> <span class="nav-text">*** 虚拟内存的作用，分页系统实现虚拟内存原理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%A1%B5%E9%9D%A2%E7%BD%AE%E6%8D%A2%E7%AE%97%E6%B3%95%E7%9A%84%E5%8E%9F%E7%90%86%EF%BC%8C%E7%89%B9%E5%88%AB%E6%98%AF-LRU-%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%EF%BC%8C%E6%9C%80%E5%A5%BD%E8%83%BD%E6%89%8B%E5%86%99%EF%BC%8C%E5%86%8D%E8%AF%B4%E6%98%8E%E5%AE%83%E5%9C%A8-Redis-%E7%AD%89%E4%BD%9C%E4%B8%BA%E7%BC%93%E5%AD%98%E7%BD%AE%E6%8D%A2%E7%AE%97%E6%B3%95"><span class="nav-number">10.</span> <span class="nav-text">*** 页面置换算法的原理，特别是 LRU 的实现原理，最好能手写，再说明它在 Redis 等作为缓存置换算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AF%94%E8%BE%83%E5%88%86%E9%A1%B5%E4%B8%8E%E5%88%86%E6%AE%B5%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">11.</span> <span class="nav-text">** 比较分页与分段的区别</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%86%E6%9E%90%E9%9D%99%E6%80%81%E9%93%BE%E6%8E%A5%E7%9A%84%E4%B8%8D%E8%B6%B3%EF%BC%8C%E4%BB%A5%E5%8F%8A%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E7%9A%84%E7%89%B9%E7%82%B9"><span class="nav-number">12.</span> <span class="nav-text">*** 分析静态链接的不足，以及动态链接的特点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%8E%9F%E7%90%86%EF%BC%8C%E7%89%B9%E5%88%AB%E6%98%AF-inode-%E5%92%8C-block%E3%80%82%E6%95%B0%E6%8D%AE%E6%81%A2%E5%A4%8D%E5%8E%9F%E7%90%86"><span class="nav-number">13.</span> <span class="nav-text">** 文件系统的原理，特别是 inode 和 block。数据恢复原理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A1%AC%E9%93%BE%E6%8E%A5%E4%B8%8E%E8%BD%AF%E9%93%BE%E6%8E%A5%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">14.</span> <span class="nav-text">*** 硬链接与软链接的区别</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%83%BD%E5%A4%9F%E4%BD%BF%E7%94%A8%E5%B8%B8%E7%94%A8%E7%9A%84%E5%91%BD%E4%BB%A4%EF%BC%8C%E6%AF%94%E5%A6%82-cat-%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9%E6%9F%A5%E7%9C%8B%E3%80%81find-%E6%90%9C%E7%B4%A2%E6%96%87%E4%BB%B6%EF%BC%8C%E4%BB%A5%E5%8F%8A-cut%E3%80%81sort-%E7%AD%89%E7%AE%A1%E7%BA%BF%E5%91%BD%E4%BB%A4%E3%80%82%E4%BA%86%E8%A7%A3-grep-%E5%92%8C-awk-%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-number">15.</span> <span class="nav-text">** 能够使用常用的命令，比如 cat 文件内容查看、find 搜索文件，以及 cut、sort 等管线命令。了解 grep 和 awk 的作用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%83%B5%E5%B0%B8%E8%BF%9B%E7%A8%8B%E4%B8%8E%E5%AD%A4%E5%84%BF%E8%BF%9B%E7%A8%8B%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%8C%E4%BB%8E-SIGCHLD-%E5%88%86%E6%9E%90%E4%BA%A7%E7%94%9F%E5%83%B5%E5%B0%B8%E8%BF%9B%E7%A8%8B%E7%9A%84%E5%8E%9F%E5%9B%A0"><span class="nav-number">16.</span> <span class="nav-text">*** 僵尸进程与孤儿进程的区别，从 SIGCHLD 分析产生僵尸进程的原因</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Jiahang Gu</p>
+  <div class="site-description" itemprop="description">认真学习，享受生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">51</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JiahangGu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JiahangGu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/fengzhizi76506" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;fengzhizi76506" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jiahang Gu</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

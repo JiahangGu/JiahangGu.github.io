@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="基础知识 Redis为什么是单线程Redis是基于内存的操作，CPU不是Redis的瓶颈。单线程容易实现，而且CPU不会成为瓶颈，也可以省去线程切换上下文的开销 为什么使用IO多路复用来保证多连接的时候系统的高吞吐量。多路复用通过单线程高效地处理多个连接请求，可以减少网络IO地时间消耗。采用epoll实现的多路复用在监控时只需要将描述符复制到内核态一次，并且维护队列记录已经到达的事件，只需要O(1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis总结">
+<meta property="og:url" content="http://example.com/2022/02/21/Redis%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="菜汤里的咸鱼要翻身">
+<meta property="og:description" content="基础知识 Redis为什么是单线程Redis是基于内存的操作，CPU不是Redis的瓶颈。单线程容易实现，而且CPU不会成为瓶颈，也可以省去线程切换上下文的开销 为什么使用IO多路复用来保证多连接的时候系统的高吞吐量。多路复用通过单线程高效地处理多个连接请求，可以减少网络IO地时间消耗。采用epoll实现的多路复用在监控时只需要将描述符复制到内核态一次，并且维护队列记录已经到达的事件，只需要O(1">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20210619135953952.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20210619141339975.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20210619142534559.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20210619142706147.png">
+<meta property="og:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20210619143624771.png">
+<meta property="article:published_time" content="2022-02-21T04:19:07.000Z">
+<meta property="article:modified_time" content="2022-02-21T05:04:47.459Z">
+<meta property="article:author" content="Jiahang Gu">
+<meta property="article:tag" content="面经">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="c:/Users/fengzhizi/AppData/Roaming/Typora/typora-user-images/image-20210619135953952.png">
+
+<link rel="canonical" href="http://example.com/2022/02/21/Redis%E6%80%BB%E7%BB%93/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Redis总结 | 菜汤里的咸鱼要翻身</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">菜汤里的咸鱼要翻身</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/Redis%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Redis总结
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-21 12:19:07 / 修改时间：13:04:47" itemprop="dateCreated datePublished" datetime="2022-02-21T12:19:07+08:00">2022-02-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>15k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>14 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>基础知识</p>
+<h3 id="Redis为什么是单线程"><a href="#Redis为什么是单线程" class="headerlink" title="Redis为什么是单线程"></a>Redis为什么是单线程</h3><p>Redis是基于内存的操作，CPU不是Redis的瓶颈。单线程容易实现，而且CPU不会成为瓶颈，也可以省去线程切换上下文的开销</p>
+<h3 id="为什么使用IO多路复用"><a href="#为什么使用IO多路复用" class="headerlink" title="为什么使用IO多路复用"></a>为什么使用IO多路复用</h3><p>来保证多连接的时候系统的高吞吐量。多路复用通过单线程高效地处理多个连接请求，可以减少网络IO地时间消耗。采用epoll实现的多路复用在监控时只需要将描述符复制到内核态一次，并且维护队列记录已经到达的事件，只需要O(1)时间即可得到到达的事件，避免轮询。</p>
+<h3 id="Redis主从复制用什么结构"><a href="#Redis主从复制用什么结构" class="headerlink" title="Redis主从复制用什么结构"></a>Redis主从复制用什么结构</h3><p>单向链表结构，即Master&lt;-Slave1&lt;-Slave2… 可以方便解决单点故障问题，实现Slave对Master的替换，如果Master挂掉直接启用Slave1做Master</p>
+<h3 id="如何选择Redis回收策略"><a href="#如何选择Redis回收策略" class="headerlink" title="如何选择Redis回收策略"></a>如何选择Redis回收策略</h3><p>如果数据呈现幂律分布，即一部分数据访问频率高，一部分数据访问频率低，使用lru；如果数据平等分布，即所有数据访问频率相似，则使用random</p>
+<h3 id="Redis内存用完会发生什么"><a href="#Redis内存用完会发生什么" class="headerlink" title="Redis内存用完会发生什么"></a>Redis内存用完会发生什么</h3><p>内存到达上限后，写命令返回错误信息，读命令正常返回。可以配置内存淘汰机制，达到上线时淘汰旧数据</p>
+<h3 id="pipeline有什么好处？为什么要用"><a href="#pipeline有什么好处？为什么要用" class="headerlink" title="pipeline有什么好处？为什么要用"></a>pipeline有什么好处？为什么要用</h3><p>可以将多次IO往返的事件缩减为1次，前提是pipeline执行的指令之间没有因果相关性<br>可以提高Redis的QPS峰值</p>
+<h3 id="Redis两种集群方案的区别"><a href="#Redis两种集群方案的区别" class="headerlink" title="Redis两种集群方案的区别"></a>Redis两种集群方案的区别</h3><p>哨兵模式；着眼于高可用，在master宕机时会自动将slave升级为master，继续提供服务<br>Cluster模式：着眼于扩展性，单个redis内存不足时，使用cluster进行分片存储，并且添加/删除机器也更简单</p>
+<h3 id="如果有大量的key需要设置同一时间过期，一般需要注意什么"><a href="#如果有大量的key需要设置同一时间过期，一般需要注意什么" class="headerlink" title="如果有大量的key需要设置同一时间过期，一般需要注意什么"></a>如果有大量的key需要设置同一时间过期，一般需要注意什么</h3><p>如果key过期时间过于集中，到过期的时间点可能会出现暂时卡顿，需要在时间上加一个随机值，分散过期时间</p>
+<h3 id="Redis持久化数据和缓存怎么扩容"><a href="#Redis持久化数据和缓存怎么扩容" class="headerlink" title="Redis持久化数据和缓存怎么扩容"></a>Redis持久化数据和缓存怎么扩容</h3><p>如果当作缓存使用，可以通过一致性哈希实现动态扩容缩容；<br>如果被当作持久化存储使用，必须使用固定的key-node映射关系，节点数量确定后不能变化。否则使用可以在运行时进行数据再平衡的系统，当前只有Redis集群可以做到</p>
+<h3 id="缓存穿透"><a href="#缓存穿透" class="headerlink" title="缓存穿透"></a>缓存穿透</h3><p>缓存穿透：指的是对某个一定不存在的数据（在数据库中也没有）进行请求，该请求会穿透缓存到达数据库<br>解决方案：<br>1）对这些不存在的数据缓存一个空数据，设置一个较短的过期时间，第二次访问缓存就有值了<br>2）对这类请求进行过滤。可以使用布隆过滤器进行过滤，将所有可能存在的数据哈希到一个足够大的bitmap中，一个一定不存在的数据会被拦截掉。</p>
+<h3 id="缓存雪崩"><a href="#缓存雪崩" class="headerlink" title="缓存雪崩"></a>缓存雪崩</h3><p>缓存雪崩：指的是由于数据没有被加载到缓存中，或者缓存数据在同一时间大面积失效（过期），又或者缓存服务器宕机，导致大量的请求都到数据库。在有缓存的系统中，系统非常依赖缓存，分担了很大一部分的数据请求。当发生缓存雪崩时，数据库无法处理这么大的请求，导致数据库崩溃<br>解决方案：<br>1）为了防止缓存在同一时间大面积过期导致的缓存雪崩，可以通过观察用户行为，合理设置缓存过期时间来实现<br>2）为了防止缓存服务器宕机出现的缓存雪崩，可以使用分布式缓存，分布式缓存中每一个节点之缓存部分数据，当某个节点宕机时可以保证其他节点的缓存仍然可用<br>3）可以进行缓存预热，避免在系统刚启动不久由于还未将大量数据进行缓存导致缓存雪崩<br>4）并发量不是特别多的时候，使用加锁排队的方案<br>5）给每一个缓存数据增加相应的缓存标记，记录缓存是否失效，如果失效则更新数据缓存</p>
+<h3 id="缓存一致性"><a href="#缓存一致性" class="headerlink" title="缓存一致性"></a>缓存一致性</h3><p>缓存一致性要求数据更新的同时缓存数据也能够实时更新。<br>解决方案：</p>
+<ol>
+<li>在数据更新的同时立即去更新缓存；</li>
+<li>在读缓存之前先判断缓存是否是最新的，如果不是最新的先进行更新。</li>
+</ol>
+<p>要保证缓存一致性需要付出很大的代价，缓存数据最好是那些对一致性要求不高的数据，允许缓存数据存在一些脏数据。</p>
+<p>以下参考自<a target="_blank" rel="noopener" href="https://thinkwon.blog.csdn.net/article/details/103522351">博客</a></p>
+<h3 id="Redis为什么这么快"><a href="#Redis为什么这么快" class="headerlink" title="Redis为什么这么快"></a>Redis为什么这么快</h3><ol>
+<li>完全基于内存，绝大部分请求是纯粹的内存操作</li>
+<li>数据结构简单，对数据操作也简单，数据结构专门设计</li>
+<li>采用单线程，避免不必要的上下文切换和竞争条件，也不会因切换消耗CPU，不存在锁的问题</li>
+<li>使用多路IO复用模型</li>
+<li>底层模型不同，自己构建了VM机制，构建了自己的底层实现方式以及与客户端之间通信的应用协议</li>
+</ol>
+<h3 id="Redis如何优化内存"><a href="#Redis如何优化内存" class="headerlink" title="Redis如何优化内存"></a>Redis如何优化内存</h3><p>根据业务利用不同集合类型数据，将小的k-v对用更紧凑的方式放到一起，尽可能使用散列表</p>
+<h3 id="Redis线程模型"><a href="#Redis线程模型" class="headerlink" title="Redis线程模型"></a>Redis线程模型</h3><p>Redis基于Reactor模式开发了网络事件处理器，这个处理器被称为文件事件处理器，组成有4部分：多个套接字、IO多路复用程序、文件事件分派器和事件处理器。因为文件事件分派器队列的消费是单线程，Redis才称为单线程模型。文件事件处理器通过IO多路复用监听多个套接字，当套接字准备好操作时会产生与操作对应的文件事件，此时文件事件处理器会用此前套接字关联好的事件处理器来处理</p>
+<h3 id="Redis事务相关特点"><a href="#Redis事务相关特点" class="headerlink" title="Redis事务相关特点"></a>Redis事务相关特点</h3><p>Redis不支持回滚，事务失败时继续执行余下的命令。如果事务中的命令出现错误，所有命令不执行；如果一个事务中出现运行错误，正确的命令会被执行。<br>Redis的事务总是保证ACID中的一致性和隔离性。开启AOF时保证持久性，单条命令保证原子性</p>
+<h3 id="Redis集群方案（哨兵、Cluster和主从的区分）"><a href="#Redis集群方案（哨兵、Cluster和主从的区分）" class="headerlink" title="Redis集群方案（哨兵、Cluster和主从的区分）"></a>Redis集群方案（哨兵、Cluster和主从的区分）</h3><h5 id="Sentinel哨兵模式"><a href="#Sentinel哨兵模式" class="headerlink" title="Sentinel哨兵模式"></a>Sentinel哨兵模式</h5><p>用于实现Redis集群的高可用，有如下功能：</p>
+<ol>
+<li>集群监控：负责监控redis master和slave进程是否正常工作</li>
+<li>消息通知；如果某个redis实例有故障，那么哨兵负责发送消息作为报警通知给管理员</li>
+<li>故障转移：master挂了会自动转移到slave上</li>
+<li>配置中心：如果故障转移，会通知client客户端新的master地址</li>
+</ol>
+<p>哨兵本身也是分布式，作为哨兵集群运行，互相协同工作</p>
+<ol>
+<li>故障转移判断一个master是否宕机，需要多数哨兵同意，涉及到分布式选举的问题</li>
+<li>即使部分哨兵节点挂掉，哨兵集群还应该能正常工作</li>
+<li>哨兵至少需要3个实例，保证自己的健壮性</li>
+<li>哨兵+redis主从的部署结构，不保证数据零丢失，只能保证redis集群的高可用性</li>
+</ol>
+<h5 id="官方Redis-Cluster方案（服务端路由查询）"><a href="#官方Redis-Cluster方案（服务端路由查询）" class="headerlink" title="官方Redis Cluster方案（服务端路由查询）"></a>官方Redis Cluster方案（服务端路由查询）</h5><p>是一种服务端Sharding技术，不使用一致性hash，而是分为16384个槽，请求发送到任意节点，并由接收的节点转发到正确的节点上<br>方案：</p>
+<ol>
+<li>通过哈希方式将数据分片，每个节点均分存储一定哈希槽区间的数据，默认16384</li>
+<li>每份数据分片存储在多个互为主从的多节点上</li>
+<li>数据写入先写主节点，再同步到从节点</li>
+<li>同一分片多个节点间的数据不保持一致性</li>
+<li>读取数据时，当客户端操作的key没有分配在该节点上时，redis会返回转向指令，指向正确的节点</li>
+<li>扩容时需要把旧节点的数据迁移一部分到新节点</li>
+</ol>
+<p>节点间内部采用gossip协议进行通信<br>分布式寻址算法</p>
+<ol>
+<li>hash算法，包含大量缓存映射</li>
+<li>一致性hash算法+虚拟节点，实现自动缓存迁移和自动负载均衡</li>
+<li>hash槽算法</li>
+</ol>
+<p>优点：</p>
+<ol>
+<li>无中心架构，支持动态扩容，对业务透明</li>
+<li>具备哨兵模式的监控和自动故障转移能力</li>
+<li>客户端不需要连接集群所有节点，连接任何一个可用节点即可</li>
+<li>高性能，客户端直连，避免了代理的损耗</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>运维很复杂，数据迁移需要人工干预</li>
+<li>只能使用0号数据库</li>
+<li>不支持批量操作</li>
+<li>分布式逻辑和存储模块耦合</li>
+</ol>
+<h5 id="基于客户端分配"><a href="#基于客户端分配" class="headerlink" title="基于客户端分配"></a>基于客户端分配</h5><p>由客户端决定应该访问哪一个服务端，每个Redis实例为单服务器，容易扩展，灵活性高，但放在客户端导致Redis实例结构变化时客户端需要更新调整</p>
+<h5 id="基于代理服务器分片"><a href="#基于代理服务器分片" class="headerlink" title="基于代理服务器分片"></a>基于代理服务器分片</h5><p>客户端发送请求到一个代理，代理解析客户端数据，并将请求转发至正确的节点，最后将结果回复给客户端<br>特点：</p>
+<ol>
+<li>透明接入，业务程序不用关心后端Redis实例，切换成本低</li>
+<li>代理的逻辑和存储逻辑分离</li>
+<li>多了一层转发，性能有损耗</li>
+</ol>
+<h3 id="Redis主从架构"><a href="#Redis主从架构" class="headerlink" title="Redis主从架构"></a>Redis主从架构</h3><p>一主多从，主节点负责写，然后将修改的数据复制到slave节点，从节点负责读。<br>过程：启动一个从节点时，发送一个异步复制命令到主节点，如果是首次连接，会触发全量复制，主节点启动一个后台线程，开始生成RDB快照文件，同时将客户端发来的所有写命令缓存到内存中，RDB文件生成后，发送给从节点，从节点先写入本地磁盘，然后再从本地磁盘加载到内存中。接着主节点将内存中缓存的写命令发送到从节点进行同步。从节点因网络故障与主节点断开连接，重连后主节点仅复制从节点缺少的数据<br>特点：</p>
+<ol>
+<li>通过异步方式复制数据</li>
+<li>一主多从，并且以链表形式连接可以提高故障回复速度</li>
+<li>从节点复制时不阻塞主节点工作</li>
+<li>从节点复制时，不会阻塞自己的查询操作，用旧数据集提供服务，但复制完成时需要删除旧数据集，加载新的时会暂停服务</li>
+<li>主从结构主要是横向扩容，读写分离，提高读的吞吐量</li>
+</ol>
+<h3 id="为什么要做Redis分区"><a href="#为什么要做Redis分区" class="headerlink" title="为什么要做Redis分区"></a>为什么要做Redis分区</h3><p>分区可以让Redis管理更大的内存，Redis将可以使用所有机器的内存。如果没有分区，你最多只能使用一台机器的内存。分区使Redis的计算能力通过简单地增加计算机得到成倍提升，Redis的网络带宽也会随着计算机和网卡的增加而成倍增长。<br>实现方案：</p>
+<ol>
+<li>客户端分区</li>
+<li>代理分区</li>
+<li>查询路由</li>
+</ol>
+<h3 id="Redis分区缺点"><a href="#Redis分区缺点" class="headerlink" title="Redis分区缺点"></a>Redis分区缺点</h3><ol>
+<li>涉及多个key的操作通常不会被支持</li>
+<li>同时操作多个key，则不能使用Redis事务</li>
+<li>分区使用的粒度是key，不能使用一个非常长的排序key存储一个数据集</li>
+<li>使用分区时数据处理复杂</li>
+<li>动态扩容或缩容可能非常复杂</li>
+</ol>
+<h3 id="分布式锁"><a href="#分布式锁" class="headerlink" title="分布式锁"></a>分布式锁</h3><p>Redis使用SETNX命令获取锁，失败返回0，否则成功，并且得到锁后需要为key设置一个合理的过期时间，防止其他线程无法争用，释放锁时使用DEL命令删除</p>
+<h3 id="如何解决Redis并发竞争key问题"><a href="#如何解决Redis并发竞争key问题" class="headerlink" title="如何解决Redis并发竞争key问题"></a>如何解决Redis并发竞争key问题</h3><p>单机环境下可以使用事务操作。<br>集群环境，做了数据分片，如果涉及到多个key不一定存储在同一个redis-server，事务机制比较复杂。</p>
+<ol>
+<li>如果对key操作，不要求顺序。使用分布式锁，抢到锁就set即可</li>
+<li>如果要求顺序，则为每个kv数据保存一个时间戳，当抢到锁要修改数据的时候，发现数据时间戳晚于自己的数据，则无需修改，因为数据已经是最新的了</li>
+</ol>
+<h3 id="分布式Redis前期做还是后期规模大了再做好？为什么？"><a href="#分布式Redis前期做还是后期规模大了再做好？为什么？" class="headerlink" title="分布式Redis前期做还是后期规模大了再做好？为什么？"></a>分布式Redis前期做还是后期规模大了再做好？为什么？</h3><p>一开始就启动较多实例，当数据不断增长、需要更多Redis服务器时，仅需将Redis实例迁移到另一台服务器。开始可以在一台服务器上启动多个实例，以分布式方式运行，并实现分区</p>
+<h3 id="缓存雪崩、缓存穿透、缓存击穿、缓存预热、缓存降级"><a href="#缓存雪崩、缓存穿透、缓存击穿、缓存预热、缓存降级" class="headerlink" title="缓存雪崩、缓存穿透、缓存击穿、缓存预热、缓存降级"></a>缓存雪崩、缓存穿透、缓存击穿、缓存预热、缓存降级</h3><h5 id="缓存雪崩-1"><a href="#缓存雪崩-1" class="headerlink" title="缓存雪崩"></a>缓存雪崩</h5><p>缓存同一时间大面积失效，请求都落到数据库上，造成数据库短时间内承受大量请求而崩掉<br>解决方案：</p>
+<ol>
+<li>缓存数据的过期时间设置随机，防止同一时间大量数据过期现象发生</li>
+<li>一般并发量不是特别多的时候，使用最多的解决方案是加锁排队</li>
+<li>给每个缓存数据增加相应的缓存标记，记录缓存是否失效，如果失效则更新数据缓存</li>
+</ol>
+<h5 id="缓存穿透-1"><a href="#缓存穿透-1" class="headerlink" title="缓存穿透"></a>缓存穿透</h5><p>请求缓存和数据库中都没有的数据，所有请求都落到数据库上，造成数据库崩溃<br>方案：</p>
+<ol>
+<li>接口层增加校验</li>
+<li>缓存和数据库都没有的数据设置为key-null，且设置较短的有效时间</li>
+<li>采用布隆过滤器，将所有可能存在的数据哈希到一个足够大的bitmap中，对于一定不存在的数进行拦截</li>
+</ol>
+<p>布隆过滤器：引入多个相互独立的哈希函数，既然一个hash函数可能产生冲突，那使用多个hash函数，只有所有hash函数都校验通过的情况下，才认为这个数据存在</p>
+<h5 id="缓存击穿"><a href="#缓存击穿" class="headerlink" title="缓存击穿"></a>缓存击穿</h5><p>指缓存中没有但数据库有的数据（一般是缓存时间过期），此时由于并发用户狠多，读缓存没读到数据又去数据库取，引起数据库压力增大。注意是并发查同一条数据，但因为并发导致没查到<br>方案：</p>
+<ol>
+<li>设置热点数据不过期</li>
+<li>加互斥锁</li>
+</ol>
+<h5 id="缓存降级"><a href="#缓存降级" class="headerlink" title="缓存降级"></a>缓存降级</h5><p>当访问量剧增、服务出现问题（如响应时间慢或不响应）或非核心服务影响到核心流程的性能时，仍然需要保证服务还是可用的，即使是有损服务。系统可以根据一些关键数据进行自动降级，也可以配置开关实现人工降级。<br>最终目的是保证核心服务可用</p>
+<h3 id="如何保证缓存与数据库双写时的数据一致性"><a href="#如何保证缓存与数据库双写时的数据一致性" class="headerlink" title="如何保证缓存与数据库双写时的数据一致性"></a>如何保证缓存与数据库双写时的数据一致性</h3><p>先更新数据库，然后删除缓存，缓存没有命中再去数据库读并回写缓存。可能暂时产生不一致的情况，但发生概率很小。<br>另外还可以缓存异步刷新，但系统要能接受数据暂时不一致。</p>
+<h3 id="Redis常见性能问题和解决方案"><a href="#Redis常见性能问题和解决方案" class="headerlink" title="Redis常见性能问题和解决方案"></a>Redis常见性能问题和解决方案</h3><ol>
+<li>master最好不要做任何持久化工作，包括rdb和aof，特别是不要启用rdb</li>
+<li>如果数据比较关键，某个slave开启AOF备份，每秒同步1次</li>
+<li>为了主从复制的速度和连接的稳定性，slave和master最好在同一个局域网内</li>
+<li>避免在压力较大的主库上增加从库</li>
+<li>Master调用BGREWRITEAOF重写AOF文件，AOF在重写的时候会占大量的CPU和内存资源，导致服务load过高，出现短暂服务暂停现象</li>
+<li>主从复制使用链表结构代替图结构可以增强master的稳定性，并且也方便解决单点故障</li>
+</ol>
+<h3 id="Redis如何做大量数据插入"><a href="#Redis如何做大量数据插入" class="headerlink" title="Redis如何做大量数据插入"></a>Redis如何做大量数据插入</h3><p>客户端支持pipe mode的新模式用于执行大量数据插入，可以理解为流水线</p>
+<h3 id="加入Redis里有1亿个key，其中10万个key以某个固定已知前缀开头，如何全部找出来"><a href="#加入Redis里有1亿个key，其中10万个key以某个固定已知前缀开头，如何全部找出来" class="headerlink" title="加入Redis里有1亿个key，其中10万个key以某个固定已知前缀开头，如何全部找出来"></a>加入Redis里有1亿个key，其中10万个key以某个固定已知前缀开头，如何全部找出来</h3><p>使用keys指令可以扫出指定模式的key列表<br>追问：如果redis正在给线上的业务提供服务，使用keys指令会有什么问题？<br>redis是单线程的，keys指令导致线程阻塞直到指令执行完毕，期间线上服务会停顿。可以使用scan指令，无阻塞地提取指定模式的key列表，但会有重复，需要在客户端做去重，并且整体花费时间也比keys长</p>
+<h3 id="Redis如何实现异步队列"><a href="#Redis如何实现异步队列" class="headerlink" title="Redis如何实现异步队列"></a>Redis如何实现异步队列</h3><p>使用list类型保存数据信息，rpush生成，lpop消费，当lpop没有消息时可以sleep然后再检查有没有信息，或者可以使用blpop，会一直阻塞到信息到来。Redis可以通过pub/sub主题订阅模式实现一个生产者和多个消费者，当消费者下线时，生产的消息会丢失</p>
+<h3 id="Redis如何实现延时队列"><a href="#Redis如何实现延时队列" class="headerlink" title="Redis如何实现延时队列"></a>Redis如何实现延时队列</h3><p>使用zset，使用时间戳做score，消息内容为key，调用zadd生产消息，消费者使用zrangebyscore获取n秒之前的数据做处理</p>
+<h3 id="Redis回收进程如何工作"><a href="#Redis回收进程如何工作" class="headerlink" title="Redis回收进程如何工作"></a>Redis回收进程如何工作</h3><p>客户端运行命令添加新数据，Redis检查内存使用情况，如果大于maxMemory限制，根据设定好的策略回收。即不断穿越内存限制的边界，并不断回收回到边界以下</p>
+<p>下文参考自<a target="_blank" rel="noopener" href="https://thinkwon.blog.csdn.net/article/details/103522351">博客</a></p>
+<h3 id="AOF和RDB持久化方式对比"><a href="#AOF和RDB持久化方式对比" class="headerlink" title="AOF和RDB持久化方式对比"></a>AOF和RDB持久化方式对比</h3><ol>
+<li>AOF文件比RDB更新频率高，优先使用AOF还原数据，因为AOF保存的数据比RDB更多，而RDB可能因为快照生成时间导致丢失数据</li>
+<li>AOF比RDB更安全也更大</li>
+<li>RDB性能比AOF好，因为AOF里存储的是Redis命令，而RDB存储的快照数据，RDB加载更快</li>
+<li>如果两个都配了，则故障恢复时优先加载AOF</li>
+</ol>
+<h3 id="RDB持久化原理"><a href="#RDB持久化原理" class="headerlink" title="RDB持久化原理"></a>RDB持久化原理</h3><p>RDB持久化通过快照实现，在指定的时间间隔内将内存的数据集快照写入磁盘，恢复的时候就是将快照文件读取到内存中</p>
+<ol>
+<li>手动触发可以使用save和bgsave命令<br>save：阻塞当前Redis服务器，知道RDB过程完成为止，对于内存较大的实例会造成长时间阻塞，不建议使用<br>bgsave：Redis进程执行fork操作创建子进程，RDB持久化过程由子进程负责，完成后自动结束。阻塞只发生在fork阶段，一般时间很短。bgsave是针对save阻塞问题做的优化。因为Redis是单线程，所以需要fork创建子进程进行文件IO，而主进程不会阻塞</li>
+<li>其他一些命令会被动触发RDB持久化。1）FLUSHALL：清空命令触发持久化，但dump.rdb为空，无意义；2）SHUTDOWN：关闭数据库会触发持久化，前提是AOF没有开启；3）DEBUG RELOAD：重新加载redis时，也会自动触发save操作</li>
+<li>配置redis.conf可以设置save</li>
+</ol>
+<h3 id="bgsave具体工作流程"><a href="#bgsave具体工作流程" class="headerlink" title="bgsave具体工作流程"></a>bgsave具体工作流程</h3><ol>
+<li>执行bgsave命令，父进程判断当前是否存在正在执行的子进程，如RDB/AOF进程，如果存在则返回</li>
+<li>父进程执行fork操作创建子进程，fork操作过程中父进程会阻塞</li>
+<li>fork完成后，bgsave命令返回且不再阻塞父进程，可以继续响应其他命令</li>
+<li>子进程创建RDB文件，根据父进程内存生成临时快照文件，完成后对原有文件进行替换</li>
+<li>进程发送信号给父进程表示完成，父进程更新统计信息</li>
+</ol>
+<p>在第3步中，由于不能对同一片内存操作，用到copy on write机制，当需要写指令时，复制一个内存页面处理新请求，而子进程保存的内存是不变的</p>
+<h3 id="RDB优缺点"><a href="#RDB优缺点" class="headerlink" title="RDB优缺点"></a>RDB优缺点</h3><p>优点</p>
+<ol>
+<li>对数据完整性要求不高</li>
+<li>主进程不进行任何IO操作，对数据大规模恢复有很高性能，适合全量恢复、备份场景</li>
+</ol>
+<p>缺点</p>
+<ol>
+<li>fork进程的时候，占用一定的内存空间</li>
+<li>需要一定的时间间隔进行操作，如果redis意外宕机，则最后一次修改的数据没有了</li>
+</ol>
+<h3 id="AOF持久化原理"><a href="#AOF持久化原理" class="headerlink" title="AOF持久化原理"></a>AOF持久化原理</h3><p>以独立日志的方式记录每次写命令，重启时再重新执行AOF文件的命令恢复数据。主要是解决了数据持久化的实时性，默认不开启，如果开启则优先使用</p>
+<h3 id="具体工作流程"><a href="#具体工作流程" class="headerlink" title="具体工作流程"></a>具体工作流程</h3><ol>
+<li>命令的实时写入，调用到命令</li>
+<li>所有写入命令追加到aof_buf（缓冲区）中</li>
+<li>aof缓存区根据对应策略向磁盘做同步操作（同步频率）</li>
+<li>AOF文件增长很块，需要定期进行重写，压缩，父进程执行fork创建子进程，由子进程根据内存快照执行aof重写，而父进程继续响应后面命令并写入aof_rewrite_buf(重写缓冲区)，在子进程完成重写后，重写缓冲区再把新增命令写入到AOF文件中。（如果重写时挂了，父进程写入到重写缓冲区的命令不就丢了？并没有，父进程依然会将新的写入命令更新到旧的AOF文件中，子进程是根据内存快照执行重写的，与AOF文件无关）。主动触发使用bgrewriteaof命令</li>
+</ol>
+<h3 id="AOF缓冲区和AOF重写缓冲区有什么区别？"><a href="#AOF缓冲区和AOF重写缓冲区有什么区别？" class="headerlink" title="AOF缓冲区和AOF重写缓冲区有什么区别？"></a>AOF缓冲区和AOF重写缓冲区有什么区别？</h3><p>aof缓冲区：正常使用aof作为数据落地中间地带，所有数据先到aof缓冲区再到aof文件<br>aof重写缓冲区：aof触发重写机制时，redis还要继续接受数据，这个数据写到aof重写缓冲区，当aof重写ok时，主进程再把aof重写缓冲区的数据写到新的aof文件，然后重命名</p>
+<h3 id="缓冲区对硬盘操作同步有哪些策略"><a href="#缓冲区对硬盘操作同步有哪些策略" class="headerlink" title="缓冲区对硬盘操作同步有哪些策略"></a>缓冲区对硬盘操作同步有哪些策略</h3><p>通过参数appendfsync控制</p>
+<ol>
+<li>always：命令写入aof_buf后调用系统fsycn操作同步到aof文件，fsync完成后线程返回。每次都要同步文件，普通硬盘无法达到高性能</li>
+<li>everysec：命令写入aof_buf后调用系统write操作，write完成后线程返回。fsync同步操作由线程每秒调用一次（建议策略）。默认的同步策略</li>
+<li>no：命令写入aof_buf后调用系统write操作，不对aof文件进行fsync同步，同步硬盘的操作由OS负责，通常同步周期最长30秒。每次同步周期不可控，但会加大每次同步硬盘的数据量，提升了写入性能，但数据安全性无法保证</li>
+</ol>
+<h3 id="为什么重写可以变小AOF文件"><a href="#为什么重写可以变小AOF文件" class="headerlink" title="为什么重写可以变小AOF文件"></a>为什么重写可以变小AOF文件</h3><ol>
+<li>重写的时候，进程内已经超时的数据不再写入文件</li>
+<li>旧的AOF文件含有无效命令，重写使用进程内数据直接生成，新的AOF文件只保留最终的数据的写入命令</li>
+<li>多条写命令可以合并为一个，为了防止溢出，以64个元素为界拆分成多条</li>
+</ol>
+<h3 id="Redis过期键删除策略"><a href="#Redis过期键删除策略" class="headerlink" title="Redis过期键删除策略"></a>Redis过期键删除策略</h3><ol>
+<li>定时过期：每个设置过期时间的key都要创建一个定时器，过期时会立即清楚，对内存友好，但会占用CPU资源处理过期数据，影响缓存的响应时间和吞吐</li>
+<li>惰性过期：只有当访问一个key时，才会判断key是否已过期，过期则清除。可以最大化节省CPU，但内存不友好。可能出现大量的过期key没有再次被访问，从而不会被清除。</li>
+<li>定期过期：每隔一定时间，会扫描一定数量的数据库的expires字典中一定数量的key，并清除已过期的key。expires字典保存所有设置了过期时间的key（指向某个键的指针）和过期时间。</li>
+</ol>
+<p>Redis中同时使用了惰性过期和定期过期两种策略</p>
+<h3 id="Redis使用规范"><a href="#Redis使用规范" class="headerlink" title="Redis使用规范"></a>Redis使用规范</h3><ol>
+<li>冷热数据区分</li>
+<li>业务数据分离</li>
+<li>消息大小限制，大文本数据压缩后存储</li>
+<li>连接数限制</li>
+<li>缓存key设置失效时间</li>
+<li>缓存不能有中间态</li>
+<li>扩展方式首选客户端hash</li>
+<li>线上Redis禁止使用keys正则匹配，会阻塞线上其他命令的正常请求，可以使用scan+去重实现</li>
+<li>谨慎全量操作Hash、Set等集合结构，会导致效率急剧下降、网卡打满等问题，建议对结构进行拆分</li>
+</ol>
+<h3 id="Redis的优势"><a href="#Redis的优势" class="headerlink" title="Redis的优势"></a>Redis的优势</h3><ol>
+<li>性能极高：读110000次/s，写81000次/s</li>
+<li>丰富的数据类型：String, List, Hash, Set, ZSet</li>
+<li>事务：所有操作都是原子性的</li>
+<li>丰富特性：支持发布-订阅模式，通知，key过期等</li>
+</ol>
+<h3 id="高性能经验"><a href="#高性能经验" class="headerlink" title="高性能经验"></a>高性能经验</h3><ol>
+<li>master最好不要做任何持久化工作，如RDB和AOF</li>
+<li>如果数据比较重要，可以某个slave开启aof备份，策略为每秒同步一次</li>
+<li>为了主从复制的速度和连接稳定性，master和slaver最好在同一个局域网内</li>
+<li>尽量避免在压力很大的主库上增加从库</li>
+<li>主从复制使用单向链表</li>
+</ol>
+<h3 id="Redis中存在很多的key，如何取出特定的key"><a href="#Redis中存在很多的key，如何取出特定的key" class="headerlink" title="Redis中存在很多的key，如何取出特定的key"></a>Redis中存在很多的key，如何取出特定的key</h3><ol>
+<li>String：Get命令获取特定key值，如果key不存在返回null，如果存储的值不是String类型，则返回错误</li>
+<li>hash：Hget命令用于返回哈希表中指定字段的值，如果给定字段或key不存在，返回null</li>
+<li>list：Lindex用于通过索引获取列表中的元素，如果指定索引值不再列表区间范围，返回null。也可以使用负数下标</li>
+<li>set：Sinter命令返回所有给定集合的交集，不存在的集合key被视为空集。</li>
+<li>Zset：如果成员是有序集key的成员，则返回成员排名，否则返回null</li>
+</ol>
+<h2 id="Redis应用示例"><a href="#Redis应用示例" class="headerlink" title="Redis应用示例"></a>Redis应用示例</h2><p>常用命令的效果展示</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># </span><span class="language-bash">所有操作的返回为0表示结果为0或者操作失败（但没有发生异常），nil表示不存在，ERROR表示语法错误或运行时错误，数字表示正常的执行结果</span></span><br><span class="line">select 3  #选择数据库，默认16个</span><br><span class="line">dbsize    #查询当前数据库大小</span><br><span class="line">flushdb		# 清空当前数据库</span><br><span class="line">flushall	# 清空所有数据库</span><br><span class="line">set key val		# 设置kv，默认字符串</span><br><span class="line">get key		</span><br><span class="line">keys *		# 查看所有key</span><br><span class="line">keys parttern	# 查找所有符合表达式的key</span><br></pre></td></tr></table></figure>
+
+<p>Redis单线程，因为基于内存操作，CPU不是性能瓶颈，瓶颈是内存和网络带宽。</p>
+<p>为什么快：C语言写的，读QPS11W+，写QPS8W。多线程会有线程上下文切换的开销</p>
+<p>但是从3.0开始有了多线程版本</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># </span><span class="language-bash">基本操作</span></span><br><span class="line">exists key	# 判断key是否存在</span><br><span class="line">move key db	# 从db中移除key</span><br><span class="line">expire key seconds	# 设置key过期时间，单位秒</span><br><span class="line">ttl key		# 查看数据过期时间</span><br><span class="line">type key	# 查看key的数据类型</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># </span><span class="language-bash">String操作</span></span><br><span class="line">set key val</span><br><span class="line">get key</span><br><span class="line">append key val1		# 在key后追加字符val1</span><br><span class="line">strlen key		# 查看字符串长度</span><br><span class="line">incr key		# key的val加1</span><br><span class="line">incrby key step # key的val加step</span><br><span class="line">decr key</span><br><span class="line">decr key step</span><br><span class="line">getrange key start end # 得到key的value[start, end]</span><br><span class="line">getrange key 0 -1	# 得到val，等于get</span><br><span class="line">setex key second val	# 设置key的val并且添加过期时间</span><br><span class="line">setnx key val		# 当key不存在时设置val，否则设置失败返回0</span><br><span class="line">mset k1 v1 k2 v2...		# 批量设置keys</span><br><span class="line">mget k1 k2...			# 批量获取keys</span><br><span class="line">msetnx	k1 v1 k2 v2		# 批量setnx，是一个原子操作，要么都成功要么都失败</span><br><span class="line">set user:1:name val		# 设置对象，使用:隔开，表示不同的属性</span><br><span class="line">getset key val		# 先得到key的val，然后再设置为新的val</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># </span><span class="language-bash">List，命令前加l</span></span><br><span class="line">lpush list one	# 将一个值或多个值插入到list左侧</span><br><span class="line">lrange list 0 -1 # 获得所有list值</span><br><span class="line">lrange list start end	# 获得list[start, end]</span><br><span class="line">rpush list one	# 插入到右侧</span><br><span class="line">rrange list start end</span><br><span class="line">lpop list		# 弹出左侧第一个元素</span><br><span class="line">rpop list</span><br><span class="line">lindex list idx		# 通过下标idx获得值</span><br><span class="line">llen		# 查看list长度</span><br><span class="line">lrem list cnt ele    # 从list中移除cnt个ele（都叫ele，同名元素）,精确匹配</span><br><span class="line">ltrim list start, end	# 截取list，只剩下list[start, end]元素</span><br><span class="line">lpoprpush source dest	# 从source左侧弹出并放入dest右侧</span><br><span class="line">exists list		# 查看list是否存在</span><br><span class="line">lset list idx item	# 设置list[idx]=item，如果idx下标不存在会报错ERR </span><br><span class="line">linsert list before|after target new_val	# 在list中插入new_val，参考target位置</span><br><span class="line">实际上是一个双向链表</span><br><span class="line">两边插值效率高，中间效率低</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># </span><span class="language-bash">Set，命令前加s</span></span><br><span class="line">sadd myset val #向set添加元素</span><br><span class="line">smembers myset # 查看set所有值</span><br><span class="line">sismember myset val # 查看val是否在set中</span><br><span class="line">scard myset 	# 获取set元素个数</span><br><span class="line">srem myset val	# 从set中移除val</span><br><span class="line">srandmember myset # 从set中随机取值</span><br><span class="line">spop myset		# 随机删除set中元素</span><br><span class="line">smove source dest val	# 将source中的val移动到dest中</span><br><span class="line">sdiff set1 set2		# 做set1和set2的差集</span><br><span class="line">sinter set1 set2	# 做交集</span><br><span class="line">sunion set1 set2	# 做并集</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># </span><span class="language-bash">Hash，命令前加h，和String类似</span></span><br><span class="line">hset myhash key val		# 设置key-val</span><br><span class="line">hget myhash key			# 得到key的val</span><br><span class="line">hmset myhash k1 v1 k2 v2...	# 设置多个kv</span><br><span class="line">hmget myhash k1 k2...		# 获取多个key</span><br><span class="line">hgetall myhash			# 获取全部数据，以k-v形式展示</span><br><span class="line">hdel myhash key		# 删除hash中的key，连同val</span><br><span class="line">hlen myhash			# 查看hash的元素个数</span><br><span class="line">hkeys myhash		# 获取所有的keys</span><br><span class="line">hvals myhash		# 获取所有的vals</span><br><span class="line">hincrby myhash key step	# </span><br><span class="line">hsetnx myhash key val	# 存在不能设置，返回0</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># </span><span class="language-bash">Zset，命令前加z</span></span><br><span class="line">zadd myzset score key		# 向zset加key和score，score为排序标准</span><br><span class="line">zrangebyscore myzset min max (withscores)		# 指定范围查询，score在[min, max]中，with可以带上想显示的其余信息</span><br><span class="line">zrange myzset start end		# 查询</span><br><span class="line">zrem myzset key		# 移除指定元素</span><br><span class="line">zcard myzset		# 获取集合中的元素个数</span><br><span class="line">zrevrange myzset start end	# 逆序排序</span><br><span class="line">zcount myzset min max 		# 获取指定区间的成员数量n</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># </span><span class="language-bash">Geospatial，地理位置，命令前加geo</span></span><br><span class="line">geoadd mygeo 经度([-180,180]) 纬度([0,90]) name   # 添加位置，</span><br><span class="line">geodist mygeo name1 name2 单位(m|km|英尺|英里)		# 获取两个位置的距离</span><br><span class="line">geohash mygeo name		# 将给定name转化为hash值（11位）</span><br><span class="line">geopos mygeo name		# 获取name的经纬度</span><br><span class="line">georadius mygeo 经度 纬度 半径数值 半径单位    # 获取以输入经纬度为中心，方圆若干米的所有name</span><br><span class="line">georadiusbymember mygeo name 半径数值 半径单位	# 获得以指定name为中心方圆若干米的所有name</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># </span><span class="language-bash">Hyperloglog，基数类型。做基数统计，命令前加pf</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">什么是基数：A = &#123;1,2,3&#125;, B = &#123;2,3,4&#125;，则基数(A, B) = 4，即集合中不重复的元素</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">优点：占用内存固定，2^64数据只需12KB内存。如果使用<span class="built_in">set</span>会占用大量内存</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">但是存在0.81%的错误率，需要根据场景设计</span></span><br><span class="line">pfadd set a b c d 	# 添加元素</span><br><span class="line">pfcount	set		# 统计set基数个数</span><br><span class="line">pfmerge dest source1 source2	# 合并source集合到dest集合</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># </span><span class="language-bash">Bitmaps</span></span><br><span class="line">setbit sign idx 0|1		# 将sign的第idx位置为0或1</span><br><span class="line">getbit sign idx			# 获得sign的第idx位</span><br><span class="line">bitcount sign start end			# 获得sign[start, end]中1的个数</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># </span><span class="language-bash">事务</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">没有隔离级别的概念，不存在脏读等情况</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">Redis单条命令原子性，但事务不保证原子性</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">本质，一个任务队列</span> </span><br><span class="line"><span class="meta"># </span><span class="language-bash">队列 [命令1，命令2...]按照顺序执行一次，具有顺序性、一次性、排他性</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">只有在发起执行后才会执行，否则存到队列</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">阶段：</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">1.开启事务（multi）</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">2.命令入队（输入的命令）</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">3.执行事务（<span class="built_in">exec</span>）</span></span><br><span class="line">----------</span><br><span class="line">multi</span><br><span class="line">set k1 v1</span><br><span class="line">set k2 v1</span><br><span class="line">exec</span><br><span class="line">----------</span><br><span class="line"><span class="meta"># </span><span class="language-bash">入<span class="built_in">exec</span>之后才会依次执行，并输出每条指令的结果</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">放弃事务</span></span><br><span class="line">multi</span><br><span class="line">***</span><br><span class="line">discard</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">编译型异常（代码有问题），事务中所有命令都不会执行</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">运行时异常（例如除0，字符串自增）执行命令的时候，其余命令可以执行，不会打断后续执行</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">乐观锁，使用watch</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">悲观锁</span></span><br><span class="line">---------</span><br><span class="line">watch name</span><br><span class="line">multi</span><br><span class="line">***</span><br><span class="line">exec</span><br><span class="line">---------</span><br><span class="line"><span class="meta"># </span><span class="language-bash">其余线程对name做了修改，则这个事务执行失败</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">unwatch 取消监视</span></span><br></pre></td></tr></table></figure>
+
+<p>Jedis，操作和redis基本一致</p>
+<p>Springboot2.0之后使用Lettuce替换Jedis</p>
+<p>Jedis：直连，多个线程操作不安全，可以使用jedis pool连接池，BIO模式</p>
+<p>lettuce：采用netty，实例可以在多个线程中共享，不存在多线程不安全情况，可以减少线程数据</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># </span><span class="language-bash">Redis配置，redis.conf</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">单位1k, 1kb, 1m, 1mb, 1g, 1gb，大小写不敏感</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">include 可以包含多个配置文件</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">network</span></span><br><span class="line">bind ip </span><br><span class="line">protected-mode yes		# 保护模式</span><br><span class="line">port 6379</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">通用</span></span><br><span class="line">daemonize yes	# 开启守护进程，默认是no</span><br><span class="line">pidfile		filepath	# 守护进程pid文件</span><br><span class="line">loglevel	notice		# 日志级别，debug，verbose，notice，warning</span><br><span class="line">logfile filepath	# 日志文件，为空则标准输出</span><br><span class="line">databases 16	# 数据库数量</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">快照，规定时间内执行多少次操作会持久化到文件dump.rdb</span></span><br><span class="line">save 900 1 # 900秒内执行至少1个key有修改操作则持久化</span><br><span class="line">save 300 10</span><br><span class="line">save 60 10000</span><br><span class="line">stop-writes-on-bgsave-error yes		# 持久化出错是否继续工作</span><br><span class="line">rdbcompression yes		# 快照压缩，需要消耗cpu</span><br><span class="line">rdbchecksum yes		# 保存rdb文件时，进行错误校验</span><br><span class="line">dir ./		# rdb文件保存目录</span><br><span class="line">dbfilename dump.rdb		# rdb文件名</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">复制，主从复制的配置</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">Security，安全</span></span><br><span class="line">requirepass &quot;123456&quot; # 设置密码，默认为空</span><br><span class="line"><span class="meta"># </span><span class="language-bash">命令行设置</span></span><br><span class="line">config set requirepass &quot;123456&quot;</span><br><span class="line">config get requirepass</span><br><span class="line">auth pass		# 使用密码登录</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">Clients，客户端</span></span><br><span class="line">maxclients 10000		# 默认最大可连接客户端数量</span><br><span class="line">maxmemory &lt;bytes&gt;		# 默认客户端最大内存</span><br><span class="line">maxmemory-policy noeviction		# 超过内存限制后的策略</span><br><span class="line"><span class="meta"># </span><span class="language-bash">有6个</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">volatile-lru，设置了过期时间的key进行lru</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">allkeys-lru，所有key进行lru</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">volatile-random，设置过期时间的key随机删除</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">allkeys-random，随机删除</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">volatile-ttl，删除即将过期的key</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">noeviction，不淘汰，返回错误</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">AOF配置</span></span><br><span class="line">appendonly no		# 默认不开启rof模式，使用rdb，大部分情况下rdb够用</span><br><span class="line">appendfilename &quot;appendonly.aof&quot;		# 持久化名字</span><br><span class="line"><span class="meta"># </span><span class="language-bash">appendfsync always		<span class="comment"># 每次修改都写入aof</span></span></span><br><span class="line">appendfsync everysec 		# 默认每秒一次同步，可能丢失1秒数据</span><br><span class="line"><span class="meta"># </span><span class="language-bash">appendfsync no			<span class="comment"># 不执行，依赖操作系统同步数据</span></span></span><br><span class="line">no-appendfsync-on-rewrite no	# aof是否需要执行重写</span><br><span class="line">auto-aof-rewrite-percentage 100	# 重写的比例</span><br><span class="line">auto-aof-rewrite-min-size 64mb	# 超过64mb时触发重写</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># </span><span class="language-bash">持久化，RDB</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">因为内存是易失型介质，需要对数据进行持久化</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">指定时间内将内存数据写入到磁盘</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">会fork子进程进行持久化，不会影响主进程服务</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">除了满足配置中save设置的策略外，退出服务和flushall也会保存dump.rdb，并且开始之后自动加载配置的rdb文件</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">优点：1、适合大规模数据恢复；2、对数据完整性要求不高</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">缺点：1、需要一定时间持久化，可能丢失中间的数据；2、fork进程会占用一定的资源</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">生产环境对rdb文件备份</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20210619135953952.png" alt="image-20210619135953952"></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># </span><span class="language-bash">AOF，记录的是执行的指令，恢复时顺序重放所以的指令</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">可以修改aof文件，redis提供</span></span><br><span class="line">redis-check-aof --fix file.aof</span><br><span class="line"><span class="meta"># </span><span class="language-bash">可以修复aof文件</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">优点：1、每次修改都同步，不会丢失数据，完整性更高；2、默认每秒同步1次，效率较高</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">缺点：1、相比rdb文件，aof文件规模远大于rdb，恢复和修复的额速度也更慢；2、运行效率也比rdb慢</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">重写规则：fork一个新的子进程，将文件进行重写</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># </span><span class="language-bash">Redis发布订阅</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">发布者发送消息，订阅者接收消息，客户端可以订阅任意数量的频道</span></span><br><span class="line">psubscribe pattern [pattern..] 	# 订阅一个或多个符合给定模式的频道</span><br><span class="line">pubsub subcommand [argument]		# 查看订阅与发布系统的状态</span><br><span class="line">publish channel message		# 将消息发送到指定频道</span><br><span class="line">pubsubscribe [pattern]		# 退订给定模式的频道</span><br><span class="line">subscribe channel [channel...]		# 订阅给定的一个或多个频道的信息</span><br><span class="line">unsubscribe channel...		# 退订给定的频道</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">发送到频道的消息会立即同步到所有订阅者</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">原理</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">subscribe订阅某频道后，redis-server里维护一个字典，key是每个频道，val是一个链表，保存所有订阅这个频道的客户端。subscribe就是将客户端添加到给定channel的链表中</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">publish命令向订阅者发送消息，redis-server使用给定的channel作为键，在维护的字典中查找订阅这个频道的所有客户端链表，遍历并发送消息</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20210619141339975.png" alt="image-20210619141339975"></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># </span><span class="language-bash">主从复制</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">将主节点的数据复制到从节点，复制流单向，只能从master到slave。读写分离，主节点可读写，从节点只能读</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">默认情况下，redis启动时就是主节点</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">作用：</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">1. 数据冗余</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">2. 故障恢复</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">3. 负载均衡</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">4. 高可用基石</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">需要为每个redis服务器写一个配置文件，需要修改端口、pid文件，aof文件和rdb文件、<span class="built_in">log</span>文件配置</span></span><br><span class="line">info replication		# 打印主从复制的信息</span><br><span class="line">slaveof host port		# 设定当前服务器为目标服务器的从节点</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">主机写，从机可以得到同步的数据，主机连接断开，从机依旧可以读，且连接到主机，如果主机故障修复，从机依然可以同步主机修复后的修改数据</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">复制原理</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">slave启动成功后连接到master后发送一个同步命令，master收到命令后启动存盘进程，存盘成功后将数据文件发送到slave，完成全量复制，此后将后续的新的修改命令一次传给slave，完成增量复制</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20210619142534559.png" alt="image-20210619142534559"></p>
+<p><img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20210619142706147.png" alt="image-20210619142706147"></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># </span><span class="language-bash">可以配置一个节点，选择一个其余主节点的从节点，来作为自己的主节点，形成链式结构</span></span><br><span class="line">slaveof no one		# 配置当前服务器为master</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># </span><span class="language-bash">哨兵模式，使用哨兵监控redis服务器主从节点，当master挂掉后，投票选举一个结点作为新的master</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">要保证哨兵的高可用，需要配置哨兵集群，监控redis服务器并互相监控，哨兵挂掉后重新选举master哨兵，继续监视reids服务器</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">哨兵检测到master宕机，仅认为其不可用，当一定数量的哨兵都检测到master宕机，则认为真正宕机，投票选举新的master，完成failover（故障转移）操作</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">需要配置哨兵的配置文件，sentinel.conf</span></span><br><span class="line">sentinel monitor myredis host ip 1	# 选择哨兵监控的结点，最后的1表示多少个哨兵认为master挂了之后是真正的挂了，可以发起failover操作</span><br><span class="line">redis-sentinel sentinel.conf	# 启动哨兵</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">主节点宕机后，如果修复重新连接到集群，会当做slave</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">优点：1、基于主从复制模式，有主从优点；2、主从可以切换，故障转移，可用性提高；3、哨兵模式自动切换master，不需要再进行手动操作</span></span><br><span class="line"><span class="meta"># </span><span class="language-bash">缺点：1、redis不好在线扩容；2、哨兵模式配置很繁琐</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="C:\Users\fengzhizi\AppData\Roaming\Typora\typora-user-images\image-20210619143624771.png" alt="image-20210619143624771"></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># </span><span class="language-bash">缓存穿透、击穿和雪崩</span></span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/interview/" rel="tag"># 面经</a>
+              <a href="/tags/Redis/" rel="tag"># Redis</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/02/21/Nginx%E6%80%BB%E7%BB%93/" rel="prev" title="Nginx总结">
+      <i class="fa fa-chevron-left"></i> Nginx总结
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/02/21/Redis%E9%9D%A2%E8%AF%95%E9%A2%98/" rel="next" title="Redis面试题">
+      Redis面试题 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF%E5%8D%95%E7%BA%BF%E7%A8%8B"><span class="nav-number">1.</span> <span class="nav-text">Redis为什么是单线程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%BF%E7%94%A8IO%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">为什么使用IO多路复用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E7%94%A8%E4%BB%80%E4%B9%88%E7%BB%93%E6%9E%84"><span class="nav-number">3.</span> <span class="nav-text">Redis主从复制用什么结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E9%80%89%E6%8B%A9Redis%E5%9B%9E%E6%94%B6%E7%AD%96%E7%95%A5"><span class="nav-number">4.</span> <span class="nav-text">如何选择Redis回收策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E5%86%85%E5%AD%98%E7%94%A8%E5%AE%8C%E4%BC%9A%E5%8F%91%E7%94%9F%E4%BB%80%E4%B9%88"><span class="nav-number">5.</span> <span class="nav-text">Redis内存用完会发生什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pipeline%E6%9C%89%E4%BB%80%E4%B9%88%E5%A5%BD%E5%A4%84%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E7%94%A8"><span class="nav-number">6.</span> <span class="nav-text">pipeline有什么好处？为什么要用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E4%B8%A4%E7%A7%8D%E9%9B%86%E7%BE%A4%E6%96%B9%E6%A1%88%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">7.</span> <span class="nav-text">Redis两种集群方案的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E6%9E%9C%E6%9C%89%E5%A4%A7%E9%87%8F%E7%9A%84key%E9%9C%80%E8%A6%81%E8%AE%BE%E7%BD%AE%E5%90%8C%E4%B8%80%E6%97%B6%E9%97%B4%E8%BF%87%E6%9C%9F%EF%BC%8C%E4%B8%80%E8%88%AC%E9%9C%80%E8%A6%81%E6%B3%A8%E6%84%8F%E4%BB%80%E4%B9%88"><span class="nav-number">8.</span> <span class="nav-text">如果有大量的key需要设置同一时间过期，一般需要注意什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E6%8C%81%E4%B9%85%E5%8C%96%E6%95%B0%E6%8D%AE%E5%92%8C%E7%BC%93%E5%AD%98%E6%80%8E%E4%B9%88%E6%89%A9%E5%AE%B9"><span class="nav-number">9.</span> <span class="nav-text">Redis持久化数据和缓存怎么扩容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F"><span class="nav-number">10.</span> <span class="nav-text">缓存穿透</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9"><span class="nav-number">11.</span> <span class="nav-text">缓存雪崩</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-number">12.</span> <span class="nav-text">缓存一致性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B9%88%E5%BF%AB"><span class="nav-number">13.</span> <span class="nav-text">Redis为什么这么快</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E5%A6%82%E4%BD%95%E4%BC%98%E5%8C%96%E5%86%85%E5%AD%98"><span class="nav-number">14.</span> <span class="nav-text">Redis如何优化内存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B"><span class="nav-number">15.</span> <span class="nav-text">Redis线程模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E4%BA%8B%E5%8A%A1%E7%9B%B8%E5%85%B3%E7%89%B9%E7%82%B9"><span class="nav-number">16.</span> <span class="nav-text">Redis事务相关特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E9%9B%86%E7%BE%A4%E6%96%B9%E6%A1%88%EF%BC%88%E5%93%A8%E5%85%B5%E3%80%81Cluster%E5%92%8C%E4%B8%BB%E4%BB%8E%E7%9A%84%E5%8C%BA%E5%88%86%EF%BC%89"><span class="nav-number">17.</span> <span class="nav-text">Redis集群方案（哨兵、Cluster和主从的区分）</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Sentinel%E5%93%A8%E5%85%B5%E6%A8%A1%E5%BC%8F"><span class="nav-number">17.0.1.</span> <span class="nav-text">Sentinel哨兵模式</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%AE%98%E6%96%B9Redis-Cluster%E6%96%B9%E6%A1%88%EF%BC%88%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%B7%AF%E7%94%B1%E6%9F%A5%E8%AF%A2%EF%BC%89"><span class="nav-number">17.0.2.</span> <span class="nav-text">官方Redis Cluster方案（服务端路由查询）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%88%86%E9%85%8D"><span class="nav-number">17.0.3.</span> <span class="nav-text">基于客户端分配</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E4%BB%A3%E7%90%86%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%88%86%E7%89%87"><span class="nav-number">17.0.4.</span> <span class="nav-text">基于代理服务器分片</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E4%B8%BB%E4%BB%8E%E6%9E%B6%E6%9E%84"><span class="nav-number">18.</span> <span class="nav-text">Redis主从架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%81%9ARedis%E5%88%86%E5%8C%BA"><span class="nav-number">19.</span> <span class="nav-text">为什么要做Redis分区</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E5%88%86%E5%8C%BA%E7%BC%BA%E7%82%B9"><span class="nav-number">20.</span> <span class="nav-text">Redis分区缺点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81"><span class="nav-number">21.</span> <span class="nav-text">分布式锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3Redis%E5%B9%B6%E5%8F%91%E7%AB%9E%E4%BA%89key%E9%97%AE%E9%A2%98"><span class="nav-number">22.</span> <span class="nav-text">如何解决Redis并发竞争key问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8FRedis%E5%89%8D%E6%9C%9F%E5%81%9A%E8%BF%98%E6%98%AF%E5%90%8E%E6%9C%9F%E8%A7%84%E6%A8%A1%E5%A4%A7%E4%BA%86%E5%86%8D%E5%81%9A%E5%A5%BD%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">23.</span> <span class="nav-text">分布式Redis前期做还是后期规模大了再做好？为什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%E3%80%81%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F%E3%80%81%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%E3%80%81%E7%BC%93%E5%AD%98%E9%A2%84%E7%83%AD%E3%80%81%E7%BC%93%E5%AD%98%E9%99%8D%E7%BA%A7"><span class="nav-number">24.</span> <span class="nav-text">缓存雪崩、缓存穿透、缓存击穿、缓存预热、缓存降级</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9-1"><span class="nav-number">24.0.1.</span> <span class="nav-text">缓存雪崩</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F-1"><span class="nav-number">24.0.2.</span> <span class="nav-text">缓存穿透</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF"><span class="nav-number">24.0.3.</span> <span class="nav-text">缓存击穿</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E9%99%8D%E7%BA%A7"><span class="nav-number">24.0.4.</span> <span class="nav-text">缓存降级</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E7%BC%93%E5%AD%98%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E5%8F%8C%E5%86%99%E6%97%B6%E7%9A%84%E6%95%B0%E6%8D%AE%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-number">25.</span> <span class="nav-text">如何保证缓存与数据库双写时的数据一致性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E5%B8%B8%E8%A7%81%E6%80%A7%E8%83%BD%E9%97%AE%E9%A2%98%E5%92%8C%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">26.</span> <span class="nav-text">Redis常见性能问题和解决方案</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E5%A6%82%E4%BD%95%E5%81%9A%E5%A4%A7%E9%87%8F%E6%95%B0%E6%8D%AE%E6%8F%92%E5%85%A5"><span class="nav-number">27.</span> <span class="nav-text">Redis如何做大量数据插入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A0%E5%85%A5Redis%E9%87%8C%E6%9C%891%E4%BA%BF%E4%B8%AAkey%EF%BC%8C%E5%85%B6%E4%B8%AD10%E4%B8%87%E4%B8%AAkey%E4%BB%A5%E6%9F%90%E4%B8%AA%E5%9B%BA%E5%AE%9A%E5%B7%B2%E7%9F%A5%E5%89%8D%E7%BC%80%E5%BC%80%E5%A4%B4%EF%BC%8C%E5%A6%82%E4%BD%95%E5%85%A8%E9%83%A8%E6%89%BE%E5%87%BA%E6%9D%A5"><span class="nav-number">28.</span> <span class="nav-text">加入Redis里有1亿个key，其中10万个key以某个固定已知前缀开头，如何全部找出来</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E5%BC%82%E6%AD%A5%E9%98%9F%E5%88%97"><span class="nav-number">29.</span> <span class="nav-text">Redis如何实现异步队列</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E5%BB%B6%E6%97%B6%E9%98%9F%E5%88%97"><span class="nav-number">30.</span> <span class="nav-text">Redis如何实现延时队列</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E5%9B%9E%E6%94%B6%E8%BF%9B%E7%A8%8B%E5%A6%82%E4%BD%95%E5%B7%A5%E4%BD%9C"><span class="nav-number">31.</span> <span class="nav-text">Redis回收进程如何工作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AOF%E5%92%8CRDB%E6%8C%81%E4%B9%85%E5%8C%96%E6%96%B9%E5%BC%8F%E5%AF%B9%E6%AF%94"><span class="nav-number">32.</span> <span class="nav-text">AOF和RDB持久化方式对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RDB%E6%8C%81%E4%B9%85%E5%8C%96%E5%8E%9F%E7%90%86"><span class="nav-number">33.</span> <span class="nav-text">RDB持久化原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bgsave%E5%85%B7%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="nav-number">34.</span> <span class="nav-text">bgsave具体工作流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RDB%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-number">35.</span> <span class="nav-text">RDB优缺点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AOF%E6%8C%81%E4%B9%85%E5%8C%96%E5%8E%9F%E7%90%86"><span class="nav-number">36.</span> <span class="nav-text">AOF持久化原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="nav-number">37.</span> <span class="nav-text">具体工作流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AOF%E7%BC%93%E5%86%B2%E5%8C%BA%E5%92%8CAOF%E9%87%8D%E5%86%99%E7%BC%93%E5%86%B2%E5%8C%BA%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="nav-number">38.</span> <span class="nav-text">AOF缓冲区和AOF重写缓冲区有什么区别？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%93%E5%86%B2%E5%8C%BA%E5%AF%B9%E7%A1%AC%E7%9B%98%E6%93%8D%E4%BD%9C%E5%90%8C%E6%AD%A5%E6%9C%89%E5%93%AA%E4%BA%9B%E7%AD%96%E7%95%A5"><span class="nav-number">39.</span> <span class="nav-text">缓冲区对硬盘操作同步有哪些策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%87%8D%E5%86%99%E5%8F%AF%E4%BB%A5%E5%8F%98%E5%B0%8FAOF%E6%96%87%E4%BB%B6"><span class="nav-number">40.</span> <span class="nav-text">为什么重写可以变小AOF文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E8%BF%87%E6%9C%9F%E9%94%AE%E5%88%A0%E9%99%A4%E7%AD%96%E7%95%A5"><span class="nav-number">41.</span> <span class="nav-text">Redis过期键删除策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E4%BD%BF%E7%94%A8%E8%A7%84%E8%8C%83"><span class="nav-number">42.</span> <span class="nav-text">Redis使用规范</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E7%9A%84%E4%BC%98%E5%8A%BF"><span class="nav-number">43.</span> <span class="nav-text">Redis的优势</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AB%98%E6%80%A7%E8%83%BD%E7%BB%8F%E9%AA%8C"><span class="nav-number">44.</span> <span class="nav-text">高性能经验</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis%E4%B8%AD%E5%AD%98%E5%9C%A8%E5%BE%88%E5%A4%9A%E7%9A%84key%EF%BC%8C%E5%A6%82%E4%BD%95%E5%8F%96%E5%87%BA%E7%89%B9%E5%AE%9A%E7%9A%84key"><span class="nav-number">45.</span> <span class="nav-text">Redis中存在很多的key，如何取出特定的key</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis%E5%BA%94%E7%94%A8%E7%A4%BA%E4%BE%8B"><span class="nav-number"></span> <span class="nav-text">Redis应用示例</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Jiahang Gu</p>
+  <div class="site-description" itemprop="description">认真学习，享受生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">51</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JiahangGu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JiahangGu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/fengzhizi76506" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;fengzhizi76506" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jiahang Gu</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

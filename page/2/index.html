@@ -167,7 +167,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/18/leetcode%E8%82%A1%E7%A5%A8%E4%B8%93%E9%A2%98/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/Java%E5%9F%BA%E7%A1%80%E6%80%BB%E7%BB%93/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -181,7 +181,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/02/18/leetcode%E8%82%A1%E7%A5%A8%E4%B8%93%E9%A2%98/" class="post-title-link" itemprop="url">leetcode股票专题</a>
+            <a href="/2022/02/21/Java%E5%9F%BA%E7%A1%80%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">Java基础总结</a>
         </h2>
 
         <div class="post-meta">
@@ -192,7 +192,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2022-02-18 22:51:06 / 修改时间：22:51:45" itemprop="dateCreated datePublished" datetime="2022-02-18T22:51:06+08:00">2022-02-18</time>
+              <time title="创建时间：2022-02-21 12:18:41 / 修改时间：13:03:20" itemprop="dateCreated datePublished" datetime="2022-02-21T12:18:41+08:00">2022-02-21</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -200,7 +200,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/algorithm-notes/" itemprop="url" rel="index"><span itemprop="name">算法总结</span></a>
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
                 </span>
             </span>
 
@@ -210,14 +210,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>11k</span>
+              <span>14k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>10 分钟</span>
+              <span>13 分钟</span>
             </span>
 
         </div>
@@ -229,13 +229,15 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p><strong>本文是对leetcode上股票专题的总结</strong><br>&emsp;&emsp;买卖股票的专题都可以将买入和卖出分开考虑，买入是负收益，而卖出是正收益。刚开始时只能买入，所以收益为负，在买入之后就有了卖出的权力，可以获得正收益，在每次交易尽可能的降低负收益提高正收益。在使用DP解决问题时，可以维护每一天结束后的累计最大收益，并根据买入卖出的策略分别更新这两个状态，最终得到最大的收益解。</p>
-<h3 id="股票问题1"><a href="#股票问题1" class="headerlink" title="股票问题1"></a>股票问题1</h3><p>给定一个数组，它的第 i 个元素是一支给定股票第 i 天的价格。</p>
-<p>如果你最多只允许完成一笔交易（即买入和卖出一支股票一次），设计一个算法来计算你所能获取的最大利润。</p>
-<p>注意：你不能在买入股票前卖出股票。</p>
+          <h3 id="为啥先判断hash再判断eqauls"><a href="#为啥先判断hash再判断eqauls" class="headerlink" title="为啥先判断hash再判断eqauls()"></a>为啥先判断hash再判断eqauls()</h3><p>因为两个相同的对象hashCode一定相等，反之不成立。通常得到hash更快，可以先使用hashCode排除不相等的元素，减少equals的判断次数</p>
+<h3 id="List、List、List-lt-gt-、List-泛型的区别"><a href="#List、List、List-lt-gt-、List-泛型的区别" class="headerlink" title="List、List、List&lt;?&gt;、List 泛型的区别"></a>List、List<object>、List&lt;?&gt;、List<k> 泛型的区别</k></object></h3><p>List, List<?>, List<object>都可以容纳所有对象，使用顺序应该是List<t>, List<?>，最后List<object></object></t></object></p>
+<ol>
+<li>List<t>是确定的某一个类型，具体类型在运行期决定；List&lt;?&gt;表示任意类型，与List<t>类似，而List<object>则表示List集合中所有元素为Object类型，所以也可以容纳所有类类型</object></t></t></li>
+<li>List<t>可以进行读写操作，因为是固定的T类型，编码器不需要进行转型操作；List&lt;?&gt;是只读类型，不能增加和修改，因为编译器不知道List中容纳的是什么类型的元素，无法校验类型是否安全，并且取出的元素都是Object类型，需要主动转型。但是可以删除元素。List<object>也可以读写，但在写入时需要向上转型，取出后需要向下转型，即知道了具体数据类型，失去了泛型的意义</object></t></li>
+</ol>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2022/02/18/leetcode%E8%82%A1%E7%A5%A8%E4%B8%93%E9%A2%98/#more" rel="contents">
+              <a class="btn" href="/2022/02/21/Java%E5%9F%BA%E7%A1%80%E6%80%BB%E7%BB%93/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -259,7 +261,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/18/%E6%8E%92%E5%BA%8F%E6%80%BB%E7%BB%93/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/HR%E9%9D%A2%E9%97%AE%E9%A2%98%E6%B1%87%E6%80%BB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -273,7 +275,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/02/18/%E6%8E%92%E5%BA%8F%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">排序总结</a>
+            <a href="/2022/02/21/HR%E9%9D%A2%E9%97%AE%E9%A2%98%E6%B1%87%E6%80%BB/" class="post-title-link" itemprop="url">HR面问题汇总</a>
         </h2>
 
         <div class="post-meta">
@@ -284,7 +286,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2022-02-18 22:49:47 / 修改时间：22:58:16" itemprop="dateCreated datePublished" datetime="2022-02-18T22:49:47+08:00">2022-02-18</time>
+              <time title="创建时间：2022-02-21 12:18:30 / 修改时间：13:02:54" itemprop="dateCreated datePublished" datetime="2022-02-21T12:18:30+08:00">2022-02-21</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -292,7 +294,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/algorithm-notes/" itemprop="url" rel="index"><span itemprop="name">算法总结</span></a>
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
                 </span>
             </span>
 
@@ -302,7 +304,794 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>7.5k</span>
+              <span>671</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>参考自网络博客，以及自己面试遇到的问题<br>主要方针：表现得乐观、积极、抗压能力强，有很强学习能力</p>
+<ol>
+<li>自我介绍（一分钟）：名字+擅长技能+过去成绩+未来价值，明确表达自己想去工作得期望</li>
+<li>哪里人，是否独生子女，父母工作</li>
+<li>女朋友</li>
+<li>实习时间</li>
+<li>介绍科研训练项目</li>
+<li>为什么来公司</li>
+<li>夏令营内容</li>
+<li>说三个独特得特质</li>
+<li>自己在技术方面的优势（从技术上分析，有相关经验，动手能力强，能够快速解决问题，坚持，不易放弃）</li>
+<li>校园经历</li>
+<li>反问，不能说没有，不能问新资福利。可以聊具体在公司的工作，团队氛围，对于我加入团队的期望是什么</li>
+<li>自己的优缺点</li>
+<li>职业规划</li>
+<li>意向城市</li>
+<li>觉得自己有哪些性格方面的缺点</li>
+<li>大学里最大的收获</li>
+<li>实习最大的收获</li>
+<li>还投了其他公司实习吗</li>
+<li>部门有没有和你沟通以后做的事情</li>
+<li>大学重来一次，哪方面可以做的更好</li>
+<li>从小到大最难的一件事</li>
+<li>压力大会怎样</li>
+<li>自我评价</li>
+<li>有什么问题问（是否有转正机会，对我的评价，哪里需要提高，多久有通知）</li>
+<li>平时看什么书（专业书较多，还有些历史书，沟通技巧相关的）</li>
+<li>平时如何学习</li>
+<li>大学期间最印象深刻的一件事？说出影响、感悟、经验或教训</li>
+<li>对创业公司的看法</li>
+<li>餐补房补工资</li>
+<li>成绩</li>
+<li>有没有团队合作过</li>
+<li>最喜欢哪一门课程，为什么</li>
+<li>一周能实习几天</li>
+<li>最喜欢哪一位老师</li>
+<li>分数最低的一门课，为什么这么少，翘课吗</li>
+<li>实习工作</li>
+<li>实习项目的角色</li>
+<li>实习工作的收益</li>
+<li>对部门了解吗</li>
+<li>觉得技术方向如何</li>
+<li>为什么做这个方向</li>
+<li>对于工作的预期</li>
+<li>对于这个方向有没有行业上的了解</li>
+<li>项目中担任的角色</li>
+<li>如何处理团队之间的任务</li>
+<li>项目遇到什么问题？让你重新去做会怎么做</li>
+<li>兴趣爱好</li>
+<li>怎么看待996</li>
+<li>怎么平衡学习和工作</li>
+<li>你对自己的评价</li>
+<li>别人对你的评价</li>
+<li>大学里遇到过的挫折</li>
+<li>从小到大遇到的挫折</li>
+<li>最近在学什么</li>
+<li>最近比较重要的三件事</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/docker%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/21/docker%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">docker总结</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-21 12:18:20 / 修改时间：13:01:44" itemprop="dateCreated datePublished" datetime="2022-02-21T12:18:20+08:00">2022-02-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/course-notes/" itemprop="url" rel="index"><span itemprop="name">课程笔记</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>学自B站 狂神</p>
+<h3 id="出现原因"><a href="#出现原因" class="headerlink" title="出现原因"></a>出现原因</h3><p>打包环境不需要重新配置，方便运维和启动服务，可以直接发布。<br>轻量级，利用联合文件系统，复用linux内核，相比VM在硬件上重新模拟操作系统来说，资源消耗更少。</p>
+<h3 id="VM缺点"><a href="#VM缺点" class="headerlink" title="VM缺点"></a>VM缺点</h3><p>资源占用很多<br>冗余步骤多，开机需要boot启动很慢</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/02/21/docker%E6%80%BB%E7%BB%93/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/21/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">消息队列总结</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-21 12:18:12 / 修改时间：13:00:41" itemprop="dateCreated datePublished" datetime="2022-02-21T12:18:12+08:00">2022-02-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="为什么使用MQ及其优缺点"><a href="#为什么使用MQ及其优缺点" class="headerlink" title="为什么使用MQ及其优缺点"></a>为什么使用MQ及其优缺点</h3><p>优点</p>
+<ol>
+<li>异步处理：相比传统的串行、并行方式，提高系统吞吐量。系统接收请求后写入到MQ继续自己的操作，而不用等其余相关系统的回应</li>
+<li>应用解耦：系统间通过消息通信，不关系其他系统的处理。可以方便地改变系统拓扑结构，降低维护和运维成本</li>
+<li>流量削峰：可以通过消息队列长度控制请求量，缓解短时间内的高并发请求，减少高峰期服务器的瞬时压力</li>
+<li>日志处理：解决大量日志传输</li>
+<li>消息通讯：MQ内置高效的通信机制，可以实现点对点消息队列、聊天室等</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>系统可用性降低，加入了新的模块就会引入新的风险</li>
+<li>系统复杂度很高，MQ的一致性问题、消息重复消费、消息可靠性传输等问题需要考虑</li>
+<li>一致性问题：各节点可能出现故障导致的数据不一致问题</li>
+</ol>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/02/21/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E6%80%BB%E7%BB%93/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/%E6%95%B0%E6%8D%AE%E5%BA%93%E9%9D%A2%E8%AF%95%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/21/%E6%95%B0%E6%8D%AE%E5%BA%93%E9%9D%A2%E8%AF%95%E9%A2%98/" class="post-title-link" itemprop="url">数据库面试题</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-21 12:18:01 / 修改时间：13:00:20" itemprop="dateCreated datePublished" datetime="2022-02-21T12:18:01+08:00">2022-02-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>12k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>11 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/babylovewei/article/details/106711013">数据库面试题</a></p>
+<h3 id="高频面试题"><a href="#高频面试题" class="headerlink" title="高频面试题"></a>高频面试题</h3><ol>
+<li>怎么判断sql语句的性能，怎么分析，explain使用的时候需要关注的点是什么</li>
+<li>介绍下InnoDB的索引实现，B+树叶子结点是单向链表还是双向链表</li>
+<li>了解慢查询吗（不了解）<br> 慢查询就是查询时可能查询数据涉及到的数据量或表较多导致查询速度慢的情况。常用的优化方式<ol>
+<li>可以使用explain对语句进行分析，并重点查看type, rows, keys字段查看查询类型、查询涉及到的数据行数以及使用的索引，并以此确定优化的方向。例如涉及到的rows远大于目标数据行，则可以通过优化查询语句减少中间数据行的数量提高效率。也可以通过keys字段查看使用索引是否正确，可以新增或修改索引。</li>
+<li>修改数据库表结构，将使用频率低的表拆分出来，也可以添加中间表代替联合查询提高效率</li>
+<li>将一个大的查询分解为多个小查询</li>
+</ol>
+</li>
+<li>数据库的隔离级别</li>
+<li>MVCC了解吗</li>
+<li>乐观锁和悲观锁</li>
+<li>InnoDB的索引方式和特点</li>
+<li>什么情况下索引不可用</li>
+<li>MySQL的聚簇索引和非聚簇索引的区别</li>
+<li>MySQL如何实现主从复制</li>
+<li>binlog、redo、undo有什么作用</li>
+<li>做过索引优化吗？</li>
+<li>数据库为什么使用B+树而不是B树<br>1）B树只适合随机检索，而B+树同时支持随机检索和顺序检索<br>2）B+树空间利用率更高，可减少IO次数，磁盘读写代价更低，B+树非叶子结点只保存关键字，一次性读入到内存更多的关键字，减少了IO次数，而IO读写次数是影响检索效率的最大因素<br>3）B+树查询效率更稳定。B树可能在非叶子结点结束，等价于二分查找，而B+树都需要走一条从根节点到叶子结点的路，所有查询路径长度相同，导致每一个关键字的查询效率相当<br>4）B树提高磁盘性能的同时没有解决元素遍历效率低下的问题，B+树叶子结点通过指针连在一起，优化了基于范围的查询<br>5）增删文件时B+树效率更高，叶子结点包含所有关键字，并以有序链表结构存储，可以提高增删效率</li>
+<li>大表数据查询怎么优化<br>1）优化schema、sql语句+索引<br>2）加缓存，缓解数据库压力，memcached，redis<br>3）主从复制，读写分离，主库负责写和高性能读，从库读<br>4）垂直拆分，划分为分布式系统<br>5）水平切分，选择合理的分配范围和分布算法</li>
+<li>为什么尽量设定一个主键<br>主键确保数据行在整个表的唯一性，在删查改操作可能加速并确保操作数据范围安全。<br>推荐使用自增id，因为主键索引作为聚簇索引存在，B+树非叶子结点存储了关键字，叶子结点存储了主键索引和全部的数据，如果自增只需向后排列，否则可能存在较多的数据插入和移动，导致产生很多的内存碎片，造成插入性能的下降<br>如果没有主键，InnoDB会选择一个唯一键生成聚簇索引，如果没有唯一键会生成隐式主键</li>
+<li>存储用户密码散列使用什么字段<br>密码散列、身份证号等定长字符串使用char，可以节省空间且提高检索效率</li>
+<li>MySQL数据库cpu飙升如何处理<br>1）先使用top查看是否是mysqld导致<br>2）如果是，使用show processlist查看session情况，找出消耗高的sql，观察耗费高的原因：执行计划是否准确，索引是否确实，数据库是否太大<br>3）如果存在问题，kill掉并优化对应sql语句<br>4）也可能是突然之间大量session连入，考虑使用缓存，或限制连接个数</li>
+</ol>
+<h3 id="Cyc高频面试题"><a href="#Cyc高频面试题" class="headerlink" title="Cyc高频面试题"></a>Cyc高频面试题</h3><p>*表示重要程度，题目摘抄自<a target="_blank" rel="noopener" href="https://github.com/liguigui/CyC2018-CS-Notes">Cyc2018</a>，答案为自己的理解</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/02/21/%E6%95%B0%E6%8D%AE%E5%BA%93%E9%9D%A2%E8%AF%95%E9%A2%98/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/%E6%95%B0%E6%8D%AE%E5%BA%93%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/21/%E6%95%B0%E6%8D%AE%E5%BA%93%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">数据库总结</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-21 12:17:53 / 修改时间：12:59:48" itemprop="dateCreated datePublished" datetime="2022-02-21T12:17:53+08:00">2022-02-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>12k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>11 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>本文是根据<a target="_blank" rel="noopener" href="https://github.com/liguigui/CyC2018-CS-Notes">Cyc2018</a>总结的基础知识整理而来，在基础知识的基础上更多偏向实际面试问题，以及一些深入的问题思考</p>
+<h3 id="基础语法"><a href="#基础语法" class="headerlink" title="基础语法"></a>基础语法</h3><ol>
+<li><p>创建数据库并使用</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CREATE DATABASE test;</span><br><span class="line">USE test;</span><br></pre></td></tr></table></figure></li>
+<li><p>创建表</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE mytable (</span><br><span class="line">    id INT NOT NULL AUTO_INCREMENT,</span><br><span class="line">    col1 INT NOT NULL DEFAULT 1,</span><br><span class="line">    col2 VARCHAR(255) NULL,</span><br><span class="line">    col3 DATE NULL,</span><br><span class="line">    PRIMARY KEY(`id`)</span><br><span class="line">);</span><br></pre></td></tr></table></figure></li>
+<li><p>修改表<br>添加列</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ALTER TABLE mytable ADD col CHAR(20);</span><br></pre></td></tr></table></figure>
+<p>删除列</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ALTER TABLE mytable DROP COLUMN col;</span><br></pre></td></tr></table></figure>
+<p>删除表</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DROP TABLE mytable;</span><br></pre></td></tr></table></figure></li>
+<li><p>插入<br>普通插入</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">INSERT INTO mytable(col1, col2) VALUES(val1, val2);</span><br></pre></td></tr></table></figure>
+<p>插入检索出的数据</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">INSERT INTO mytable(col1, col2) SELECT col1, col2 FROM mytable2;</span><br></pre></td></tr></table></figure>
+<p>将一个表的内容插入到一个新表</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE newtable AS SELECT * FROM mytable;</span><br></pre></td></tr></table></figure></li>
+<li><p>更新</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">UPDATE mytable SET col = val WHERE id = 1;</span><br></pre></td></tr></table></figure></li>
+<li><p>删除</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DELETE FROM mytable WHERE id = 1;</span><br><span class="line">TRUNCATE TABLE mytable;</span><br></pre></td></tr></table></figure></li>
+<li><p>查询<br>DISTINCT，相同值只会出现一次，所有列都相同才算相同</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT DISTINCT col1, col2 FROM mytable;</span><br></pre></td></tr></table></figure>
+<p>LIMIT, 限制返回的行数，第一个参数为起始行，默认为0，第二个参数是返回的总行数</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM mytable LIMIT 5;</span><br></pre></td></tr></table></figure></li>
+<li><p>排序<br>ORDER BY ASC升序（默认），DESC降序，可以按照多个列排序，并且每个列指定不同的排序方式</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM mytable ORDER BY col1 DESC, col2 ASC;</span><br></pre></td></tr></table></figure></li>
+<li><p>过滤<br>WHERE子句可以筛选数据，降低数据传输的开销，NULL和0、空字符串都不同。AND和OR连接多个过滤条件，优先处理AND。</p>
+</li>
+<li><p>通配符<br>%匹配&gt;=0个字符，_匹配一个字符，[]匹配集合内的字符， [^]不匹配集合内的字符，LIKE进行通配符匹配</p>
+</li>
+<li><p>计算字段<br>AS取别名，CONCAT()连接两个字段，TRIM()去除首尾空格。</p>
+</li>
+<li><p>函数<br>汇总: AVG(), COUNT(), MAX(), MIN(), SUM()<br>文本处理: LEFT(), RIGHT(), LOWER(), UPPER(), LTRIM(), RTRIM(), LENGTH(), SOUNDEX()转为语音值<br>日期和时间处理: ADDDATE(), ADDTIME(), CURDATE(), CURTIME(), DATE(), DATEDIFF(), DATE_ADD(), DATE_FORMAT(), DAY(), DAYOFWEEK(), HOUR(), MINUTE(), MONTH(), NOW(), SECOND(), TIME(), YEAR()<br>数值处理: SIN(), COS(), TAN(), ABS(), SQRT(), MOD(), EXP(), PI(), RAND()</p>
+</li>
+<li><p>分组<br>将具有相同的数据值的行放在同一组中，可以对同一分组数据使用汇总函数处理，并且自动按照该字段排序</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT col, COUNT(*) AS num FROM mytable GROUP BY col;</span><br></pre></td></tr></table></figure>
+<p>GROUP BY自动按照该字段排序，也可以按汇总字段排序</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT col, COUNT(*) AS num FROM mytable GROUP BY col ORDER BY num;</span><br></pre></td></tr></table></figure>
+<p>WHERE过滤行，HAVING过滤分组，行过滤优先</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT col, COUNT(*) AS num FROM mytable WHERE col &gt; 2 GROUP BY col HAVING num &gt;= 2;</span><br></pre></td></tr></table></figure>
+<p>规定：</p>
+</li>
+<li><p>GROUP BY出现在WHERE子句之后，ORDER BY子句之前</p>
+</li>
+<li><p>除了汇总字段外，SELECT语句中的每一字段都必须在GROUP BY子句中给出</p>
+</li>
+<li><p>NULL的行单独分为一组</p>
+</li>
+<li><p>大多数SQL实现不支持GROUP BY列具有可变长度的数据类型</p>
+</li>
+<li><p>子查询<br>子查询中只能返回一个字段的数据，可以将子查询的结果作为WHERE语句的过滤条件</p>
+</li>
+<li><p>连接<br>连接用于连接多个表，使用JOIN关键字，条件语句用ON。连接可以替换子查询并且效率一般更快<br>内连接，关键字INNER JOIN，JOIN默认为内连接<br>自连接：连接的表是自身<br>自然连接：NATURAL JOIN自动连接所有同名列，而内连接需要提供连接的列<br>外连接：LEFT OUTER JOIN左外连接寻找符合条件的连接，如果JOIN的左侧表存在没有关联的行，保留左侧表并复制右侧表相关字段为NULL</p>
+</li>
+<li><p>组合查询<br>UNION组合两个查询，每个查询包含相同列、表达式和聚集函数。默认去除相同行，要保留相同行使用UNION ALL，ORDER BY子句必须位于语句最后</p>
+</li>
+</ol>
+<h3 id="ACID-的作用以及实现原理"><a href="#ACID-的作用以及实现原理" class="headerlink" title="ACID 的作用以及实现原理"></a>ACID 的作用以及实现原理</h3><ol>
+<li>原子性，Atomicity：事务被视为不可分割的最小单位，事务的所有操作要么全部提交成功，要么全部失败回滚。回滚可以用回滚日志实现，回滚日志记录着事务所执行的修改操作，在回滚时反向执行这些修改操作</li>
+<li>一致性, Consistency: 数据库在事务执行前后都保持一致性状态。在一致性状态下，所有事务对一个数据的读取结果都是相同的。</li>
+<li>隔离性, Isolation: 一个事务所做的修改在最终提交之前，对其他事务是不可见的。</li>
+<li>持久性, Durability: 一旦事务提交，则其所作的修改将会永远保存到数据库中。即使系统发生崩溃，事务执行的结果也不能丢失。可以使用重做日志保证持久性</li>
+</ol>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/02/21/%E6%95%B0%E6%8D%AE%E5%BA%93%E6%80%BB%E7%BB%93/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/21/%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF/" class="post-title-link" itemprop="url">高频面试题解题思路</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-21 12:16:54 / 修改时间：13:26:02" itemprop="dateCreated datePublished" datetime="2022-02-21T12:16:54+08:00">2022-02-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>36k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>33 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="codetop高频题思路"><a href="#codetop高频题思路" class="headerlink" title="codetop高频题思路"></a>codetop高频题思路</h3><ol>
+<li>206.反转链表<br>输入: 1-&gt;2-&gt;3-&gt;4-&gt;5-&gt;NULL<br>输出: 5-&gt;4-&gt;3-&gt;2-&gt;1-&gt;NULL</li>
+</ol>
+<p><strong>关键点：需要一个prev结点记录前驱结点，修改指向关系后更新prev和cur结点</strong></p>
+<ol start="2">
+<li>215.数组中的第K个最大元素<br>在未排序的数组中找到第 k 个最大的元素<br>输入: [3,2,1,5,6,4] 和 k = 2<br>输出: 5</li>
+</ol>
+<p><strong>关键点：快排思想更新数组为前k-1个元素均大于第k个最大元素，时间复杂度O(N)。或者使用最小堆维护，时间复杂度O(Nlgk)。</strong></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/02/21/%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/%E6%A6%82%E7%8E%87%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/21/%E6%A6%82%E7%8E%87%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">概率问题</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-21 12:14:52 / 修改时间：12:16:32" itemprop="dateCreated datePublished" datetime="2022-02-21T12:14:52+08:00">2022-02-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="洗牌算法"><a href="#洗牌算法" class="headerlink" title="洗牌算法"></a>洗牌算法</h3><p>给定一个数组，对数组进行洗牌，使得每个排列出现的概率都相等<br>比如1,2,3,4,5则要做到5!种排列的出现概率一样<br>第一种做法：将数组作为一个箱子，每次从中取出一个球，并不放回。则每个位置的所有球概率均为1/5，4/5 * 1/4, 4/5 * 3/4 * 1/3等等，均为1/5.<br>第二种做法：另一种是通过swap的方式，比如每次取出两个不同的数字，做交换。但这样有可能出现重复的交换产生无效操作。可以固定交换遍历的顺序，比如从n到1，在要交换n的时候，从[1, n]中选择一个位置，则所有数字出现在第n位概率为1/n，然后交换第n-1位，此时他没被交换到第n位，概率为n-1/n，此时从[1, n-1]中选择一位交换，则出现在第n-1为的概率为n-1/n*1/n-1=1/n，同理，所有数字出现在所有位置的概率均为1/n，为随机洗牌<br>实现代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">for (int i = list.size(); i &gt; 0; i--) &#123;</span><br><span class="line">    int k = new Random().nextInt(i);</span><br><span class="line">    swap(ans, i - 1, k);</span><br><span class="line">&#125;</span><br><span class="line">return ans;</span><br></pre></td></tr></table></figure>
+
+<h3 id="蓄水池抽样"><a href="#蓄水池抽样" class="headerlink" title="蓄水池抽样"></a>蓄水池抽样</h3><p>问题：当内存无法加载数据的时候，如何从包含未知大小的数据流中随机选取k个数据，并保证每个数据被抽到的概率相等</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/02/21/%E6%A6%82%E7%8E%87%E9%97%AE%E9%A2%98/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/%E5%88%86%E5%B8%83%E5%BC%8F%E6%9E%B6%E6%9E%84%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/21/%E5%88%86%E5%B8%83%E5%BC%8F%E6%9E%B6%E6%9E%84%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">分布式架构总结</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-21 12:13:55 / 修改时间：12:14:28" itemprop="dateCreated datePublished" datetime="2022-02-21T12:13:55+08:00">2022-02-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -321,114 +1110,12 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="常见排序算法总结"><a href="#常见排序算法总结" class="headerlink" title="常见排序算法总结"></a>常见排序算法总结</h1><h3 id="算法复杂度对比"><a href="#算法复杂度对比" class="headerlink" title="算法复杂度对比"></a>算法复杂度对比</h3><table>
-<thead>
-<tr>
-<th align="center">排序算法</th>
-<th align="center">平均时间复杂度</th>
-<th align="center">最好情况</th>
-<th align="center">最坏情况</th>
-<th align="center">空间复杂度</th>
-<th align="center">排序方式</th>
-<th align="center">稳定性</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">冒泡排序</td>
-<td align="center">$O(n^2)$</td>
-<td align="center">$O(n)$</td>
-<td align="center">$O(n^2)$</td>
-<td align="center">$O(1)$</td>
-<td align="center">in-place</td>
-<td align="center">稳定</td>
-</tr>
-<tr>
-<td align="center">选择排序</td>
-<td align="center">$O(n^2)$</td>
-<td align="center">$O(n^2)$</td>
-<td align="center">$O(n^2)$</td>
-<td align="center">$O(1)$</td>
-<td align="center">in-place</td>
-<td align="center">不稳定</td>
-</tr>
-<tr>
-<td align="center">插入排序</td>
-<td align="center">$O(n^2)$</td>
-<td align="center">$O(n)$</td>
-<td align="center">$O(n^2)$</td>
-<td align="center">$O(1)$</td>
-<td align="center">in-place</td>
-<td align="center">稳定</td>
-</tr>
-<tr>
-<td align="center">希尔排序</td>
-<td align="center">$O(nlgn)$</td>
-<td align="center">$O(nlog^2n)$</td>
-<td align="center">$O(nlog^2n)$</td>
-<td align="center">$O(1)$</td>
-<td align="center">in-place</td>
-<td align="center">不稳定</td>
-</tr>
-<tr>
-<td align="center">归并排序</td>
-<td align="center">$O(nlgn)$</td>
-<td align="center">$O(nlgn)$</td>
-<td align="center">$O(nlgn)$</td>
-<td align="center">$O(n)$</td>
-<td align="center">out-place</td>
-<td align="center">稳定</td>
-</tr>
-<tr>
-<td align="center">快速排序</td>
-<td align="center">$O(nlgn)$</td>
-<td align="center">$O(nlgn)$</td>
-<td align="center">$O(n^2)$</td>
-<td align="center">$O(lgn)$</td>
-<td align="center">in-place</td>
-<td align="center">不稳定</td>
-</tr>
-<tr>
-<td align="center">堆排序</td>
-<td align="center">$O(nlgn)$</td>
-<td align="center">$O(nlgn)$</td>
-<td align="center">$O(nlgn)$</td>
-<td align="center">$O(1)$</td>
-<td align="center">in-place</td>
-<td align="center">不稳定</td>
-</tr>
-<tr>
-<td align="center">计数排序</td>
-<td align="center">$O(n+k)$</td>
-<td align="center">$O(n+k)$</td>
-<td align="center">$O(n+k)$</td>
-<td align="center">$O(k)$</td>
-<td align="center">out-place</td>
-<td align="center">稳定</td>
-</tr>
-<tr>
-<td align="center">桶排序</td>
-<td align="center">$O(n+k)$</td>
-<td align="center">$O(n+k)$</td>
-<td align="center">$O(n^2)$</td>
-<td align="center">$O(n+k)$</td>
-<td align="center">out-place</td>
-<td align="center">稳定</td>
-</tr>
-<tr>
-<td align="center">基数排序</td>
-<td align="center">$O(n\times k)$</td>
-<td align="center">$O(n\times k)$</td>
-<td align="center">$O(n\times k)$</td>
-<td align="center">$O(n+k)$</td>
-<td align="center">out-place</td>
-<td align="center">稳定</td>
-</tr>
-</tbody></table>
-<p>&emsp;&emsp;以下程序均默认为升序排列，排序方式in-place表示是否需要额外数组空间保存临时结果。排序的稳定性则表示，如果具有相等键的若干个对象在同一个序列中，那么排好序的有序序列这些相等键的对象会保留排序之前的相对顺序不变。例如1，2，3，2排好序之后为1，2（第二个），2（第一个），3则说明算法不稳定。</p>
-<h3 id="算法介绍"><a href="#算法介绍" class="headerlink" title="算法介绍"></a>算法介绍</h3>
+          <p>本文参考自<a target="_blank" rel="noopener" href="https://thinkwon.blog.csdn.net/article/details/105870730">博客</a></p>
+<h3 id="静态代理、JDK动态代理和CGLIB动态代理"><a href="#静态代理、JDK动态代理和CGLIB动态代理" class="headerlink" title="静态代理、JDK动态代理和CGLIB动态代理"></a>静态代理、JDK动态代理和CGLIB动态代理</h3><h5 id="静态代理"><a href="#静态代理" class="headerlink" title="静态代理"></a>静态代理</h5><p>在程序运行之前，提前写好被代理方法的代理类，编译后运行。在程序运行前，class已经存在<br>定义接口</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public interface Target &#123;</span><br><span class="line">    public String execute();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2022/02/18/%E6%8E%92%E5%BA%8F%E6%80%BB%E7%BB%93/#more" rel="contents">
+              <a class="btn" href="/2022/02/21/%E5%88%86%E5%B8%83%E5%BC%8F%E6%9E%B6%E6%9E%84%E6%80%BB%E7%BB%93/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -452,7 +1139,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/18/LRUCache/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E9%9D%A2%E8%AF%95%E9%A2%98/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -466,7 +1153,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/02/18/LRUCache/" class="post-title-link" itemprop="url">LRUCache</a>
+            <a href="/2022/02/21/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E9%9D%A2%E8%AF%95%E9%A2%98/" class="post-title-link" itemprop="url">操作系统面试题</a>
         </h2>
 
         <div class="post-meta">
@@ -477,7 +1164,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2022-02-18 22:49:02 / 修改时间：22:49:26" itemprop="dateCreated datePublished" datetime="2022-02-18T22:49:02+08:00">2022-02-18</time>
+              <time title="创建时间：2022-02-21 12:13:10 / 修改时间：12:13:32" itemprop="dateCreated datePublished" datetime="2022-02-21T12:13:10+08:00">2022-02-21</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -485,7 +1172,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/algorithm-notes/" itemprop="url" rel="index"><span itemprop="name">算法总结</span></a>
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
                 </span>
             </span>
 
@@ -495,14 +1182,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.4k</span>
+              <span>10k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
+              <span>9 分钟</span>
             </span>
 
         </div>
@@ -514,804 +1201,18 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>&emsp;&emsp;LRU Cache，最近最少使用缓存。在CPU的缓存机制中，如果要读出一条在cache中没有的数据并存到cache中时，需要淘汰一些已经在cache里的数据来腾出位置。LRU机制就是将最久没有使用过的数据淘汰的策略。<br>&emsp;&emsp;LRU有两个内置操作：</p>
-<ul>
-<li>get(key):如果关键字key存在于缓存中，则获取关键字的值</li>
-<li>put(key, value):如果关键字已存在，变更其数据值，如果不存在，插入该kv对。并且当缓存容量到达上限时，删除之前最久未使用的数据，然后插入新数据。<br>&emsp;&emsp;要求get和put操作都具有O(1)的时间复杂度。<br>&emsp;&emsp;对需求进行分析，首先需要O(1)进行get和put，至少需要一个哈希表。其次是需要满容量时删除最久未使用的数据，则需要存储元素的放入顺序，并且在put之后可以更新到最近使用的位置。通过数组实现的话，put之后要保证最近的元素在最后的位置，但数组删除元素之后需要整体移动到前一个，时间复杂度为O(N)。通过链表可以实现对放入顺序的存储，链表序即为插入顺序，但要实现O(1)删除元素，显然不可实现（因为要拿到该节点的前驱结点）。既然要得到前驱结点才能实现O(1)删除，那使用双向链表即可实现。</li>
-<li>get(key)操作：判断key是否在哈希表中，如果在，返回该值，否则返回不存在</li>
-<li>put(key, value)：判断key是否在哈希表中，如果在，更新value，如果不在，判断是否超出容量，如果达到容量上限，删除链表中第一个节点。将新的value插入到链表最后一个位置。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><span class="line">class LinkNode:</span><br><span class="line">    def __init__(self, val, key):</span><br><span class="line">        self.val = val</span><br><span class="line">        self.key = key</span><br><span class="line">        self.next = None</span><br><span class="line">        self.prev = None</span><br><span class="line"></span><br><span class="line">class DoubleLinkedList:</span><br><span class="line">    def __init__(self):</span><br><span class="line">        self.head = None</span><br><span class="line">        self.tail = None</span><br><span class="line"></span><br><span class="line">    def insert(self, node):</span><br><span class="line">        if not self.head:</span><br><span class="line">            self.head = node</span><br><span class="line">        elif not self.tail:</span><br><span class="line">            self.tail = node</span><br><span class="line">            self.head.next = node</span><br><span class="line">            node.prev = self.head</span><br><span class="line">        else:</span><br><span class="line">            self.tail.next = node</span><br><span class="line">            node.prev = self.tail</span><br><span class="line">            self.tail = node</span><br><span class="line"></span><br><span class="line">    def remove(self, node):</span><br><span class="line">        if node == self.head:</span><br><span class="line">            self.head = node.next</span><br><span class="line">            if self.head:</span><br><span class="line">                self.head.prev = None</span><br><span class="line">        elif node == self.tail:</span><br><span class="line">            self.tail = node.prev</span><br><span class="line">            if self.tail:</span><br><span class="line">                self.tail.next = None</span><br><span class="line">        else:</span><br><span class="line">            tmp = node.prev</span><br><span class="line">            tmp.next = node.next</span><br><span class="line">            node.next.prev = tmp</span><br><span class="line">        node.next = None</span><br><span class="line">        node.prev = None</span><br><span class="line"></span><br><span class="line">    def remove_head(self):</span><br><span class="line">        node = self.head</span><br><span class="line">        self.head = self.head.next</span><br><span class="line">        if self.head:</span><br><span class="line">            self.head.prev = None</span><br><span class="line">        return node</span><br><span class="line"></span><br><span class="line">    def str(self):</span><br><span class="line">        ans = []</span><br><span class="line">        node = self.head</span><br><span class="line">        while node:</span><br><span class="line">            ans.append(node.val)</span><br><span class="line">            node = node.next</span><br><span class="line">        return ans</span><br><span class="line"></span><br><span class="line">class LRUCache:</span><br><span class="line"></span><br><span class="line">    def __init__(self, capacity: int):</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        使用哈希表实现O(1)查询，使用双向链表实现O(1)插入和删除</span><br><span class="line">        查询的时候，首先判断是否存在，如果存在，则将该节点移动到tail的位置，表示是最新访问的</span><br><span class="line">        写入数据时，首先判断容量是否足够，如果够直接放入到最后一位，如果不够，则移除掉head位置，并将新</span><br><span class="line">        结点插入到tail位置。</span><br><span class="line">        上述操作都要反应在哈希表中。</span><br><span class="line">        :param capacity:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        self.len = 0</span><br><span class="line">        self.max_len = capacity</span><br><span class="line">        self.d = dict()</span><br><span class="line">        self.dll = DoubleLinkedList()</span><br><span class="line"></span><br><span class="line">    def get(self, key: int) -&gt; int:</span><br><span class="line">        if key in self.d:</span><br><span class="line">            node = self.d[key]</span><br><span class="line">            self.dll.remove(node)</span><br><span class="line">            self.dll.insert(node)</span><br><span class="line">            return node.val</span><br><span class="line">        else:</span><br><span class="line">            return -1</span><br><span class="line"></span><br><span class="line">    def put(self, key: int, value: int) -&gt; None:</span><br><span class="line">        if key in self.d:</span><br><span class="line">            node = self.d[key]</span><br><span class="line">            node.val = value</span><br><span class="line">            self.dll.remove(node)</span><br><span class="line">            self.dll.insert(node)</span><br><span class="line">            self.d[key] = node</span><br><span class="line">        else:</span><br><span class="line">            if self.len == self.max_len:</span><br><span class="line">                node = self.dll.remove_head()</span><br><span class="line">                k = node.key</span><br><span class="line">                del self.d[k]</span><br><span class="line">                self.len -= 1</span><br><span class="line">            node = LinkNode(value, key)</span><br><span class="line">            self.d[key] = node</span><br><span class="line">            self.dll.insert(node)</span><br><span class="line">            self.len += 1</span><br><span class="line"></span><br><span class="line">    def str(self):</span><br><span class="line">        return self.dll.str()</span><br></pre></td></tr></table></figure></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/18/KMP%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%8C%B9%E9%85%8D%E7%AE%97%E6%B3%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Jiahang Gu">
-      <meta itemprop="description" content="认真学习，享受生活">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/02/18/KMP%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%8C%B9%E9%85%8D%E7%AE%97%E6%B3%95/" class="post-title-link" itemprop="url">KMP字符串匹配算法</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-02-18 22:07:21" itemprop="dateCreated datePublished" datetime="2022-02-18T22:07:21+08:00">2022-02-18</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-02-19 18:17:25" itemprop="dateModified" datetime="2022-02-19T18:17:25+08:00">2022-02-19</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/algorithm-notes/" itemprop="url" rel="index"><span itemprop="name">算法总结</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>2.8k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>3 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>&emsp;&emsp;问题描述：给定目标字符串target（简称t）和模式串pattern（简称p），判断p是否包含在t中，即p是否是t的子串。为和代码统一，假设字符串的起始索引从0开始，p[i,j]表示pattern从i开始到j结束的子串（左右闭区间），分析时间复杂度均假设target长度为n，pattern长度为m。<br>示例：target = abcabccab, pattern = abcc, pattern是target的子串。<br>解决方法：</p>
+          <p>*表示重要程度，题目摘抄自<a target="_blank" rel="noopener" href="https://github.com/liguigui/CyC2018-CS-Notes">Cyc2018</a>，答案为自己的理解</p>
+<h4 id="进程和线程的本质区别，以及各自的使用场景"><a href="#进程和线程的本质区别，以及各自的使用场景" class="headerlink" title="*** 进程和线程的本质区别，以及各自的使用场景"></a>*** 进程和线程的本质区别，以及各自的使用场景</h4><p>区别：</p>
 <ol>
-<li>   暴力法：最显而易见的方案，以target的每个字符为起始位置，逐个比较该字符开始的等长字符串是否等于pattern，如果等于则包含，否则向后移位一个字符继续遍历比较直到结束。时间复杂度方面，最坏情况下不包含会比较n-m次，每次最多比较m位字符，所以总时间为O(m(n-m))。空间复杂度为O(1)，不需要额外的空间。</li>
-<li>   KMP算法：KMP算法相比暴力法来说改进的地方在于，利用模式串自身的特点和信息，在每次比较失败时尽可能多的移位。这里的信息指的是pattern的前缀信息，例如pattern=abcabcacab，abca是pattern的前缀，而且abca这个子串在第3位开始重复出现，即p[0,3]=p[3,6]，这样在比较字符串时，如果target=abcabcabcacaba，从t[0]开始比较到第7位时p[7]!=t[7]，不需要从t[1]开始从头比较，而是可以从t[3]开始，因为p[7]不等但p[0,3]=p[3,6]，既然比较到p[7]说明此前字符串是相等的，即t[0,6]=p[0,6]，而且p[0,3]=p[3,6]，可得p[0,3]=t[3,6]，所以直接从t[7]和p[4]处开始比较，相比于每次移位1个字符大幅提高了比较的效率。<br>&emsp;&emsp;下面分为两部分做KMP算法的说明，第一部分介绍next数组的含义及求解方法，第二部分介绍KMP算法的流程。<br>1）next数组：next数组是用来标记模式串本身的前缀后缀信息的，正如上文举例，如果已知某个子串可匹配的位置，即第一个不匹配的字符，每次只需要移动模式串的当前匹配索引到下一个前缀没有覆盖到的字符位置，而在这个字符之前的所有pattern的子串都与target当前索引之前等长的子串相等。已知匹配的前缀即可将索引位置移动到第一个前缀不匹配的字符处，达到多级跳跃的效果，并且不会产生回溯，即始终向右移动，相比暴力法单字符移动要更快到达下一个可以匹配的位置。Next[j]=k的含义是，对于模式串pattern来说，k是最大的满足p[0,k-1]=p[j-k,j-1]且p[j]!=p[k]的值，在求next数组之前，先引入f(j)的概念，假设f(j)=k表示满足p[0,k-1]=p[j-k,j-1]的最大k值，但对p(j)和p(k)没有任何要求。例如pattern=abcabcacab，求f[7]来说，需要求出最大的k满足p[0,k-1]=p[7-k,6]，如下表格所示</li>
+<li>资源：进程是资源分配的基本单位，但线程不拥有资源，线程可以访问隶属进程的资源</li>
+<li>调度：线程是独立调度的基本单位，在同一进程中，线程的切换不会引起进程切换，从一个进程中的线程切换到另一个进程中的线程时，会引起进程切换</li>
+<li>系统开销：创建或撤销进程时，系统要分配或回收资源，开销远大于创建或撤销线程时的开销。进程切换时需要保存当前执行进程的环境并设置新调度进程的环境，而切换线程时只需保存和设置少量寄存器，开销很小</li>
+<li>通信：线程间可以通过直接读写同一进程中的数据进行通信，而进程通信需要借助IPC</li>
 </ol>
-<table>
-<thead>
-<tr>
-<th align="center">k-1</th>
-<th align="center">P[0,k-1]</th>
-<th align="center">关系</th>
-<th align="center">P[7-k,6]</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">0</td>
-<td align="center">a</td>
-<td align="center">==</td>
-<td align="center">a</td>
-</tr>
-<tr>
-<td align="center">1</td>
-<td align="center">ab</td>
-<td align="center">!=</td>
-<td align="center">ca</td>
-</tr>
-<tr>
-<td align="center">2</td>
-<td align="center">abc</td>
-<td align="center">!=</td>
-<td align="center">bca</td>
-</tr>
-<tr>
-<td align="center">3</td>
-<td align="center">abca</td>
-<td align="center">==</td>
-<td align="center">abca</td>
-</tr>
-<tr>
-<td align="center">4</td>
-<td align="center">abcab</td>
-<td align="center">!=</td>
-<td align="center">cabca</td>
-</tr>
-<tr>
-<td align="center">5</td>
-<td align="center">abcabc</td>
-<td align="center">!=</td>
-<td align="center">bcabca</td>
-</tr>
-</tbody></table>
-<p>&emsp;&emsp;从表中可以看出，满足子串相等且k最大的值为k-1=3即，k=4，所以f(7)=4。但是这样存在一个问题，即每次求f(j)都需要从0开始遍历pattern，没有有效利用已经求得的前缀字符串的信息。例如求f(7)之前，已知f(6)=3，此时有p[0,2]=p[3,5]，如果p[3]=p[6]，那么也有p[0,3]=p[3,6]，根据定义可知f(7)=4=f(6)+1，而如果p[3]!=p[6]，那么求f[7]又变成了求新的前缀关系，而这个前缀是以p[3]结尾的（已知p[0,2]=p[3,5]，p[6]字符是未重复出现的前缀，那要找的新前缀一定不是以p[3]结尾且会在p[3]之前，所以需要从f(3)的位置开始找），即f(6)=f(3)。相比于从0开始遍历求最大k值来说，这种求法利用前缀信息节省了很多步骤。以abcabcacab为例，f数组和next数组值如下表：</p>
-<table>
-<thead>
-<tr>
-<th align="center">j</th>
-<th align="center">0</th>
-<th align="center">1</th>
-<th align="center">2</th>
-<th align="center">3</th>
-<th align="center">4</th>
-<th align="center">5</th>
-<th align="center">6</th>
-<th align="center">7</th>
-<th align="center">8</th>
-<th align="center">9</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">Pattern[j]</td>
-<td align="center">a</td>
-<td align="center">b</td>
-<td align="center">c</td>
-<td align="center">a</td>
-<td align="center">b</td>
-<td align="center">c</td>
-<td align="center">a</td>
-<td align="center">c</td>
-<td align="center">a</td>
-<td align="center">b</td>
-</tr>
-<tr>
-<td align="center">f(j)</td>
-<td align="center">-1</td>
-<td align="center">0</td>
-<td align="center">0</td>
-<td align="center">0</td>
-<td align="center">1</td>
-<td align="center">2</td>
-<td align="center">3</td>
-<td align="center">4</td>
-<td align="center">0</td>
-<td align="center">1</td>
-</tr>
-<tr>
-<td align="center">next[j]</td>
-<td align="center">-1</td>
-<td align="center">0</td>
-<td align="center">0</td>
-<td align="center">-1</td>
-<td align="center">0</td>
-<td align="center">0</td>
-<td align="center">-1</td>
-<td align="center">4</td>
-<td align="center">-1</td>
-<td align="center">0</td>
-</tr>
-</tbody></table>
+<p>使用场景：<br>多线程相比于多进程占用内存少、CPU利用率高，创建销毁切换都较简单，速度快，同步复杂。<br>多进程相比于多线程共享数据复杂，需要进程间通信，但同步简单。<br>进程之间互不影响，但一个线程挂掉将导致整个进程挂掉。<br>多进程适合多核、多机分布，多线程适合多核分布。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2022/02/18/KMP%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%8C%B9%E9%85%8D%E7%AE%97%E6%B3%95/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/18/%E5%93%88%E5%B8%8C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Jiahang Gu">
-      <meta itemprop="description" content="认真学习，享受生活">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/02/18/%E5%93%88%E5%B8%8C/" class="post-title-link" itemprop="url">哈希</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-02-18 22:06:02 / 修改时间：22:06:57" itemprop="dateCreated datePublished" datetime="2022-02-18T22:06:02+08:00">2022-02-18</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/algorithm-notes/" itemprop="url" rel="index"><span itemprop="name">算法总结</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>4.3k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>4 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="哈希表"><a href="#哈希表" class="headerlink" title="哈希表"></a>哈希表</h2><p>&emsp;&emsp;散列表也叫哈希表，通过给定的哈希函数计算对应键值，根据得到的键值将查询的key映射到对应的表结构中，实现O(1)的访问。<br>&emsp;&emsp;散列表中每个位置称为slot，从0开始编号，开始散列表为空。<br>常用的散列函数为：</p>
-<ul>
-<li>取余法：直接对key取余，模应该是质数以减少冲突</li>
-<li>分组求和再取余：将元素分成等长片段，对所有片段求和后取余。</li>
-<li>平方取余法：将元素平方后，对平方取余</li>
-<li>字符哈希方法：将每个字符的ascii码求和并取余。</li>
-</ul>
-<p>散列冲突：两个key经过映射后分到同一位置就会产生冲突，常用解决冲突的办法有：</p>
-<ul>
-<li>开放寻址法，即如果当前key分配到的slot存在值，则继续寻找直到找到一个空的slot。寻找方法有：</li>
-<li>线性探测法：每一次只向后搜k个slot，即new_hash_val = (old_hash_val + k) % n，缺点是多个元素有相同的hash value时造成元素聚集，导致冲突概率上升。</li>
-<li>平方探测法：将探测地址改为1,4,9…的序列，即new_hash_val = (old_hash_val + k**2) % n。</li>
-<li>链地址法：将所有具有相同hash_value的key对应的value放在以hash_value为头结点的链表中。相对来说好实现，但是需要空间。<br>Python实现线性探测法<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">class HashTable:</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    self.slots存储键，里面是(key, value)对</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    def __init__(self, n):</span><br><span class="line">        self.size = n</span><br><span class="line">        self.slots = [None] * n</span><br><span class="line"></span><br><span class="line">    def hash(self, key):</span><br><span class="line">        return key % self.size</span><br><span class="line"></span><br><span class="line">    def rehash(self, key, k):</span><br><span class="line">        return (key + k) % self.size</span><br><span class="line"></span><br><span class="line">    def get(self, key):</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        首先进行一次hash映射，如果该slot的key等于给定key则返回，否则继续rehash直到找到给定的key，或者搜索一圈之后都没有即key不存在</span><br><span class="line">        :param key:</span><br><span class="line">        :return:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        first_slot = self.hash(key)</span><br><span class="line">        data = None</span><br><span class="line">        cur_slot = first_slot</span><br><span class="line">        while self.slots[cur_slot]:</span><br><span class="line">            if self.slots[cur_slot][0] == key:</span><br><span class="line">                data = self.slots[cur_slot][1]</span><br><span class="line">                break</span><br><span class="line">            else:</span><br><span class="line">                cur_slot = self.rehash(cur_slot, 3)</span><br><span class="line">            # 找了一圈没有对应key，则说明key不在slot中</span><br><span class="line">            if cur_slot == first_slot:</span><br><span class="line">                break</span><br><span class="line">        return data</span><br><span class="line"></span><br><span class="line">    def put(self, key, value):</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        首先得到key的hash值即对应slot，如果该slot为空则放入，如果是对应key则更新value，否则继续rehash直到slot为空放入，</span><br><span class="line">        或者找到对应key更新</span><br><span class="line">        :param key:</span><br><span class="line">        :param value:</span><br><span class="line">        :return:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        hash_value = self.hash(key)</span><br><span class="line">        if self.slots[hash_value] is None or self.slots[hash_value][0] == key or self.slots[hash_value][0] == -1:</span><br><span class="line">            self.slots[hash_value] = (key, value)</span><br><span class="line">        else:</span><br><span class="line">            nxt_slot = self.rehash(hash_value, 3)</span><br><span class="line">            while self.slots[nxt_slot] is not None and self.slots[nxt_slot][0] != key:</span><br><span class="line">                nxt_slot = self.rehash(nxt_slot, 3)</span><br><span class="line">            self.slots[nxt_slot] = (key, value)</span><br><span class="line"></span><br><span class="line">    def delete(self, key):</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        同理找到存储对应key的slot，如果可以找到则更新该slot为标记（即标记该slot为删除的而不是空的），否则表示删除失败</span><br><span class="line">        :param key:</span><br><span class="line">        :return:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        first_slot = self.hash(key)</span><br><span class="line">        cur_slot = first_slot</span><br><span class="line">        while self.slots[cur_slot]:</span><br><span class="line">            if self.slots[cur_slot][0] == key:</span><br><span class="line">                # 使用-1标记该元素被删除，同时该slot不为空，否则线性探测时会断裂</span><br><span class="line">                self.slots[cur_slot] = (-1, -1)</span><br><span class="line">                return True</span><br><span class="line">            else:</span><br><span class="line">                cur_slot = self.rehash(cur_slot, 3)</span><br><span class="line">            # 找了一圈没有对应key，则说明key不在slot中</span><br><span class="line">            if cur_slot == first_slot:</span><br><span class="line">                return False</span><br></pre></td></tr></table></figure></li>
-</ul>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/02/18/%E5%93%88%E5%B8%8C/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/18/%E5%B8%B8%E7%94%A8%E5%9B%BE%E8%AE%BA%E7%AE%97%E6%B3%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Jiahang Gu">
-      <meta itemprop="description" content="认真学习，享受生活">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/02/18/%E5%B8%B8%E7%94%A8%E5%9B%BE%E8%AE%BA%E7%AE%97%E6%B3%95/" class="post-title-link" itemprop="url">常用图论算法</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-02-18 22:04:16" itemprop="dateCreated datePublished" datetime="2022-02-18T22:04:16+08:00">2022-02-18</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-02-19 18:17:42" itemprop="dateModified" datetime="2022-02-19T18:17:42+08:00">2022-02-19</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/algorithm-notes/" itemprop="url" rel="index"><span itemprop="name">算法总结</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>4.2k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>4 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="二分图"><a href="#二分图" class="headerlink" title="二分图"></a>二分图</h2><p>设G=(V,E)是一个无向图，如果顶点V可分为两个不相交的子集(A,B)，并且图中每条边(i,j)所关联的两个顶点i, j分别属于这两个不同的顶点集(i in A, j in B)，则称G为二分图，即属于同一个顶点集的任意两个点没有相邻的边。<br>染色法判断二分图：</p>
-<ol>
-<li>   初始设置所有点未染色</li>
-<li>   随意取出一个未染色的顶点u，把它染成一种颜色</li>
-<li>   取出与它连接的节点v，如果v未染色则将v染成与u不同的颜色，如果v已经染色，则判断u和v颜色相同则染色失败，不是二分图，结束</li>
-<li>   遍历所有节点重复步骤3</li>
-</ol>
-<p>以leetcode<a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/is-graph-bipartite/">785.判断二分图</a>为例</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">class Solution:</span><br><span class="line">    def isBipartite(self, graph: List[List[int]]) -&gt; bool:</span><br><span class="line">        col = [0] * len(graph)</span><br><span class="line"></span><br><span class="line">        def dfs(i, color):</span><br><span class="line">            col[i] = color</span><br><span class="line">            for j in graph[i]:</span><br><span class="line">                if col[j] == 0 and not dfs(j, -color):</span><br><span class="line">                    return False</span><br><span class="line">                elif col[j] == color:</span><br><span class="line">                    return False</span><br><span class="line">            return True</span><br><span class="line"></span><br><span class="line">        for i in range(len(graph)):</span><br><span class="line">            if col[i] == 0:</span><br><span class="line">                if not dfs(i, 1):</span><br><span class="line">                    return False</span><br><span class="line">        return True</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/02/18/%E5%B8%B8%E7%94%A8%E5%9B%BE%E8%AE%BA%E7%AE%97%E6%B3%95/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/18/%E8%AE%A1%E7%AE%97%E5%99%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Jiahang Gu">
-      <meta itemprop="description" content="认真学习，享受生活">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/02/18/%E8%AE%A1%E7%AE%97%E5%99%A8/" class="post-title-link" itemprop="url">计算器</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-02-18 22:01:15 / 修改时间：22:02:11" itemprop="dateCreated datePublished" datetime="2022-02-18T22:01:15+08:00">2022-02-18</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/algorithm-notes/" itemprop="url" rel="index"><span itemprop="name">算法总结</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>2k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>计算器的功能实现是栈的典型应用，因为在得到一个运算符之后要得到前一个相邻的字符，和栈的后进先出性质相符。<br>普通计算器需要满足的功能是：</p>
-<ol>
-<li>   输入一个字符串包括+-*/、数字、空格和括号，返回运算结果</li>
-<li>   符合运算法则</li>
-<li>   除号是整数除法</li>
-<li>   假定输入算式合法<br>首先处理加减法。以1-2+3为例，一个很简单的思路是：</li>
-<li>   先给第一个数字加一个默认符号+，变成+1-2+3，如果第一个是-则记录然后移动到下一个字符</li>
-<li>   把一个运算符和一个数字组合成一对，变成+1，-2，+3转为数字后放入栈中</li>
-<li>   对栈中数字求和得到结果<br>算法的核心思想是使用一个字符记录上一个出现的字符，在遇到下一个字符时，根据上一个字符的信息记录当前得到的结果放入到栈中<br>Python程序实现：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">def calculate(s: str) -&gt; int:</span><br><span class="line">        </span><br><span class="line">    def helper(s: List) -&gt; int:</span><br><span class="line">        stack = []</span><br><span class="line">        sign = &#x27;+&#x27;</span><br><span class="line">        num = 0</span><br><span class="line"></span><br><span class="line">        while len(s) &gt; 0:</span><br><span class="line">            c = s.pop(0)</span><br><span class="line">            if c.isdigit():</span><br><span class="line">                num = 10 * num + int(c)</span><br><span class="line">            # 忽略空格，并在表达式结尾时记录当前数字</span><br><span class="line">            if (not c.isdigit() and c != &#x27; &#x27;) or len(s) == 0:</span><br><span class="line">                if sign == &#x27;+&#x27;:</span><br><span class="line">                    stack.append(num)</span><br><span class="line">                elif sign == &#x27;-&#x27;:</span><br><span class="line">                    stack.append(-num)                   </span><br><span class="line">                num = 0</span><br><span class="line">                sign = c</span><br><span class="line"></span><br><span class="line">        return sum(stack)</span><br><span class="line">    # 需要把字符串转成列表方便操作</span><br><span class="line">    return helper(list(s))</span><br></pre></td></tr></table></figure>
-然后处理乘除法：在上述加法的基础上，如果是乘除法，优先级高于加减法，取出栈顶数字与当前数字做运算，并将结果放回到栈顶。<br>Python程序实现：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">def calculate(s: str) -&gt; int:</span><br><span class="line">        </span><br><span class="line">    def helper(s: List) -&gt; int:</span><br><span class="line">        stack = []</span><br><span class="line">        sign = &#x27;+&#x27;</span><br><span class="line">        num = 0</span><br><span class="line"></span><br><span class="line">        while len(s) &gt; 0:</span><br><span class="line">            c = s.pop(0)</span><br><span class="line">            if c.isdigit():</span><br><span class="line">                num = 10 * num + int(c)</span><br><span class="line">            # 忽略空格，并在表达式结尾时记录当前数字</span><br><span class="line">            if (not c.isdigit() and c != &#x27; &#x27;) or len(s) == 0:</span><br><span class="line">                if sign == &#x27;+&#x27;:</span><br><span class="line">                    stack.append(num)</span><br><span class="line">                elif sign == &#x27;-&#x27;:</span><br><span class="line">                    stack.append(-num)</span><br><span class="line">                elif sign == &#x27;*&#x27;:</span><br><span class="line">                    stack[-1] = stack[-1] * num</span><br><span class="line">                elif sign == &#x27;/&#x27;:</span><br><span class="line">                    # python 除法向 0 取整的写法，//默认是向下取整</span><br><span class="line">                    stack[-1] = int(stack[-1] / float(num))                    </span><br><span class="line">                num = 0</span><br><span class="line">                sign = c</span><br><span class="line"></span><br><span class="line">        return sum(stack)</span><br><span class="line">    # 需要把字符串转成列表方便操作</span><br><span class="line">    return helper(list(s))</span><br></pre></td></tr></table></figure>
-最后处理括号，括号表示内部优先运算，对应的子字符串依然可以使用上述的方法计算，所以是一个递归的过程。在遇到左括号时，递归处理直到遇到右括号结束。<br>Python程序实现：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">def calculate(s: str) -&gt; int:</span><br><span class="line">        </span><br><span class="line">    def helper(s: List) -&gt; int:</span><br><span class="line">        stack = []</span><br><span class="line">        sign = &#x27;+&#x27;</span><br><span class="line">        num = 0</span><br><span class="line"></span><br><span class="line">        while len(s) &gt; 0:</span><br><span class="line">            c = s.pop(0)</span><br><span class="line">            if c.isdigit():</span><br><span class="line">                num = 10 * num + int(c)</span><br><span class="line">            # 遇到左括号开始递归计算 num</span><br><span class="line">            if c == &#x27;(&#x27;:</span><br><span class="line">                num = helper(s)</span><br><span class="line"></span><br><span class="line">            if (not c.isdigit() and c != &#x27; &#x27;) or len(s) == 0:</span><br><span class="line">                if sign == &#x27;+&#x27;:</span><br><span class="line">                    stack.append(num)</span><br><span class="line">                elif sign == &#x27;-&#x27;:</span><br><span class="line">                    stack.append(-num)</span><br><span class="line">                elif sign == &#x27;*&#x27;:</span><br><span class="line">                    stack[-1] = stack[-1] * num</span><br><span class="line">                elif sign == &#x27;/&#x27;:</span><br><span class="line">                    # python 除法向 0 取整的写法，//默认是向下取整</span><br><span class="line">                    stack[-1] = int(stack[-1] / float(num)) </span><br><span class="line">                num = 0</span><br><span class="line">                sign = c</span><br><span class="line">                </span><br><span class="line">            # 遇到右括号返回递归结果</span><br><span class="line">            if c == &#x27;)&#x27;: </span><br><span class="line">                break</span><br><span class="line">        return sum(stack)</span><br><span class="line"></span><br><span class="line">    return helper(list(s))</span><br></pre></td></tr></table></figure></li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/18/%E4%BA%8C%E5%88%86%E6%90%9C%E7%B4%A2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Jiahang Gu">
-      <meta itemprop="description" content="认真学习，享受生活">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/02/18/%E4%BA%8C%E5%88%86%E6%90%9C%E7%B4%A2/" class="post-title-link" itemprop="url">二分搜索</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-02-18 21:58:05" itemprop="dateCreated datePublished" datetime="2022-02-18T21:58:05+08:00">2022-02-18</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-02-19 18:18:48" itemprop="dateModified" datetime="2022-02-19T18:18:48+08:00">2022-02-19</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/algorithm-notes/" itemprop="url" rel="index"><span itemprop="name">算法总结</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>2.2k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>&emsp;&emsp;二分算法用于在有序序列中寻找到目标元素，因为每次可以将待查询序列长度减少一半，时间复杂度为O(lgn)。普通的二分模板为</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">def binary_search(target, nums):</span><br><span class="line">    l = 0</span><br><span class="line">    r = len(nums) - 1</span><br><span class="line">    while l &lt;= r:</span><br><span class="line">        mid = l + (r - l) // 2</span><br><span class="line">        if nums[mid] == target:</span><br><span class="line">            return mid</span><br><span class="line">        elif nums[mid] &lt; target:</span><br><span class="line">            l = mid + 1</span><br><span class="line">        else:</span><br><span class="line">            r = mid - 1</span><br><span class="line">    return -1</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;这种写法可以看成是将待查找区间分为三个部分，[left, mid-1], [mid], [mid+1, right]。但是在出现多个相同元素的时候会有很多要考虑的因素，比如，要查找某元素的第一个出现的位置，当nums[mid]==target时，mid可能是解，也可能在左边还存在相同元素，所以应该走向哪一方有待进一步判断。此外，还有些二分的变体具有不同的书写形式，比如循环中的&lt;=改为&lt;等，混淆记忆。<br>&emsp;&emsp;为了解决上述方法带来的不便，可以使用减治法的思想，将区间划分为包含目标元素的区间和不包含目标元素的区间，也就是说将区间划分为[left, mid][mid+1, right]或者[left, mid-1][mid, right]，具体要看题目划分。这样在每次更新区间时，只需要排除目标元素不在的那个区间，继续搜索包含目标元素的区间。当所有不满足的区间都排除掉后，最后剩下的就是满足的目标元素。<br>模板如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">def binary_search(target, nums):</span><br><span class="line">    l = 0</span><br><span class="line">    r = len(nums) - 1</span><br><span class="line">    while l &lt; r:</span><br><span class="line">        mid = l + (r - l) // 2</span><br><span class="line">        # 这里要思考mid满足什么条件之后，应该如何排除不包含目标的区间</span><br><span class="line">        if check(mid):</span><br><span class="line">            r = mid - 1</span><br><span class="line">        else:</span><br><span class="line">            l = mid</span><br><span class="line">    # 循环结束时有l == r，判断nums[l]是否满足条件</span><br><span class="line">    return l</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;check(mid)用于检验nums[mid]与target的关系，如果答案在左侧则继续搜索左半区间。需要注意的是，在l = mid的赋值部分，由于更新mid是向下取整，可能存在l == r - 1从而导致死循环的情况，此时需要修改mid为向上取整。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/02/18/%E4%BA%8C%E5%88%86%E6%90%9C%E7%B4%A2/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/17/Raft%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Jiahang Gu">
-      <meta itemprop="description" content="认真学习，享受生活">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/02/17/Raft%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Raft笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-02-17 19:59:15 / 修改时间：19:59:55" itemprop="dateCreated datePublished" datetime="2022-02-17T19:59:15+08:00">2022-02-17</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/course-notes/" itemprop="url" rel="index"><span itemprop="name">课程笔记</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>3.1k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>3 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h2><p>作为一个分布式算法，让多台服务器共同合作完成完成记录日志的工作。和单机相比，让多个服务器做几乎相同的工作，最终能保持一致的状态。性能比不过单机，但可以接受，目标是在满足CP的情况下，尽可能提高A</p>
-<h3 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h3><p>代替Paxos算法实现分布式一致性算法，Paxos更加晦涩难懂，导致在工程实现阶段出现很多问题</p>
-<h3 id="复制状态机"><a href="#复制状态机" class="headerlink" title="复制状态机"></a>复制状态机</h3>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/02/17/Raft%E7%AC%94%E8%AE%B0/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/17/MIT6-824%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Jiahang Gu">
-      <meta itemprop="description" content="认真学习，享受生活">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/02/17/MIT6-824%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">MIT6.824课程笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-02-17 19:55:09" itemprop="dateCreated datePublished" datetime="2022-02-17T19:55:09+08:00">2022-02-17</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-02-19 18:05:35" itemprop="dateModified" datetime="2022-02-19T18:05:35+08:00">2022-02-19</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/course-notes/" itemprop="url" rel="index"><span itemprop="name">课程笔记</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>30k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>27 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><h3 id="分布式系统目的"><a href="#分布式系统目的" class="headerlink" title="分布式系统目的"></a>分布式系统目的</h3><ol>
-<li>更高的性能，最好是线性增加</li>
-<li>提供容错，当一台机器故障时另一台可以马上替换</li>
-<li>空间分布，需要两个地区的机器协同工作</li>
-<li>保证安全，将代码分散，并通过网络进行交互</li>
-</ol>
-<h3 id="构建分布式系统的工具"><a href="#构建分布式系统的工具" class="headerlink" title="构建分布式系统的工具"></a>构建分布式系统的工具</h3><ol>
-<li>RPC</li>
-<li>线程</li>
-<li>并发控制</li>
-</ol>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/02/17/MIT6-824%E7%AC%94%E8%AE%B0/#more" rel="contents">
+              <a class="btn" href="/2022/02/21/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E9%9D%A2%E8%AF%95%E9%A2%98/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1334,7 +1235,7 @@
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1400,20 +1301,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-count">51</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">7</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">20</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1509,59 +1410,6 @@
   
 
   
-      
-
-<script>
-  if (typeof MathJax === 'undefined') {
-    window.MathJax = {
-      loader: {
-        source: {
-          '[tex]/amsCd': '[tex]/amscd',
-          '[tex]/AMScd': '[tex]/amscd'
-        }
-      },
-      tex: {
-        inlineMath: {'[+]': [['$', '$']]},
-        tags: 'ams'
-      },
-      options: {
-        renderActions: {
-          findScript: [10, doc => {
-            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
-              const display = !!node.type.match(/; *mode=display/);
-              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
-              const text = document.createTextNode('');
-              node.parentNode.replaceChild(text, node);
-              math.start = {node: text, delim: '', n: 0};
-              math.end = {node: text, delim: '', n: 0};
-              doc.math.push(math);
-            });
-          }, '', false],
-          insertedScript: [200, () => {
-            document.querySelectorAll('mjx-container').forEach(node => {
-              let target = node.parentNode;
-              if (target.nodeName.toLowerCase() === 'li') {
-                target.parentNode.classList.add('has-jax');
-              }
-            });
-          }, '', false]
-        }
-      }
-    };
-    (function () {
-      var script = document.createElement('script');
-      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
-      script.defer = true;
-      document.head.appendChild(script);
-    })();
-  } else {
-    MathJax.startup.document.state(0);
-    MathJax.texReset();
-    MathJax.typeset();
-  }
-</script>
-
-    
 
   
 

@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="本文是根据Cyc2018总结的基础知识整理而来，在基础知识的基础上更多偏向实际面试问题，以及一些深入的问题思考 基础语法 创建数据库并使用 12CREATE DATABASE test;USE test; 创建表 1234567CREATE TABLE mytable (    id INT NOT NULL AUTO_INCREMENT,    col1 INT NOT NULL DEFAULT">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据库总结">
+<meta property="og:url" content="http://example.com/2022/02/21/%E6%95%B0%E6%8D%AE%E5%BA%93%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="菜汤里的咸鱼要翻身">
+<meta property="og:description" content="本文是根据Cyc2018总结的基础知识整理而来，在基础知识的基础上更多偏向实际面试问题，以及一些深入的问题思考 基础语法 创建数据库并使用 12CREATE DATABASE test;USE test; 创建表 1234567CREATE TABLE mytable (    id INT NOT NULL AUTO_INCREMENT,    col1 INT NOT NULL DEFAULT">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-02-21T04:17:53.000Z">
+<meta property="article:modified_time" content="2022-02-21T04:59:48.721Z">
+<meta property="article:author" content="Jiahang Gu">
+<meta property="article:tag" content="面经">
+<meta property="article:tag" content="DataBase">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2022/02/21/%E6%95%B0%E6%8D%AE%E5%BA%93%E6%80%BB%E7%BB%93/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>数据库总结 | 菜汤里的咸鱼要翻身</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">菜汤里的咸鱼要翻身</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/%E6%95%B0%E6%8D%AE%E5%BA%93%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据库总结
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-21 12:17:53 / 修改时间：12:59:48" itemprop="dateCreated datePublished" datetime="2022-02-21T12:17:53+08:00">2022-02-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>12k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>11 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本文是根据<a target="_blank" rel="noopener" href="https://github.com/liguigui/CyC2018-CS-Notes">Cyc2018</a>总结的基础知识整理而来，在基础知识的基础上更多偏向实际面试问题，以及一些深入的问题思考</p>
+<h3 id="基础语法"><a href="#基础语法" class="headerlink" title="基础语法"></a>基础语法</h3><ol>
+<li><p>创建数据库并使用</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CREATE DATABASE test;</span><br><span class="line">USE test;</span><br></pre></td></tr></table></figure></li>
+<li><p>创建表</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE mytable (</span><br><span class="line">    id INT NOT NULL AUTO_INCREMENT,</span><br><span class="line">    col1 INT NOT NULL DEFAULT 1,</span><br><span class="line">    col2 VARCHAR(255) NULL,</span><br><span class="line">    col3 DATE NULL,</span><br><span class="line">    PRIMARY KEY(`id`)</span><br><span class="line">);</span><br></pre></td></tr></table></figure></li>
+<li><p>修改表<br>添加列</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ALTER TABLE mytable ADD col CHAR(20);</span><br></pre></td></tr></table></figure>
+<p>删除列</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ALTER TABLE mytable DROP COLUMN col;</span><br></pre></td></tr></table></figure>
+<p>删除表</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DROP TABLE mytable;</span><br></pre></td></tr></table></figure></li>
+<li><p>插入<br>普通插入</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">INSERT INTO mytable(col1, col2) VALUES(val1, val2);</span><br></pre></td></tr></table></figure>
+<p>插入检索出的数据</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">INSERT INTO mytable(col1, col2) SELECT col1, col2 FROM mytable2;</span><br></pre></td></tr></table></figure>
+<p>将一个表的内容插入到一个新表</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE newtable AS SELECT * FROM mytable;</span><br></pre></td></tr></table></figure></li>
+<li><p>更新</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">UPDATE mytable SET col = val WHERE id = 1;</span><br></pre></td></tr></table></figure></li>
+<li><p>删除</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DELETE FROM mytable WHERE id = 1;</span><br><span class="line">TRUNCATE TABLE mytable;</span><br></pre></td></tr></table></figure></li>
+<li><p>查询<br>DISTINCT，相同值只会出现一次，所有列都相同才算相同</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT DISTINCT col1, col2 FROM mytable;</span><br></pre></td></tr></table></figure>
+<p>LIMIT, 限制返回的行数，第一个参数为起始行，默认为0，第二个参数是返回的总行数</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM mytable LIMIT 5;</span><br></pre></td></tr></table></figure></li>
+<li><p>排序<br>ORDER BY ASC升序（默认），DESC降序，可以按照多个列排序，并且每个列指定不同的排序方式</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM mytable ORDER BY col1 DESC, col2 ASC;</span><br></pre></td></tr></table></figure></li>
+<li><p>过滤<br>WHERE子句可以筛选数据，降低数据传输的开销，NULL和0、空字符串都不同。AND和OR连接多个过滤条件，优先处理AND。</p>
+</li>
+<li><p>通配符<br>%匹配&gt;=0个字符，_匹配一个字符，[]匹配集合内的字符， [^]不匹配集合内的字符，LIKE进行通配符匹配</p>
+</li>
+<li><p>计算字段<br>AS取别名，CONCAT()连接两个字段，TRIM()去除首尾空格。</p>
+</li>
+<li><p>函数<br>汇总: AVG(), COUNT(), MAX(), MIN(), SUM()<br>文本处理: LEFT(), RIGHT(), LOWER(), UPPER(), LTRIM(), RTRIM(), LENGTH(), SOUNDEX()转为语音值<br>日期和时间处理: ADDDATE(), ADDTIME(), CURDATE(), CURTIME(), DATE(), DATEDIFF(), DATE_ADD(), DATE_FORMAT(), DAY(), DAYOFWEEK(), HOUR(), MINUTE(), MONTH(), NOW(), SECOND(), TIME(), YEAR()<br>数值处理: SIN(), COS(), TAN(), ABS(), SQRT(), MOD(), EXP(), PI(), RAND()</p>
+</li>
+<li><p>分组<br>将具有相同的数据值的行放在同一组中，可以对同一分组数据使用汇总函数处理，并且自动按照该字段排序</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT col, COUNT(*) AS num FROM mytable GROUP BY col;</span><br></pre></td></tr></table></figure>
+<p>GROUP BY自动按照该字段排序，也可以按汇总字段排序</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT col, COUNT(*) AS num FROM mytable GROUP BY col ORDER BY num;</span><br></pre></td></tr></table></figure>
+<p>WHERE过滤行，HAVING过滤分组，行过滤优先</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT col, COUNT(*) AS num FROM mytable WHERE col &gt; 2 GROUP BY col HAVING num &gt;= 2;</span><br></pre></td></tr></table></figure>
+<p>规定：</p>
+</li>
+<li><p>GROUP BY出现在WHERE子句之后，ORDER BY子句之前</p>
+</li>
+<li><p>除了汇总字段外，SELECT语句中的每一字段都必须在GROUP BY子句中给出</p>
+</li>
+<li><p>NULL的行单独分为一组</p>
+</li>
+<li><p>大多数SQL实现不支持GROUP BY列具有可变长度的数据类型</p>
+</li>
+<li><p>子查询<br>子查询中只能返回一个字段的数据，可以将子查询的结果作为WHERE语句的过滤条件</p>
+</li>
+<li><p>连接<br>连接用于连接多个表，使用JOIN关键字，条件语句用ON。连接可以替换子查询并且效率一般更快<br>内连接，关键字INNER JOIN，JOIN默认为内连接<br>自连接：连接的表是自身<br>自然连接：NATURAL JOIN自动连接所有同名列，而内连接需要提供连接的列<br>外连接：LEFT OUTER JOIN左外连接寻找符合条件的连接，如果JOIN的左侧表存在没有关联的行，保留左侧表并复制右侧表相关字段为NULL</p>
+</li>
+<li><p>组合查询<br>UNION组合两个查询，每个查询包含相同列、表达式和聚集函数。默认去除相同行，要保留相同行使用UNION ALL，ORDER BY子句必须位于语句最后</p>
+</li>
+</ol>
+<h3 id="ACID-的作用以及实现原理"><a href="#ACID-的作用以及实现原理" class="headerlink" title="ACID 的作用以及实现原理"></a>ACID 的作用以及实现原理</h3><ol>
+<li>原子性，Atomicity：事务被视为不可分割的最小单位，事务的所有操作要么全部提交成功，要么全部失败回滚。回滚可以用回滚日志实现，回滚日志记录着事务所执行的修改操作，在回滚时反向执行这些修改操作</li>
+<li>一致性, Consistency: 数据库在事务执行前后都保持一致性状态。在一致性状态下，所有事务对一个数据的读取结果都是相同的。</li>
+<li>隔离性, Isolation: 一个事务所做的修改在最终提交之前，对其他事务是不可见的。</li>
+<li>持久性, Durability: 一旦事务提交，则其所作的修改将会永远保存到数据库中。即使系统发生崩溃，事务执行的结果也不能丢失。可以使用重做日志保证持久性</li>
+</ol>
+<p>特性之间的关联：</p>
+<ol>
+<li>只有满足一致性，事务的执行结果才是正确的</li>
+<li>在无并发的情况下，事务串行执行，隔离性一定能够满足。此时只要能满足原子性，就一定能满足一致性。</li>
+<li>在并发的情况下，多个事务并行执行，事务不仅要满足原子性，还要满足隔离性，才能满足一致性</li>
+<li>事务满足持久性是应对数据库崩溃的情况</li>
+</ol>
+<h3 id="四大隔离级别，以及不可重复读和幻影读的出现原因"><a href="#四大隔离级别，以及不可重复读和幻影读的出现原因" class="headerlink" title="四大隔离级别，以及不可重复读和幻影读的出现原因"></a>四大隔离级别，以及不可重复读和幻影读的出现原因</h3><p>四大隔离级别：</p>
+<ol>
+<li>未提交读：事务中的修改，即使没有提交，对其他事务也是可见的</li>
+<li>提交读：一个事务只能读取已经提交的事务所作的修改，即事务做的修改在提交之前对其他事务不可见</li>
+<li>可重复读：保证在同一个事务中多次读取数据的结果是一样的</li>
+<li>可串行化：强制事务串行执行，需要加锁实现</li>
+</ol>
+<p>丢失修改：T1和T2两个数据都对一个数据修改，T1修改后T2随后修改，覆盖了T1的修改<br>脏读：T1修改一个数据，T2随后读取这个数据，如果T1撤销修改，则T2读出的数据是脏数据<br>不可重复读：T2读取一个数据，T1对该数据进行修改，此时T2再读这个数据会得到和第一次不同的结果<br>幻影读：T1读取某个范围的数据，T2在这个范围内插入新数据，T1再次读取这个范围的数据，此时读取的结果和第一次读取的结果不同</p>
+<table>
+<thead>
+<tr>
+<th align="center">隔离级别</th>
+<th align="center">脏读</th>
+<th align="center">不可重复读</th>
+<th align="center">幻影读</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">未提交读</td>
+<td align="center">存在</td>
+<td align="center">存在</td>
+<td align="center">存在</td>
+</tr>
+<tr>
+<td align="center">提交读</td>
+<td align="center">不存在</td>
+<td align="center">存在</td>
+<td align="center">存在</td>
+</tr>
+<tr>
+<td align="center">可重复读</td>
+<td align="center">不存在</td>
+<td align="center">不存在</td>
+<td align="center">存在</td>
+</tr>
+<tr>
+<td align="center">可串行化</td>
+<td align="center">不存在</td>
+<td align="center">不存在</td>
+<td align="center">不存在</td>
+</tr>
+</tbody></table>
+<h3 id="封锁的类型以及粒度，两段锁协议，隐式和显式锁定"><a href="#封锁的类型以及粒度，两段锁协议，隐式和显式锁定" class="headerlink" title="封锁的类型以及粒度，两段锁协议，隐式和显式锁定"></a>封锁的类型以及粒度，两段锁协议，隐式和显式锁定</h3><p>封锁的粒度：行级锁和表级锁。应该尽量只锁定需要的数据，锁定的数据量越少，发生锁争用的可能性越小，系统的并发程度越高。但加锁消耗资源，锁操作会增加系统开销。因此封锁粒度越小，系统开销越大。在选择封锁粒度时，需要在锁开销和并发程度之间做一个权衡</p>
+<p>封锁的类型：</p>
+<ol>
+<li>读写锁：分为排他锁（X锁，写锁）和共享锁（S锁，读锁）。一个事务对数据对象A加X锁，则可以读取和更新A，期间其他事务不能对A加任何锁。一个事务对A加S锁，可以对A进行读取操作，但不能更新。期间其他事务能对A加S锁。</li>
+<li>意向锁：支持多粒度封锁。在存在行级锁和表级锁的情况下，事务想要对表A加锁，就要检测是否有其他事务对表A或表A的任意一行加锁，需要对A的每一行检测一次，非常耗时。在X/S基础上引入IX/IS作为表级锁，用来表示一个事务想在表中的某个数据行上加S锁或者X锁。规定：1）一个事务在获得对象的S锁之前，必须先获得表的IS锁或者更强的锁；2）一个事务在获得对象的X锁之前，必须先获得表的IX锁。引入意向锁后，如果T想对表A加X锁，先检测是否有其他事务对A加X/IX/IS锁，如果加了就表示其他事务正在使用这个表或表中某一行，加X锁失败。</li>
+</ol>
+<p>兼容关系<br>|-|X|IX|S|IS|<br>|:–:|:–:|:–:|:–:|:–:|<br>|X|x|x|x|x|<br>|IX|x|√|x|√|<br>|S|x|x|√|√|<br>|IS|x|√|√|√|</p>
+<p>两段锁协议：加锁和解锁分为两个阶段进行，先加锁再解锁。可串行化调度是指通过并发控制使得并发执行的事务结果与某个串行执行的事务结果相同。事务遵循两段锁协议是保证可串行化调度的充分条件，但不是必要条件。</p>
+<p>隐式与显式锁定：InnoDB存储引擎采用两段锁协议，会根据隔离级别在需要的时候自动加锁，并且所有的锁都是在同一时刻被释放，被称为隐式锁定。也可以使用特定语句进行显式锁定：select … lock in share mode; select … for update;</p>
+<h3 id="行级锁、表级锁和页级锁"><a href="#行级锁、表级锁和页级锁" class="headerlink" title="行级锁、表级锁和页级锁"></a>行级锁、表级锁和页级锁</h3><p>行级锁：锁定粒度最细的锁，只针对当前操作的行加锁。能大大减少数据库操作的冲突，加锁粒度最小但开销最大，发生冲突概率最低，并发度最高<br>表级锁：锁定粒度最大的，对当前操作的整张表加锁，实现简单，资源消耗少，但冲突概率高，并发度最低<br>页级锁：锁定粒度介于行级锁和表级锁，在二者之间的特点中折中</p>
+<h3 id="MVCC-原理，当前读以及快照读，Next-Key-Locks-解决幻影读"><a href="#MVCC-原理，当前读以及快照读，Next-Key-Locks-解决幻影读" class="headerlink" title="MVCC 原理，当前读以及快照读，Next-Key Locks 解决幻影读"></a>MVCC 原理，当前读以及快照读，Next-Key Locks 解决幻影读</h3><p>MVCC原理：MVCC是多版本并发控制，通过保存数据在某个时间点的快照实现，一个事务无论运行多久，在同一个事务里看到的数据视图是一致的。在MySQL的InnoDB存储引擎中实现提交读和可重复读隔离级别。未提交读总是读到最新的数据行不需要控制，可串行化需要对所有读取行加锁，MVCC无法实现。<br>MVCC使用两个版本号：系统版本号是一个递增的数字，每开始一个新的事务，系统版本号会递增；事务版本号是事务开始时的系统版本号。MVCC在每行后面保存着两个隐藏列：1）创建版本号：创建该数据行快照时的系统版本号；2）删除版本号：如果快照删除版本号为空或大于当前事务版本号表示该快照有效，否则表示已删除。MVCC将使用到的快照保存在Undo日志中，通过回滚指针将一个数据行的所有快照连接起来。<br>基本原理：开始一个事务时，该事务的版本号肯定大于当前所有数据行快照的创建版本号。</p>
+<ol>
+<li>select：多个事务必须读取到同一个数据行距离现在最近的一个有效快照。假设当前事务为T，则读的数据行快照的创建版本号必须小于T的版本号，删除版本号必须大于T的版本号或者为空。</li>
+<li>insert：当前系统版本号作为数据行快照的创建版本号</li>
+<li>delete：当前系统版本号作为数据行快照的删除版本号</li>
+<li>update：可以理解为先删后插入，将当前版本号作为更新前的数据行快照的删除版本号，作为更新后的数据行快照的创建版本号</li>
+</ol>
+<p>快照读：MVCC读取的是快照中的数据，减少加锁开销<br>当前读：读取的是最新的数据，需要加X/S锁</p>
+<p>MVCC无法解决幻影读，需要MVCC+Next-Key Locks解决。分为两个Lock</p>
+<ol>
+<li>Record Locks：锁定一个记录的索引，而不是记录本身。如果表没有索引，InnoDB会自动在主键上创建隐藏的聚簇索引</li>
+<li>Gap Locks：锁定索引之间的间隙，但不包含索引本身，即锁定索引的范围。</li>
+</ol>
+<p>Next-Key Locks结合Record Locks和Gap Locks锁定记录上的索引以及索引之间的间隙</p>
+<h3 id="范式理论"><a href="#范式理论" class="headerlink" title="范式理论"></a>范式理论</h3><p>不符合范式可能产生：冗余数据、修改异常、删除异常和插入异常。<br>函数依赖：A-&gt;B表示B函数依赖于A<br>第一范式：属性不可分。例如姓名列拆分成姓和名<br>第二范式：每个非主键属性完全依赖于键码，可以对表进行拆分实现。例如学生选课，学号和课程号是主键，但学生姓名部分依赖于学号，与课程号无关，可以拆分为学生表和课程表<br>第三范式：非主键属性不传递函数依赖于键码。例如学生对应的学院关系在一张表，此时修改学院信息则所有学生信息都要改，造成冗余，可以拆分为学院表和学生表并通过id连接</p>
+<h3 id="SQL-与-NoSQL-的比较"><a href="#SQL-与-NoSQL-的比较" class="headerlink" title="SQL 与 NoSQL 的比较"></a>SQL 与 NoSQL 的比较</h3><p>NoSQL: Not Only SQL<br>NoSQL是非关系型数据库，可用于超大规模数据的存储。<br>区别：</p>
+<ol>
+<li>SQL数据库提供关系型表存储数据，NoSQL数据库采用类JSON的键值对存储文档</li>
+<li>SQL数据库中，只有事先定义了表和字段的模式才可以添加数据，NoSQL数据库中任何时候都可以添加。</li>
+<li>SQL具有数据库的规范化，NoSQL也可以使用规范化，但倾向于非规范化</li>
+<li>SQL有join操作，NoSQL没有</li>
+<li>SQL具有数据完整性，NoSQL不具备</li>
+<li>SQL需要自定义事务，NoSQL操作单文档时具备事务性，操作多文档时不具备</li>
+<li>SQL使用SQL语言，NoSQL使用类JSON</li>
+<li>NoSQL更快</li>
+</ol>
+<p>适合使用SQL开发的项目：</p>
+<ol>
+<li>可以预先定义逻辑相关的离散数据的需求</li>
+<li>数据一致性是必要的</li>
+<li>具有良好的开发者经验和技术支持的标准的成熟技术</li>
+</ol>
+<p>适合使用NoSQL开发的项目：</p>
+<ol>
+<li>不相关，不确定和逐步发展的数据需求</li>
+<li>更简单或更宽松的能够快速开始编程的项目</li>
+<li>速度和可扩展性至关重要</li>
+</ol>
+<h3 id="B-Tree-原理，与其它查找树的比较"><a href="#B-Tree-原理，与其它查找树的比较" class="headerlink" title="B+ Tree 原理，与其它查找树的比较"></a>B+ Tree 原理，与其它查找树的比较</h3><p>B+Tree基于B树实现，在叶子节点增加顺序访问指针，形成双向链表（容易忽略）。<br>B树的结构特点：</p>
+<ol>
+<li>所有键值分布在整个树中，与BST不同的是每个节点可能有多个子节点</li>
+<li>任何关键字出现且只出现在一个节点中</li>
+<li>搜索有可能在非叶子节点结束</li>
+<li>关键字全集内做一次查找性能类似二分查找</li>
+</ol>
+<p>B+Tree与B树的对比：</p>
+<ol>
+<li>所有关键字和对应数据存储在叶子节点，非叶子节点用于索引，不存储真正的data，使得一个节点可以存储更多的索引关键字，能索引的范围更大</li>
+<li>所有叶子节点具有指向兄弟节点的指针，可以通过顺序访问指针提高区间查询性能，从左到右叶子节点非递减排列</li>
+</ol>
+<p>B树的好处：在内部节点同时存储键和值，故频繁访问的数据放在靠近根节点的地方会大大提高查询热点数据的效率，在特定数据重复多次查询的场景中更高效<br>B+树的好处：B+树内部节点只存键，不存放数据行，一次读取可以在内存页中获取更多键，加速查询。B+树的叶节点由一条链相连，当需要一次全数据遍历的时候，只需O(lgN)时间找到最小的节点，然后通过链顺序遍历即可，而B树需要对每一层进行遍历，需要更多的内存置换次数，因此需要更多时间<br>哈希索引：进行等值查询更快，但无法进行范围查询</p>
+<p>与红黑树的比较：</p>
+<ol>
+<li>更少的查询次数：红黑树的高度h=log2N，而B+树的高度h=logdN，d表示每个节点的出度，高度更小</li>
+<li>利用磁盘预读特性：磁盘通过预读来减少磁盘IO操作，并且进行顺序读取不需要进行磁盘寻道，速度很快。内存与磁盘以页为单位交换数据，数据库系统将索引的一个节点的大小设置为页的大小，使得一次IO能完全载入一个节点，利用预读特性，相邻节点也可以预先载入。</li>
+</ol>
+<h3 id="MySQL-索引以及优化"><a href="#MySQL-索引以及优化" class="headerlink" title="MySQL 索引以及优化"></a>MySQL 索引以及优化</h3><p>索引是在存储引擎层实现的，用于中到大型的表比较有效，小型表直接全盘扫描，超大型表维护索引代价高。<br>InnoDB使用B+树作为索引，特点：</p>
+<ol>
+<li>不需要全盘扫描，只对树进行搜索，查找速度快</li>
+<li>B+树有序，除了查找还可用于排序和分组</li>
+<li>可以指定多个列为索引列，共同组成键</li>
+<li>适用于全键值、键值范围和键最左前缀查找，如果不按照索引列的顺序查找则无法使用索引</li>
+<li>B+树索引分为主索引和辅助索引。主索引的叶子节点data域记录着完整的数据记录，被称为聚簇索引。因为无法将数据行存放在两个地方，一个表只能有一个聚簇索引。而辅助索引的叶子节点的data域记录着主键的值，在使用辅助索引查找时，先找到主键，再根据主键在主索引中查找</li>
+</ol>
+<p>MyISAM的主索引和辅助索引一样，并且和InnoDB不同的是，叶子节点存储的是关键字及其地址，在读取之后需要一次磁盘IO。</p>
+<p>哈希索引：能以O(1)时间查找，但失去有序性：无法用于排序和分组以及只支持精确查找，无法用于部分查找。InnoDB存储引擎使用自适应哈希索引：当某个索引值被使用很频繁，会在B+树索引之上创建哈希索引，引入哈希索引快速查找的优点</p>
+<p>全文索引：MyISAM存储引擎支持，用于查找文本中的关键词，而不是直接比较是否相等。使用倒排索引实现，记录关键词到所在文档的映射。</p>
+<p>空间数据索引：MyISAM支持，会从所有维度来索引数据，可以有效使用任意维度进行组合查询</p>
+<p>索引优化：</p>
+<ol>
+<li>MySQL估计使用索引比全表扫描还慢，不会使用索引。通常返回数据比例越低越容易命中索引。</li>
+<li>独立的列：索引列不能是表达式的一部分参与运算，也不能是函数的参数，否则无法使用索引</li>
+<li>多列索引：需要多个列作为条件查询时，使用多列索引比使用多个单列索引性能更好。并且查询条件不包含索引列最左边部分时不会命中索引，是指条件列需要包含索引的最左列字段</li>
+<li>索引列的顺序：让选择性强的索引放在前面。选择性是指不重复的索引值和记录总数的比值，最大为1.选择性越高，每个记录的区分度越高，查询效率更高</li>
+<li>前缀索引：blob、text和varchar类型的列，必须使用前缀索引，前缀的长度需要根据索引选择性确定。前导模糊查询不能命中索引</li>
+<li>数据类型隐式转换时不会命中索引，特别是列类型是字符串，要将字符常量值用引号引起来</li>
+<li>union、in和or都可以命中索引，建议使用in</li>
+<li>or分割的条件，or前列有索引，后面列没有索引，涉及到的索引都不会用</li>
+<li>负向条件查询不能用索引，可优化为in查询，例如!=, not in</li>
+<li>覆盖索引查询可以避免回表查询，需要索引包含所有需要查询的字段的值。优点：1）索引远小于数据行大小，减少数据访问量；2）MyISAM在内存中只缓存索引，数据依赖于操作系统，只访问索引可以不使用系统调用；3）InnoDB引擎若辅助索引能覆盖查询，无需访问主索引</li>
+<li>最左匹配原则是指，在where中会一直向右匹配直到遇到范围查询（&lt;, &gt;, between, like)停止匹配，比如a = 1 and b = 2 and c &gt; 3 and d = 4如果建立(a, b, c, d)顺序的联合索引，d用不到索引，而建立(a, b, d, c)顺序的联合索引可以用到，在where中=和in可以乱序，比如a = 1 and b = 2 and c = 3可以以任意顺序建立索引，查询优化器会帮助优化为索引可以识别的形式，例如a = 1 and b = 2 and c &gt; 3，a和b的顺序可以调整，但c不能</li>
+</ol>
+<p>索引优点：</p>
+<ol>
+<li>大大减少了服务器需要扫描的数据行数</li>
+<li>帮助服务器避免排序和分组，以及避免创建临时表</li>
+<li>将随机IO变为顺序IO</li>
+</ol>
+<h3 id="视图"><a href="#视图" class="headerlink" title="视图"></a>视图</h3><p>视图是为了提高复杂SQL语句的复用性和表操作的安全性。本质上是一种虚拟表，物理上不存在，即不再数据库中以存储的数据值形式真实存在。行列数据来自定义的查询引用基本表，在具体引用视图时动态生成<br>用途：简化SQL查询，提高开发效率，表结构兼容<br>使用场景：</p>
+<ol>
+<li>重用SQL语句</li>
+<li>简化复杂的SQL操作</li>
+<li>使用表的部分而不是整个</li>
+<li>保护数据，授予用户表部分的访问权限</li>
+<li>方便更改数据格式和表示</li>
+</ol>
+<p>优点：</p>
+<ol>
+<li>查询简单化</li>
+<li>数据安全性</li>
+<li>逻辑数据独立性</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>性能。如果视图是复杂的多表查询，数据库需要花费一定时间转化</li>
+<li>修改限制。复杂视图可能不可修改</li>
+</ol>
+<h3 id="查询优化"><a href="#查询优化" class="headerlink" title="查询优化"></a>查询优化</h3><ol>
+<li>使用Explain分析select来优化查询语句。比较重要的字段有：1）select_type：查询类型，有简单查询、联合查询、子查询等；2）key：使用的索引；3）rows：扫描的行数</li>
+<li>优化数据访问：2.1：减少请求的数据量：1）只返回必要的列，不使用select *；2）只返回必要行，使用limit限制；3）缓存重复查询的数据。2.2：减少服务器扫描的行数：使用索引覆盖查询</li>
+<li>重构查询方式：1）切分大查询：大查询如果一次性执行，可能一次锁住很多数据、占满整个事务日志、耗尽系统资源、阻塞很多小的但重要的查询；2）分解大连接查询：将大连接查询分解成对每一个表一次单表查询，然后在应用程序中进行关联，好处有：缓存更高效；减少锁竞争；分解成单表查询，缓存结果可能被其他查询使用，减少冗余记录的查询；在应用层进行连接，更容易对数据库进行拆分，更容易做到高性能和可伸缩；查询效率本身可能会提升。</li>
+</ol>
+<h3 id="InnoDB-与-MyISAM-比较"><a href="#InnoDB-与-MyISAM-比较" class="headerlink" title="InnoDB 与 MyISAM 比较"></a>InnoDB 与 MyISAM 比较</h3><p>InnoDB是MySQL默认的事务存储引擎。实现了四个标准的隔离级别，默认是可重复读，并通过MVCC+Next-key Locks防止幻影读。主索引是聚簇索引，在索引中保存了数据，避免直接读取磁盘，提升了查询性能。内部加入很多优化，例如磁盘读取数据时的预读、能加快读操作且自动创建的自适应哈希索引、能加速插入操作的插入缓冲区等。支持真正的在线热备份，获取一致性视图不需要停止对所有表的写入</p>
+<p>MyISAM设计简单，数据以紧密格式存储。提供了压缩表、空间数据索引等特性。不支持事务，不支持行级锁。可以手工或者自动执行检查和修复操作，但可能导致一些数据丢失，且修复操作慢</p>
+<p>比较：</p>
+<ol>
+<li>事务：InnoDB是事务型的，可以使用commit和rollback语句，而MyISAM不支持事务</li>
+<li>并发：MyISAM只支持表级锁，而InnoDB还支持行级锁</li>
+<li>外键：InnoDB支持外键</li>
+<li>备份：InnoDB支持热备份</li>
+<li>崩溃恢复：MyISAM崩溃后发生损坏的概率比InnoDB高很多，且恢复速度也更慢</li>
+<li>MyISAM支持压缩表和空间数据索引</li>
+</ol>
+<h3 id="为什么MyISAM比InnoDB快"><a href="#为什么MyISAM比InnoDB快" class="headerlink" title="为什么MyISAM比InnoDB快"></a>为什么MyISAM比InnoDB快</h3><p>InnoDB在做select的时候维护的东西比MyISAM引擎多很多</p>
+<ol>
+<li>数据块，InnoDB要缓存，MyISAM只缓存索引块，中间还有换进换出的减少</li>
+<li>InnoDB寻址要映射到块，再到行，MyISAM记录的直接是文件的offset，定位比InnoDB快</li>
+<li>InnoDB还需要维护MVCC一致来实现并发控制</li>
+</ol>
+<h3 id="InnoDB和MyISAM应用场景"><a href="#InnoDB和MyISAM应用场景" class="headerlink" title="InnoDB和MyISAM应用场景"></a>InnoDB和MyISAM应用场景</h3><p>MyISAM适合：</p>
+<ol>
+<li>做很多count的计算</li>
+<li>插入不频繁，查询很频繁</li>
+<li>没有事务</li>
+</ol>
+<p>InnoDB适合：</p>
+<ol>
+<li>可靠性要求比较高，或要求事务</li>
+<li>表更新和查询都相当频繁，并且多数情况进行行锁定</li>
+</ol>
+<h3 id="大表怎么优化"><a href="#大表怎么优化" class="headerlink" title="大表怎么优化"></a>大表怎么优化</h3><ol>
+<li>限定数据范围</li>
+<li>读写分离</li>
+<li>缓存</li>
+</ol>
+<h3 id="水平切分与垂直切分"><a href="#水平切分与垂直切分" class="headerlink" title="水平切分与垂直切分"></a>水平切分与垂直切分</h3><p>水平切分：将同一个表中的记录拆分到多个结构相同的表中。当一个表的数据不断增多时，使用水平切分可以将数据分布到集群的不同节点上，缓解单个数据库的压力，水平拆分最好分库，不然还是在同一机器无法提升并发能力<br>垂直切分：将一张表按列切分成多个表，通常按照列的关系密集程度切分，也可以利用垂直切分将经常被使用的列和不经常被使用的列切分到不同表中。在数据库层面使用垂直切分将按数据库中表的密集程度部署到不同的库中。</p>
+<p>垂直切分优点：使得行数据变小，查询时减少读取的block数，减少io次数，还可以简化表的结构，易于维护<br>缺点：主键出现冗余，要管理冗余列，还会引起join操作，一旦应用程序逻辑算法改变则整个分表逻辑可能要改变，扩展性差</p>
+<p>水平切分的策略：</p>
+<ol>
+<li>哈希取模</li>
+<li>范围：时间范围或者ID范围</li>
+<li>映射表：使用单独的数据表存储映射关系</li>
+</ol>
+<p>常见方案：</p>
+<ol>
+<li>客户端代理：分片逻辑在应用端</li>
+<li>中间件代理：在应用和数据中间加了代理层，分片逻辑在中间件服务中</li>
+</ol>
+<p>水平切分问题：</p>
+<ol>
+<li>事务问题：使用分布式事务</li>
+<li>连接：原来连接分解成多个单表查询，然后在用户程序中进行连接，查询数据需要union操作，增加的复杂度超过了分表带来的优点</li>
+<li>ID唯一性：1）使用全局唯一ID（GUID）；2）为每个分片指定一个ID范围；3）分布式ID生成器，例如twitter的snowflake算法</li>
+<li>数据迁移、容量规划扩容等问题</li>
+<li>跨节点的聚合函数问题</li>
+</ol>
+<h3 id="主从复制原理、作用、实现"><a href="#主从复制原理、作用、实现" class="headerlink" title="主从复制原理、作用、实现"></a>主从复制原理、作用、实现</h3><p>原理：使用三个线程binlog线程、IO线程和SQL线程。</p>
+<ol>
+<li>binlog线程：负责将主服务器上的数据更改写入二进制日志binary log中</li>
+<li>IO线程：负责从主服务器上读取binlog，并写入从服务器的中继日志relay log</li>
+<li>SQL线程：负责读取中继日志，解析出主服务器已经执行的数据更改并在从服务器重放</li>
+</ol>
+<p>主服务器处理写操作以及实时性要求比较高的读操作，从服务器处理读操作<br>读写分离能提高性能的原因：</p>
+<ol>
+<li>主从服务器负责各自的读和写，极大程度缓解了锁的争用</li>
+<li>从服务器可以使用MyISAM，提升查询性能以及节约系统开销</li>
+<li>增加冗余，提高可用性</li>
+</ol>
+<p>实现：通过代理方式，代理服务器接收应用层发来的读写请求，然后决定转发到哪个服务器</p>
+<h3 id="redo、undo、binlog-日志的作用"><a href="#redo、undo、binlog-日志的作用" class="headerlink" title="redo、undo、binlog 日志的作用"></a>redo、undo、binlog 日志的作用</h3><p>redo log作用：确保事务的持久性。防止在发生故障时尚有脏页未写入磁盘，在重启mysql服务时，根据redo log进行重做保证持久性。记录的是物理数据页面修改的信息，事务开始之后就写入redo log，在对应事务的数据写入磁盘后，redo log空间可被覆盖，通常存在Master Thread每秒一次刷新innodb_log_buffer到redo log<br>undo log作用：保存事务发生之前的数据的一个版本，可以用于回滚，同时可以提供MVCC下的读，即非锁定读。执行undo时，将数据从逻辑上恢复到事务之前状态，事务开始之前生成undo log，事务提交之后放入待清理的链表<br>binlog作用：用于复制，在主从复制中，从库利用主库上的binlog重放数据，实现主从同步，也可用于数据库基于时间点的还原。内容包含执行的sql语句及其反向语句，事务提交时产生，超过存活时间后释放。二进制文件</p>
+<p>redo log和binlog的区别：</p>
+<ol>
+<li>作用不同：redo log保证事务持久性，是事务层面的，而binlog实现复制和重放的功能，是数据库层面的，保护数据的层次不同</li>
+<li>内容：redo log是物理日志，是数据页面修改之后的物理记录，而binlog是逻辑日志，记录sql语句及其反向</li>
+<li>redo log在事务开始时产生，在数据写入物理磁盘后释放，可被覆盖释放。binlog在事务提交时产生，超过存活时间后释放，被自动删除。</li>
+<li>恢复数据的效率：基于物理日志的redo log恢复数据的效率高于binlog。</li>
+</ol>
+<p>理论上先写redo log，再写binlog，两个日志都写入磁盘，事务才算真正完成</p>
+<h3 id="为什么MyISAM比InnoDB快-1"><a href="#为什么MyISAM比InnoDB快-1" class="headerlink" title="为什么MyISAM比InnoDB快"></a>为什么MyISAM比InnoDB快</h3><p>InnoDB在做select的时候维护的东西比MyISAM引擎多很多</p>
+<ol>
+<li>数据块，InnoDB要缓存，MyISAM只缓存索引块，中间还有换进换出的减少</li>
+<li>InnoDB寻址要映射到块，再到行，MyISAM记录的直接是文件的offset，定位比InnoDB快</li>
+<li>InnoDB还需要维护MVCC一致来实现并发控制</li>
+</ol>
+<h3 id="InnoDB和MyISAM应用场景-1"><a href="#InnoDB和MyISAM应用场景-1" class="headerlink" title="InnoDB和MyISAM应用场景"></a>InnoDB和MyISAM应用场景</h3><p>MyISAM适合：</p>
+<ol>
+<li>做很多count的计算</li>
+<li>插入不频繁，查询很频繁</li>
+<li>没有事务</li>
+</ol>
+<p>InnoDB适合：</p>
+<ol>
+<li>可靠性要求比较高，或要求事务</li>
+<li>表更新和查询都相当频繁，并且多数情况进行行锁定</li>
+</ol>
+<h3 id="了解SQL慢查询吗？如何优化"><a href="#了解SQL慢查询吗？如何优化" class="headerlink" title="了解SQL慢查询吗？如何优化"></a>了解SQL慢查询吗？如何优化</h3><p>慢查询就是查询时可能查询数据涉及到的数据量或表较多导致查询速度慢的情况。常用的优化方式</p>
+<ol>
+<li>可以使用explain对语句进行分析，并重点查看type, rows, keys字段查看查询类型、查询涉及到的数据行数以及使用的索引，并以此确定优化的方向。例如涉及到的rows远大于目标数据行，则可以通过优化查询语句减少中间数据行的数量提高效率。也可以通过keys字段查看使用索引是否正确，可以新增或修改索引。</li>
+<li>修改数据库表结构，将使用频率低的表拆分出来，也可以添加中间表代替联合查询提高效率</li>
+<li>将一个大的查询分解为多个小查询</li>
+</ol>
+<p>优化方向：</p>
+<ol>
+<li>分析语句，是否load了额外的数据，对多余的行和列进行分析和重写</li>
+<li>分析语句的执行计划，获得使用索引的情况，然后修改语句或索引，使得尽量命中索引</li>
+<li>语句无法分析，考虑是否数据量太大，可以水平或垂直分表</li>
+</ol>
+<h3 id="慢查询日志"><a href="#慢查询日志" class="headerlink" title="慢查询日志"></a>慢查询日志</h3><p>用于记录执行时间超过某个临界值的sql日志，用于定位慢查询，使用配置项slow_query_log开启，配置long_query_time定义临界值</p>
+<h3 id="存储过程"><a href="#存储过程" class="headerlink" title="存储过程"></a>存储过程</h3><p>是一个预编译的SQL语句，只需创建一次，就可以调用多次，如果需要执行多次SQL，使用存储过程比单纯SQL快<br>优点：</p>
+<ol>
+<li>预编译过，执行效率高</li>
+<li>代码直接放在数据库，根据名称调用，减少网络通讯</li>
+<li>安全性高，执行需要有一定权限</li>
+<li>可以重复使用，减少开发工作量</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>调试麻烦</li>
+<li>移植存在问题</li>
+<li>带有引用关系的对象改变时需要重新编译</li>
+<li>如果大量使用，当用户需求修改时，维护代价大</li>
+</ol>
+<h3 id="in和exists的区别"><a href="#in和exists的区别" class="headerlink" title="in和exists的区别"></a>in和exists的区别</h3><p>in语句将外表和内标做hash连接，而exists语句对外表做loop循环，每次loop循环对内表查询。<br>关于二者效率的对比：</p>
+<ol>
+<li>如果查询的两个表大小相当，则用in和exists差别不大</li>
+<li>如果两个表中一个较小，一个大，则子查询表大的用exists，小的用in</li>
+<li>not in和not exists，如果查询语句用not in，则内外表都全表扫描，没用到索引；而not exists的子查询依然能用到表上的索引。故not exists要比not in快</li>
+</ol>
+<h3 id="char和varchar的区别"><a href="#char和varchar的区别" class="headerlink" title="char和varchar的区别"></a>char和varchar的区别</h3><p>char：</p>
+<ol>
+<li>表示定长字符串，长度固定</li>
+<li>插入数据小于定长时，用空格填充</li>
+<li>存取速度比varchar快很多，但会额外占用空间</li>
+<li>最多255个字符</li>
+</ol>
+<p>varchar：</p>
+<ol>
+<li>表示可变长字符串</li>
+<li>按照插入的长度存储</li>
+<li>存储慢，但不占用额外空间</li>
+<li>最多65532个字符</li>
+</ol>
+<h3 id="SQL的生命周期"><a href="#SQL的生命周期" class="headerlink" title="SQL的生命周期"></a>SQL的生命周期</h3><ol>
+<li>应用服务器与数据库服务器建立一个连接</li>
+<li>数据库进程拿到请求sql</li>
+<li>解析并生成执行计划，执行</li>
+<li>读取数据到内存并进行逻辑处理</li>
+<li>通过步骤1的连接，发送结果到客户端</li>
+<li>关掉连接，释放资源</li>
+</ol>
+<h3 id="数据库优化"><a href="#数据库优化" class="headerlink" title="数据库优化"></a>数据库优化</h3><p>为什么要优化：</p>
+<ol>
+<li>系统的吞吐量瓶颈往往出现在数据库的访问速度上</li>
+<li>随着应用程序的进行，数据库的数据越来愈多，处理时间变慢</li>
+<li>数据存在磁盘上，读写速度无法与内存相比</li>
+</ol>
+<p>优化原则：减少系统瓶颈；减少资源占用；增加系统反应速度</p>
+<p>结构优化：</p>
+<ol>
+<li>将字段很多的表分解成多个表：将使用频率高的表拆分出来</li>
+<li>增加中间表：将经常联合查询的表插入到中间表，提高查询效率</li>
+<li>增加冗余字段：减少查表时的联表个数</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/interview/" rel="tag"># 面经</a>
+              <a href="/tags/DataBase/" rel="tag"># DataBase</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/02/21/%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF/" rel="prev" title="高频面试题解题思路">
+      <i class="fa fa-chevron-left"></i> 高频面试题解题思路
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/02/21/%E6%95%B0%E6%8D%AE%E5%BA%93%E9%9D%A2%E8%AF%95%E9%A2%98/" rel="next" title="数据库面试题">
+      数据库面试题 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">基础语法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ACID-%E7%9A%84%E4%BD%9C%E7%94%A8%E4%BB%A5%E5%8F%8A%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">ACID 的作用以及实现原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%9B%E5%A4%A7%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%EF%BC%8C%E4%BB%A5%E5%8F%8A%E4%B8%8D%E5%8F%AF%E9%87%8D%E5%A4%8D%E8%AF%BB%E5%92%8C%E5%B9%BB%E5%BD%B1%E8%AF%BB%E7%9A%84%E5%87%BA%E7%8E%B0%E5%8E%9F%E5%9B%A0"><span class="nav-number">3.</span> <span class="nav-text">四大隔离级别，以及不可重复读和幻影读的出现原因</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%81%E9%94%81%E7%9A%84%E7%B1%BB%E5%9E%8B%E4%BB%A5%E5%8F%8A%E7%B2%92%E5%BA%A6%EF%BC%8C%E4%B8%A4%E6%AE%B5%E9%94%81%E5%8D%8F%E8%AE%AE%EF%BC%8C%E9%9A%90%E5%BC%8F%E5%92%8C%E6%98%BE%E5%BC%8F%E9%94%81%E5%AE%9A"><span class="nav-number">4.</span> <span class="nav-text">封锁的类型以及粒度，两段锁协议，隐式和显式锁定</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A1%8C%E7%BA%A7%E9%94%81%E3%80%81%E8%A1%A8%E7%BA%A7%E9%94%81%E5%92%8C%E9%A1%B5%E7%BA%A7%E9%94%81"><span class="nav-number">5.</span> <span class="nav-text">行级锁、表级锁和页级锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MVCC-%E5%8E%9F%E7%90%86%EF%BC%8C%E5%BD%93%E5%89%8D%E8%AF%BB%E4%BB%A5%E5%8F%8A%E5%BF%AB%E7%85%A7%E8%AF%BB%EF%BC%8CNext-Key-Locks-%E8%A7%A3%E5%86%B3%E5%B9%BB%E5%BD%B1%E8%AF%BB"><span class="nav-number">6.</span> <span class="nav-text">MVCC 原理，当前读以及快照读，Next-Key Locks 解决幻影读</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8C%83%E5%BC%8F%E7%90%86%E8%AE%BA"><span class="nav-number">7.</span> <span class="nav-text">范式理论</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SQL-%E4%B8%8E-NoSQL-%E7%9A%84%E6%AF%94%E8%BE%83"><span class="nav-number">8.</span> <span class="nav-text">SQL 与 NoSQL 的比较</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-Tree-%E5%8E%9F%E7%90%86%EF%BC%8C%E4%B8%8E%E5%85%B6%E5%AE%83%E6%9F%A5%E6%89%BE%E6%A0%91%E7%9A%84%E6%AF%94%E8%BE%83"><span class="nav-number">9.</span> <span class="nav-text">B+ Tree 原理，与其它查找树的比较</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MySQL-%E7%B4%A2%E5%BC%95%E4%BB%A5%E5%8F%8A%E4%BC%98%E5%8C%96"><span class="nav-number">10.</span> <span class="nav-text">MySQL 索引以及优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%86%E5%9B%BE"><span class="nav-number">11.</span> <span class="nav-text">视图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E4%BC%98%E5%8C%96"><span class="nav-number">12.</span> <span class="nav-text">查询优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#InnoDB-%E4%B8%8E-MyISAM-%E6%AF%94%E8%BE%83"><span class="nav-number">13.</span> <span class="nav-text">InnoDB 与 MyISAM 比较</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88MyISAM%E6%AF%94InnoDB%E5%BF%AB"><span class="nav-number">14.</span> <span class="nav-text">为什么MyISAM比InnoDB快</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#InnoDB%E5%92%8CMyISAM%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">15.</span> <span class="nav-text">InnoDB和MyISAM应用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%A7%E8%A1%A8%E6%80%8E%E4%B9%88%E4%BC%98%E5%8C%96"><span class="nav-number">16.</span> <span class="nav-text">大表怎么优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B0%B4%E5%B9%B3%E5%88%87%E5%88%86%E4%B8%8E%E5%9E%82%E7%9B%B4%E5%88%87%E5%88%86"><span class="nav-number">17.</span> <span class="nav-text">水平切分与垂直切分</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E5%8E%9F%E7%90%86%E3%80%81%E4%BD%9C%E7%94%A8%E3%80%81%E5%AE%9E%E7%8E%B0"><span class="nav-number">18.</span> <span class="nav-text">主从复制原理、作用、实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#redo%E3%80%81undo%E3%80%81binlog-%E6%97%A5%E5%BF%97%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-number">19.</span> <span class="nav-text">redo、undo、binlog 日志的作用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88MyISAM%E6%AF%94InnoDB%E5%BF%AB-1"><span class="nav-number">20.</span> <span class="nav-text">为什么MyISAM比InnoDB快</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#InnoDB%E5%92%8CMyISAM%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF-1"><span class="nav-number">21.</span> <span class="nav-text">InnoDB和MyISAM应用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%86%E8%A7%A3SQL%E6%85%A2%E6%9F%A5%E8%AF%A2%E5%90%97%EF%BC%9F%E5%A6%82%E4%BD%95%E4%BC%98%E5%8C%96"><span class="nav-number">22.</span> <span class="nav-text">了解SQL慢查询吗？如何优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%85%A2%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97"><span class="nav-number">23.</span> <span class="nav-text">慢查询日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%98%E5%82%A8%E8%BF%87%E7%A8%8B"><span class="nav-number">24.</span> <span class="nav-text">存储过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#in%E5%92%8Cexists%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">25.</span> <span class="nav-text">in和exists的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#char%E5%92%8Cvarchar%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">26.</span> <span class="nav-text">char和varchar的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SQL%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="nav-number">27.</span> <span class="nav-text">SQL的生命周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BC%98%E5%8C%96"><span class="nav-number">28.</span> <span class="nav-text">数据库优化</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Jiahang Gu</p>
+  <div class="site-description" itemprop="description">认真学习，享受生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">51</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JiahangGu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JiahangGu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/fengzhizi76506" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;fengzhizi76506" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jiahang Gu</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

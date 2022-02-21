@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="为什么使用MQ及其优缺点优点  异步处理：相比传统的串行、并行方式，提高系统吞吐量。系统接收请求后写入到MQ继续自己的操作，而不用等其余相关系统的回应 应用解耦：系统间通过消息通信，不关系其他系统的处理。可以方便地改变系统拓扑结构，降低维护和运维成本 流量削峰：可以通过消息队列长度控制请求量，缓解短时间内的高并发请求，减少高峰期服务器的瞬时压力 日志处理：解决大量日志传输 消息通讯：MQ内置高效的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="消息队列总结">
+<meta property="og:url" content="http://example.com/2022/02/21/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="菜汤里的咸鱼要翻身">
+<meta property="og:description" content="为什么使用MQ及其优缺点优点  异步处理：相比传统的串行、并行方式，提高系统吞吐量。系统接收请求后写入到MQ继续自己的操作，而不用等其余相关系统的回应 应用解耦：系统间通过消息通信，不关系其他系统的处理。可以方便地改变系统拓扑结构，降低维护和运维成本 流量削峰：可以通过消息队列长度控制请求量，缓解短时间内的高并发请求，减少高峰期服务器的瞬时压力 日志处理：解决大量日志传输 消息通讯：MQ内置高效的">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-02-21T04:18:12.000Z">
+<meta property="article:modified_time" content="2022-02-21T05:00:41.960Z">
+<meta property="article:author" content="Jiahang Gu">
+<meta property="article:tag" content="面经">
+<meta property="article:tag" content="MQ">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2022/02/21/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E6%80%BB%E7%BB%93/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>消息队列总结 | 菜汤里的咸鱼要翻身</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">菜汤里的咸鱼要翻身</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          消息队列总结
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-21 12:18:12 / 修改时间：13:00:41" itemprop="dateCreated datePublished" datetime="2022-02-21T12:18:12+08:00">2022-02-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="为什么使用MQ及其优缺点"><a href="#为什么使用MQ及其优缺点" class="headerlink" title="为什么使用MQ及其优缺点"></a>为什么使用MQ及其优缺点</h3><p>优点</p>
+<ol>
+<li>异步处理：相比传统的串行、并行方式，提高系统吞吐量。系统接收请求后写入到MQ继续自己的操作，而不用等其余相关系统的回应</li>
+<li>应用解耦：系统间通过消息通信，不关系其他系统的处理。可以方便地改变系统拓扑结构，降低维护和运维成本</li>
+<li>流量削峰：可以通过消息队列长度控制请求量，缓解短时间内的高并发请求，减少高峰期服务器的瞬时压力</li>
+<li>日志处理：解决大量日志传输</li>
+<li>消息通讯：MQ内置高效的通信机制，可以实现点对点消息队列、聊天室等</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>系统可用性降低，加入了新的模块就会引入新的风险</li>
+<li>系统复杂度很高，MQ的一致性问题、消息重复消费、消息可靠性传输等问题需要考虑</li>
+<li>一致性问题：各节点可能出现故障导致的数据不一致问题</li>
+</ol>
+<h3 id="消息中间件种类"><a href="#消息中间件种类" class="headerlink" title="消息中间件种类"></a>消息中间件种类</h3><p>ActiveMQ：老牌，但无法支撑现有的高并发、高负载以及高吞吐的复杂场景<br>RabbitMQ：支撑高并发、高吞吐、性能高，并方便管理，还支持集群化、高可用部署架构、消息高可靠支持，功能完善，开源社区很活跃，常用。但基于erlang开发，不好分析源码以及功能定制和改造<br>RocketMQ：阿里开源，支撑高并发、高吞吐、高性能，分布式事务等，基于Java开发，但开源版本不完善<br>Kafka：专为超高吞吐量的实时日志采集、实时数据同步和计算等场景设计</p>
+<h3 id="MQ常见问题及解决方案"><a href="#MQ常见问题及解决方案" class="headerlink" title="MQ常见问题及解决方案"></a>MQ常见问题及解决方案</h3><ol>
+<li>消息顺序问题：消息有序是指可以按照消息的发送顺序来消费<br>解决方案：设置生产者-MQ-消费者是一对一对一的关系，由MQ控制消息的分发顺序；或者一个queue对应一个consumer，消费者系统内部使用内存队列，分发给底层不同的worker处理<br>缺点：1）并行度成为消息系统的瓶颈，吞吐量不够；2）更多异常；3）不关注顺序的应用实际中大量存在；4）队列无序不代表消息无序，可以从业务层面保证消息的顺序更合理</li>
+<li>消息重复问题：同一条消息被重复分发到消费者。根本原因：网络不可靠<br>解决方案：消费端处理消息的业务逻辑保持幂等性。为每条消息生成唯一性ID，收到消息后记录到日志中，如果重复则忽略，否则处理完成后插入到日志表。</li>
+</ol>
+<h3 id="RabbitMQ使用场景"><a href="#RabbitMQ使用场景" class="headerlink" title="RabbitMQ使用场景"></a>RabbitMQ使用场景</h3><ol>
+<li>服务间异步通信</li>
+<li>顺序消费</li>
+<li>定时任务</li>
+<li>请求削峰</li>
+</ol>
+<h3 id="RabbitMQ基本概念"><a href="#RabbitMQ基本概念" class="headerlink" title="RabbitMQ基本概念"></a>RabbitMQ基本概念</h3><ol>
+<li>Broker：消息队列服务器实体</li>
+<li>Exchange：消息交换机，指定消息按什么规则，路由到哪个队列</li>
+<li>Queue：消息队列载体，每个消息都会被投入到一个或多个队列</li>
+<li>Binding：绑定，将exchange和queue按照路由规则绑定起来</li>
+<li>Routing Key：路由关键字，exchange根据这个关键字进行消息投递。Exchange、Queue和RoutingKey三个共同决定从exchange到queue的唯一线路</li>
+<li>VHost：虚拟broker，内部含有独立的queue、exchange和bingding等，并且有用独立的权限系统，可以作为不同权限隔离的手段（例如不同的应用可以跑在不同的vhost中）</li>
+<li>Producer：消息生产者</li>
+<li>Consumer：消息消费者</li>
+<li>Channel：消息通道，在客户端的每个每个连接里，可建立多个channel，每个channel代表一个会话任务</li>
+</ol>
+<h3 id="RabbitMQ工作模式"><a href="#RabbitMQ工作模式" class="headerlink" title="RabbitMQ工作模式"></a>RabbitMQ工作模式</h3><ol>
+<li>simple模式（最简单的收发）<br>生产者产生消息放入队列，消费者监听消息队列，如果有消息则消费掉，并从队列中删除。可能会造成消息还没被正确处理就删除，导致消息丢失。可以设置消费者处理成功后发送ack给队列再删除，但可能导致队列消息积压</li>
+<li>work工作模式（资源竞争）<br>多消费者同时监听同一个队列，争抢消息进行处理，并发情况下设置同步锁保证只能由一个消费者拿走消息</li>
+<li>publish/subscribe发布订阅模式<br>每个消费者监听自己订阅的队列，MQ根据订阅关系将队列中的消息分发给所有订阅的消费者，订阅可以通过绑定交换机实现</li>
+<li>routing路由模式<br>消息生产者将消息发送给交换机，按照路由key转发给能匹配上key对应的消息队列</li>
+<li>topic主题模式<br>为路由模式添加模糊匹配的功能，交换机根据key的规则模糊匹配到对应的队列，并由队列的监听消费者接收消息</li>
+</ol>
+<h3 id="消息怎么路由"><a href="#消息怎么路由" class="headerlink" title="消息怎么路由"></a>消息怎么路由</h3><p>消息发布到交换器时拥有路由键，RabbitMQ将消息的路由键与队列的路由键进行匹配，分发给所有匹配的队列。<br>常用路由规则：</p>
+<ol>
+<li>fanout：广播到所有绑定的队列</li>
+<li>direct：如果路由键完全匹配，消息投递到相应的队列</li>
+<li>topic：可以使来自不同源头的消息能够到达同一个队列，使用topic交换器时可以使用通配符</li>
+</ol>
+<h3 id="消息基于什么传输"><a href="#消息基于什么传输" class="headerlink" title="消息基于什么传输"></a>消息基于什么传输</h3><p>tcp占用系统资源多，会造成性能瓶颈。RabbitMQ使用信道的方式传输数据。信道是建立在真实的TCP连接内的虚拟连接，每条TCP连接上的信道数量没有限制</p>
+<h3 id="如何确保消息正确发送到RabbitMQ？如何确保消息接收方消费了消息"><a href="#如何确保消息正确发送到RabbitMQ？如何确保消息接收方消费了消息" class="headerlink" title="如何确保消息正确发送到RabbitMQ？如何确保消息接收方消费了消息"></a>如何确保消息正确发送到RabbitMQ？如何确保消息接收方消费了消息</h3><ol>
+<li>发送方确认模式<br>信道设置成confirm模式，则信道上发布的消息会被指派一个唯一的ID。消息分发到目的队列后或消息写入磁盘后，信道发送一个ack给生产者，否则发送nack。生产者在等待确认时可以继续发送消息。</li>
+<li>接收方确认机制<br>消费者接收每一条消息后都必须确认，只有确认后RabbitMQ才能安全地从队列中删除消息。RabbitMQ通过消费者地连接中断来确认是否需要重新发送消息，只要连接不中断，则时间够长可以保证数据最终一致性。特殊情况：1）消费者收到消息，确认之前断开连接或取消订阅，则MQ认为消息没有被消费，重新发给下一个订阅的消费者；2）如果消费者收到消息却没确认，连接也未断开，则MQ认为其繁忙，不会再分发更多消息。</li>
+</ol>
+<h3 id="如何保证RabbitMQ消息的可靠传输"><a href="#如何保证RabbitMQ消息的可靠传输" class="headerlink" title="如何保证RabbitMQ消息的可靠传输"></a>如何保证RabbitMQ消息的可靠传输</h3><p>消息丢失分为：</p>
+<ol>
+<li>生产者丢失消息<br>可以开启事务机制，如果发消息失败则回滚，会降低吞吐量。更多使用confirm机制，消息含有唯一的ID，MQ接收到消息后发送携带ID的ack给生产者，如果没能处理则发送Nack，通知重试</li>
+<li>消息队列丢数据<br>可以开启持久化解决，在队列将消息持久化到磁盘后，再发送ack信号。</li>
+<li>消费者丢失消息<br>通常是因为自动确认消息模式，在收到消息之后处理之前回复MQ已收到，改为处理成功后手动回复确认消息</li>
+</ol>
+<h3 id="如何保证高可用？集群"><a href="#如何保证高可用？集群" class="headerlink" title="如何保证高可用？集群"></a>如何保证高可用？集群</h3><p>三种模式</p>
+<ol>
+<li>单机：demo级别，玩玩</li>
+<li>普通集群模式：多台机器，每个上启动一个RabbitMQ实例。queue只在一个实例上，其余实例同步queue的元数据，如果消费时连接到了另外的实例，会从queue所在实例拉取数据。主要是提高吞吐量，让集群中多个节点服务某个queue的读写操作</li>
+<li>镜像集群模式：真正的高可用模式。创建的queue包含元数据和消息都在多个实例上，即完整镜像。每次写消息到queue都会同步到其余实例。可以进行数据同步和迁移。但性能开销很大</li>
+</ol>
+<h3 id="如何解决消息队列的延时及过期失效问题？队列满了怎么处理？几百万消息持续积压几小时怎么解决？"><a href="#如何解决消息队列的延时及过期失效问题？队列满了怎么处理？几百万消息持续积压几小时怎么解决？" class="headerlink" title="如何解决消息队列的延时及过期失效问题？队列满了怎么处理？几百万消息持续积压几小时怎么解决？"></a>如何解决消息队列的延时及过期失效问题？队列满了怎么处理？几百万消息持续积压几小时怎么解决？</h3><ol>
+<li>消息积压处理：临时紧急扩容。先修复consumer问题确保其恢复，然后停掉消费者。新建topic，partition为原来10倍，并写一个临时分发的消费者程序，将积压的消息均匀写入建立的10倍数量的queue，临时使用10倍的机器部署消费者，每个消费者消费一个临时queue的数据，快速消费完之后恢复原先部署的结构，重新使用原来的消费者机器。</li>
+<li>消息失效：消息在queue中积压超过一定时间会被清理。可以在大量积压的时候丢弃数据，等过了高峰期之后再将丢失的数据查出来，重新放入mq里</li>
+<li>消息队列快满了：快速消费掉已有堆积的消息，比如丢弃，然后到晚上补</li>
+</ol>
+<h3 id="设计MQ思路"><a href="#设计MQ思路" class="headerlink" title="设计MQ思路"></a>设计MQ思路</h3><ol>
+<li>支持伸缩性，方便快速扩容：设计分布式架构，参考kafka设计理念，broker-&gt;topic-&gt;partition，需要扩容时增加partition，做数据迁移</li>
+<li>持久化：顺序写磁盘做持久化，例如AOF</li>
+<li>可用性：多副本主从模式，broker挂了重新选举leader</li>
+</ol>
+<h3 id="如何处理消息丢失"><a href="#如何处理消息丢失" class="headerlink" title="如何处理消息丢失"></a>如何处理消息丢失</h3><h5 id="数据在生产者中丢失"><a href="#数据在生产者中丢失" class="headerlink" title="数据在生产者中丢失"></a>数据在生产者中丢失</h5><p>数据从生产者到消息队列的路上丢失。可以使用RabbitMQ的事务功能，生产者发送数据之前开启事务，然后发送消息，如果消息没被收到则生产者收到异常报错，此时回滚事务，重试发送消息。如果收到消息则提交事务。但使用事务机制后，吞吐量会降低，造成性能严重下降。<br>可以使用confirm模式，每次写消息分配一个唯一的id，如果写入则回传ack，否则回传nack。然后重试。可以自己在内存中维护每个消息id的状态，如果超时没收到回调则重发。<br>相比事务机制，confirm的优点是异步，发送完消息之后无需等待事务提交可以继续发送下一条消息。</p>
+<h5 id="数据在RabbitMQ中丢失"><a href="#数据在RabbitMQ中丢失" class="headerlink" title="数据在RabbitMQ中丢失"></a>数据在RabbitMQ中丢失</h5><p>持久化RabbitMQ，即消息写入之后持久化到磁盘<br>设置有两个步骤：1是创建queue时设置为持久化，这样会持久化queue的元数据，但不是真实数据；2是将消息设置为持久化，这样会持久化到磁盘去<br>持久化可以跟生产者的 confirm 机制配合，只有消息被持久化到磁盘之后，才会通知生产者 ack，所以哪怕是在持久化到磁盘之前，RabbitMQ 挂了，数据丢了，生产者收不到 ack，你也是可以自己重发的。</p>
+<h5 id="数据在消费者中丢失"><a href="#数据在消费者中丢失" class="headerlink" title="数据在消费者中丢失"></a>数据在消费者中丢失</h5><p>使用RabbitMQ的ack机制，即关闭自动ack，在代码中手动ack，这样在消息丢失后不会ack，RabbitMQ会将这个消息分配给其他消费者处理</p>
+<h3 id="RabbitMQ如何保证消息顺序执行"><a href="#RabbitMQ如何保证消息顺序执行" class="headerlink" title="RabbitMQ如何保证消息顺序执行"></a>RabbitMQ如何保证消息顺序执行</h3><h5 id="出现顺序错乱的场景"><a href="#出现顺序错乱的场景" class="headerlink" title="出现顺序错乱的场景"></a>出现顺序错乱的场景</h5><ol>
+<li>一个queue，多个consumer消费，这样consumer从MQ取出的数据是有序的，但是每个consumer的执行时间不固定，无法保证先读到消息的线完成操作。</li>
+<li>一个queue对应一个consumer，但里面进行了多线程消费，可能造成顺序错误</li>
+</ol>
+<h5 id="保证方案"><a href="#保证方案" class="headerlink" title="保证方案"></a>保证方案</h5><ol>
+<li>拆分成多个queue，每个consumer对应一个queue，将需要保证操作顺序的数据放在一个queue中，然后在单consumer中消费，保证顺序，但会造成吞吐量下降</li>
+<li>就一个queue和一个consumer，consumer内部使用内存队列做排队，放入数据后分发给底层不同的worker处理。这样从queue中取出的消息是有序的，并且在内存队列取出的也是有序的</li>
+</ol>
+<h3 id="消息如何分发"><a href="#消息如何分发" class="headerlink" title="消息如何分发"></a>消息如何分发</h3><ol>
+<li>轮询分发：不考虑消费者处理速率和任务时长，按照轮流排序的方式，将任务逐个发给消费者，并且是提前一次性分配</li>
+<li>公平分发：按照消费者处理能力来分发</li>
+</ol>
+<h3 id="RabbitMQ中的broker和cluster指什么？"><a href="#RabbitMQ中的broker和cluster指什么？" class="headerlink" title="RabbitMQ中的broker和cluster指什么？"></a>RabbitMQ中的broker和cluster指什么？</h3><p>broker指一个或多个erlang node的逻辑分组，且node上运行着RabbitMQ应用程序。cluster在broker的基础上，增加了node之间共享元数据的约束</p>
+<h3 id="元数据分为哪些类型？包括哪些内容？与cluster相关的元数据有哪些？如何保存？在cluster是如何分布的"><a href="#元数据分为哪些类型？包括哪些内容？与cluster相关的元数据有哪些？如何保存？在cluster是如何分布的" class="headerlink" title="元数据分为哪些类型？包括哪些内容？与cluster相关的元数据有哪些？如何保存？在cluster是如何分布的"></a>元数据分为哪些类型？包括哪些内容？与cluster相关的元数据有哪些？如何保存？在cluster是如何分布的</h3><p>非cluster模式下，元数据主要分为Queue元数据（queue名字和属性等）、Exchange元数据（exchange名字、类型和属性）、Binding元数据（存放路由关系的查找表）、Vhost元数据（vhost范围内针对前三者的名字空间约束和安全属性设置）。在cluster模式下，还包括cluster中node位置信息和node关系信息。元数据按照node类型判断是在RAM还是在RAM和磁盘都有。元数据在cluster中是全node分布</p>
+<h3 id="RAM-node和disk-node区别"><a href="#RAM-node和disk-node区别" class="headerlink" title="RAM node和disk node区别"></a>RAM node和disk node区别</h3><p>RAM仅将基础构建相关元数据保存到内存中，但disk node会在内存和磁盘中均存储。RAM node上唯一会存储到磁盘撒花姑娘的元数据是cluster使用的disk node地址。要求在cluster至少存在一个disk node</p>
+<h3 id="RabbitMQ上的一个queue中存放的message是否有数量限制"><a href="#RabbitMQ上的一个queue中存放的message是否有数量限制" class="headerlink" title="RabbitMQ上的一个queue中存放的message是否有数量限制"></a>RabbitMQ上的一个queue中存放的message是否有数量限制</h3><p>无限制，取决于机器的内存，但消息过多会导致处理效率的下降</p>
+<h3 id="channel、exchange和queue是逻辑概念还是进程实体？起什么作用？"><a href="#channel、exchange和queue是逻辑概念还是进程实体？起什么作用？" class="headerlink" title="channel、exchange和queue是逻辑概念还是进程实体？起什么作用？"></a>channel、exchange和queue是逻辑概念还是进程实体？起什么作用？</h3><p>queue具有自己的erlang进程；exchange内部实现为保存binding关系的查找表；channel是实际进行路由工作的实体，负责按照routing_key将message投递给queue。由AMQP协议可知，channel是真实TCP连接之上的虚拟连接，所有AMQP命令都是由channel发送的，且每一个channel有唯一ID。一个channel只能被单独一个操作系统线程使用，故投递到特定channel上的message是有顺序的。但一个操作系统线程上允许使用多个channel。0号channel用于处理当前connection全局有效的帧，而1-65535号channel用于处理和特定channel相关的帧。AMQP协议给出的channel复用模型中，每个channel运行在一个独立的线程上，多线程共享同一个socket。</p>
+<h3 id="vhost是什么？什么作用"><a href="#vhost是什么？什么作用" class="headerlink" title="vhost是什么？什么作用"></a>vhost是什么？什么作用</h3><p>可以理解为虚拟broker，即mini-RabbitMQ server，内部含有独立的queue、exchange和binding等，但最重要的是，其拥有独立的权限系统，可以做到vhost范围的用户控制。从RabbitMQ全局角度看，vhost可以作为不同权限隔离的手段</p>
+<h3 id="在单node系统和多node构成的cluster系统中声明queue、exchange，以及进行binding会有什么不同？"><a href="#在单node系统和多node构成的cluster系统中声明queue、exchange，以及进行binding会有什么不同？" class="headerlink" title="在单node系统和多node构成的cluster系统中声明queue、exchange，以及进行binding会有什么不同？"></a>在单node系统和多node构成的cluster系统中声明queue、exchange，以及进行binding会有什么不同？</h3><p>在单node上声明queue时，只要该node上相关元数据做了变更，会得到Queue.Declare-ok响应；而在cluster上声明queue，则要求cluster上的全部node都要进行元数据成功更新，才会得到queue.Declare-ok回应。另外，若node类型为RAM node，则变更的数据仅保存在内存中，若类型为disk node则还要变更保存在磁盘上的数据</p>
+<h3 id="客户端连接到cluster中的任意node是否都能工作？"><a href="#客户端连接到cluster中的任意node是否都能工作？" class="headerlink" title="客户端连接到cluster中的任意node是否都能工作？"></a>客户端连接到cluster中的任意node是否都能工作？</h3><p>使得，客户端感觉不到不同</p>
+<h3 id="若cluster拥有某个queue的owner-node失效了，且该queue声明为durable属性，能够成功从其他node重新声明该node？"><a href="#若cluster拥有某个queue的owner-node失效了，且该queue声明为durable属性，能够成功从其他node重新声明该node？" class="headerlink" title="若cluster拥有某个queue的owner node失效了，且该queue声明为durable属性，能够成功从其他node重新声明该node？"></a>若cluster拥有某个queue的owner node失效了，且该queue声明为durable属性，能够成功从其他node重新声明该node？</h3><p>不能，将得到404 错误，只能等queue所属的node恢复后才能使用。如果该queue不具有durable属性，则可以在其他node上重新声明</p>
+<h3 id="cluster-中-node-的失效会对-consumer-产生什么影响？若是在-cluster-中创建了mirrored-queue-，这时-node-失效会对-consumer-产生什么影响？"><a href="#cluster-中-node-的失效会对-consumer-产生什么影响？若是在-cluster-中创建了mirrored-queue-，这时-node-失效会对-consumer-产生什么影响？" class="headerlink" title="cluster 中 node 的失效会对 consumer 产生什么影响？若是在 cluster 中创建了mirrored queue ，这时 node 失效会对 consumer 产生什么影响？"></a>cluster 中 node 的失效会对 consumer 产生什么影响？若是在 cluster 中创建了mirrored queue ，这时 node 失效会对 consumer 产生什么影响？</h3><p>若是 consumer 所连接的那个 node 失效（无论该 node 是否为 consumer 所订阅queue 的 owner node），则 consumer 会在发现 TCP 连接断开时，按标准行为执行重连逻辑，并根据“Assume Nothing”原则重建相应的 fabric 即可。若是失效的 node 为consumer 订阅 queue 的 owner node，则 consumer 只能通过 Consumer Cancellation Notification 机制来检测与该 queue 订阅关系的终止，否则会出现傻等却没有任何消息来到的问题。</p>
+<h3 id="能够在地理上分开的不同数据中心使用-RabbitMQ-cluster-么？"><a href="#能够在地理上分开的不同数据中心使用-RabbitMQ-cluster-么？" class="headerlink" title="能够在地理上分开的不同数据中心使用 RabbitMQ cluster 么？"></a>能够在地理上分开的不同数据中心使用 RabbitMQ cluster 么？</h3><p>不能。第一，你无法控制所创建的 queue 实际分布在 cluster 里的哪个 node 上（一般使用 HAProxy + cluster 模型时都是这样），这可能会导致各种跨地域访问时的常见问题；第二，Erlang 的 OTP 通信框架对延迟的容忍度有限，这可能会触发各种超时，导致业务疲于处理；第三，在广域网上的连接失效问题将导致经典的“脑裂”问题，而RabbitMQ 目前无法处理（该问题主要是说 Mnesia）</p>
+<h3 id="为什么heavy-RPC场景下不建议使用disk-node"><a href="#为什么heavy-RPC场景下不建议使用disk-node" class="headerlink" title="为什么heavy RPC场景下不建议使用disk node"></a>为什么heavy RPC场景下不建议使用disk node</h3><p>heavy RPC指业务逻辑中高频调用RabbitMQ提供的RPC机制，导致不断创建、销毁reply queue，进而造成disk node的性能问题，因为元数据不断写盘，而写入磁盘的速率是固定的</p>
+<h3 id="向不存在的exchange发publish消息会发生什么？向不存在的queue执行consume动作会发生什么"><a href="#向不存在的exchange发publish消息会发生什么？向不存在的queue执行consume动作会发生什么" class="headerlink" title="向不存在的exchange发publish消息会发生什么？向不存在的queue执行consume动作会发生什么"></a>向不存在的exchange发publish消息会发生什么？向不存在的queue执行consume动作会发生什么</h3><p>都会受到Channel.Close信令告知不存在（内含404 NOT_FOUND）</p>
+<h3 id="routing-key-和-binding-key-的最大长度是多少？"><a href="#routing-key-和-binding-key-的最大长度是多少？" class="headerlink" title="routing_key 和 binding_key 的最大长度是多少？"></a>routing_key 和 binding_key 的最大长度是多少？</h3><p>255 字节。</p>
+<h3 id="RabbitMQ-允许发送的-message-最大可达多大？"><a href="#RabbitMQ-允许发送的-message-最大可达多大？" class="headerlink" title="RabbitMQ 允许发送的 message 最大可达多大？"></a>RabbitMQ 允许发送的 message 最大可达多大？</h3><p>根据 AMQP 协议规定，消息体的大小由 64-bit 的值来指定，所以你就可以知道到底能发多大的数据了。</p>
+<h3 id="什么情况下-producer-不主动创建-queue-是安全的？"><a href="#什么情况下-producer-不主动创建-queue-是安全的？" class="headerlink" title="什么情况下 producer 不主动创建 queue 是安全的？"></a>什么情况下 producer 不主动创建 queue 是安全的？</h3><ol>
+<li>message 是允许丢失的；</li>
+<li>实现了针对未处理消息的 republish 功能（例如采用Publisher Confirm 机制）。</li>
+</ol>
+<h3 id="“dead-letter”queue-的用途？"><a href="#“dead-letter”queue-的用途？" class="headerlink" title="“dead letter”queue 的用途？"></a>“dead letter”queue 的用途？</h3><p>当消息被 RabbitMQ server 投递到 consumer 后，但 consumer 却通过 Basic.Reject 进行了拒绝时（同时设置 requeue=false），那么该消息会被放入“dead letter”queue 中。该 queue 可用于排查 message 被 reject 或 undeliver 的原因。</p>
+<h3 id="为什么说保证-message-被可靠持久化的条件是-queue-和-exchange-具有durable-属性，同时-message-具有-persistent-属性才行？"><a href="#为什么说保证-message-被可靠持久化的条件是-queue-和-exchange-具有durable-属性，同时-message-具有-persistent-属性才行？" class="headerlink" title="为什么说保证 message 被可靠持久化的条件是 queue 和 exchange 具有durable 属性，同时 message 具有 persistent 属性才行？"></a>为什么说保证 message 被可靠持久化的条件是 queue 和 exchange 具有durable 属性，同时 message 具有 persistent 属性才行？</h3><p>binding 关系可以表示为 exchange – binding – queue 。从文档中我们知道，若要求投递的 message 能够不丢失，要求 message 本身设置 persistent 属性，要求 exchange 和 queue 都设置 durable 属性。其实这问题可以这么想，若 exchange 或 queue 未设置durable 属性，则在其 crash 之后就会无法恢复，那么即使 message 设置了 persistent 属性，仍然存在 message 虽然能恢复但却无处容身的问题；同理，若 message 本身未设置persistent 属性，则 message 的持久化更无从谈起。</p>
+<h3 id="什么情况下会出现-blackholed-问题？"><a href="#什么情况下会出现-blackholed-问题？" class="headerlink" title="什么情况下会出现 blackholed 问题？"></a>什么情况下会出现 blackholed 问题？</h3><p>blackholed 问题是指，向 exchange 投递了 message ，而由于各种原因导致该message 丢失，但发送者却不知道。<br>可导致 blackholed 的情况：</p>
+<ol>
+<li>向未绑定 queue 的exchange 发送 message；</li>
+<li>exchange 以 binding_key key_A 绑定了 queue queue_A，但向该 exchange 发送 message 使用的 routing_key 却是 key_B。</li>
+</ol>
+<h3 id="如何防止出现-blackholed-问题？"><a href="#如何防止出现-blackholed-问题？" class="headerlink" title="如何防止出现 blackholed 问题？"></a>如何防止出现 blackholed 问题？</h3><p>没有特别好的办法，只能在具体实践中通过各种方式保证相关 fabric 的存在。另外， 如果在执行 Basic.Publish 时设置 mandatory=true ，则在遇到可能出现 blackholed 情况时，服务器会通过返回 Basic.Return 告之当前 message 无法被正确投递（内含原因 312 NO_ROUTE）。</p>
+<h3 id="Consumer-Cancellation-Notification-机制用于什么场景？"><a href="#Consumer-Cancellation-Notification-机制用于什么场景？" class="headerlink" title="Consumer Cancellation Notification 机制用于什么场景？"></a>Consumer Cancellation Notification 机制用于什么场景？</h3><p>用于保证当镜像 queue 中 master 挂掉时，连接到 slave 上的 consumer 可以收到自身 consume 被取消的通知，进而可以重新执行 consume 动作从新选出的 master 获得消息。若不采用该机制，连接到 slave 上的 consumer 将不会感知 master 挂掉这个事情，导致后续无法再收到新 master 广播出来的 message 。另外，因为在镜像 queue 模式下，存在将 message 进行 requeue 的可能，所以实现 consumer 的逻辑时需要能够正确处理出现重复 message 的情况。</p>
+<h3 id="Basic-Reject-的用法是什么？"><a href="#Basic-Reject-的用法是什么？" class="headerlink" title="Basic.Reject 的用法是什么？"></a>Basic.Reject 的用法是什么？</h3><p>该信令可用于 consumer 对收到的 message 进行 reject 。若在该信令中设置requeue=true，则当 RabbitMQ server 收到该拒绝信令后，会将该 message 重新发送到下一个处于 consume 状态的 consumer 处（理论上仍可能将该消息发送给当前consumer）。若设置 requeue=false ，则 RabbitMQ server 在收到拒绝信令后，将直接将该 message 从 queue 中移除。另外一种移除 queue 中 message 的小技巧是，consumer 回复 Basic.Ack 但不对获取到的message 做任何处理。而 Basic.Nack 是对 Basic.Reject 的扩展，以支持一次拒绝多条 message 的能力。</p>
+<h3 id="为什么不应该对所有的-message-都使用持久化机制？"><a href="#为什么不应该对所有的-message-都使用持久化机制？" class="headerlink" title="为什么不应该对所有的 message 都使用持久化机制？"></a>为什么不应该对所有的 message 都使用持久化机制？</h3><p>首先，必然导致性能的下降，因为写磁盘比写 RAM 慢的多，message 的吞吐量可能有 10 倍的差距。其次，message 的持久化机制用在 RabbitMQ 的内置 cluster 方案时会出现“坑爹”问题。矛盾点在于，若 message 设置了 persistent 属性，但 queue 未设置durable 属性，那么当该 queue 的 owner node 出现异常后，在未重建该 queue 前，发往该 queue 的 message 将被 blackholed ；若 message 设置了 persistent 属性，同时queue 也设置了 durable 属性，那么当 queue 的 owner node 异常且无法重启的情况下，则该 queue 无法在其他 node 上重建，只能等待其 owner node 重启后，才能恢复该 queue 的使用，而在这段时间内发送给该 queue 的 message 将被 blackholed 。所以，是否要对 message 进行持久化，需要综合考虑性能需要，以及可能遇到的问题。若想达到 100,000 条/秒以上的消息吞吐量（单 RabbitMQ 服务器），则要么使用其他的方式来确保 message 的可靠 delivery ，要么使用非常快速的存储系统以支持全持久化（例如使用 SSD）。另外一种处理原则是：仅对关键消息作持久化处理（根据业务重要程度），且应该保证关键消息的量不会导致性能瓶颈。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/interview/" rel="tag"># 面经</a>
+              <a href="/tags/MQ/" rel="tag"># MQ</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/02/21/%E6%95%B0%E6%8D%AE%E5%BA%93%E9%9D%A2%E8%AF%95%E9%A2%98/" rel="prev" title="数据库面试题">
+      <i class="fa fa-chevron-left"></i> 数据库面试题
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/02/21/docker%E6%80%BB%E7%BB%93/" rel="next" title="docker总结">
+      docker总结 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%BF%E7%94%A8MQ%E5%8F%8A%E5%85%B6%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-number">1.</span> <span class="nav-text">为什么使用MQ及其优缺点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6%E7%A7%8D%E7%B1%BB"><span class="nav-number">2.</span> <span class="nav-text">消息中间件种类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MQ%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">3.</span> <span class="nav-text">MQ常见问题及解决方案</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RabbitMQ%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">4.</span> <span class="nav-text">RabbitMQ使用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RabbitMQ%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number">5.</span> <span class="nav-text">RabbitMQ基本概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RabbitMQ%E5%B7%A5%E4%BD%9C%E6%A8%A1%E5%BC%8F"><span class="nav-number">6.</span> <span class="nav-text">RabbitMQ工作模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E6%80%8E%E4%B9%88%E8%B7%AF%E7%94%B1"><span class="nav-number">7.</span> <span class="nav-text">消息怎么路由</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%9F%BA%E4%BA%8E%E4%BB%80%E4%B9%88%E4%BC%A0%E8%BE%93"><span class="nav-number">8.</span> <span class="nav-text">消息基于什么传输</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E7%A1%AE%E4%BF%9D%E6%B6%88%E6%81%AF%E6%AD%A3%E7%A1%AE%E5%8F%91%E9%80%81%E5%88%B0RabbitMQ%EF%BC%9F%E5%A6%82%E4%BD%95%E7%A1%AE%E4%BF%9D%E6%B6%88%E6%81%AF%E6%8E%A5%E6%94%B6%E6%96%B9%E6%B6%88%E8%B4%B9%E4%BA%86%E6%B6%88%E6%81%AF"><span class="nav-number">9.</span> <span class="nav-text">如何确保消息正确发送到RabbitMQ？如何确保消息接收方消费了消息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81RabbitMQ%E6%B6%88%E6%81%AF%E7%9A%84%E5%8F%AF%E9%9D%A0%E4%BC%A0%E8%BE%93"><span class="nav-number">10.</span> <span class="nav-text">如何保证RabbitMQ消息的可靠传输</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E9%AB%98%E5%8F%AF%E7%94%A8%EF%BC%9F%E9%9B%86%E7%BE%A4"><span class="nav-number">11.</span> <span class="nav-text">如何保证高可用？集群</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E7%9A%84%E5%BB%B6%E6%97%B6%E5%8F%8A%E8%BF%87%E6%9C%9F%E5%A4%B1%E6%95%88%E9%97%AE%E9%A2%98%EF%BC%9F%E9%98%9F%E5%88%97%E6%BB%A1%E4%BA%86%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86%EF%BC%9F%E5%87%A0%E7%99%BE%E4%B8%87%E6%B6%88%E6%81%AF%E6%8C%81%E7%BB%AD%E7%A7%AF%E5%8E%8B%E5%87%A0%E5%B0%8F%E6%97%B6%E6%80%8E%E4%B9%88%E8%A7%A3%E5%86%B3%EF%BC%9F"><span class="nav-number">12.</span> <span class="nav-text">如何解决消息队列的延时及过期失效问题？队列满了怎么处理？几百万消息持续积压几小时怎么解决？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1MQ%E6%80%9D%E8%B7%AF"><span class="nav-number">13.</span> <span class="nav-text">设计MQ思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E6%B6%88%E6%81%AF%E4%B8%A2%E5%A4%B1"><span class="nav-number">14.</span> <span class="nav-text">如何处理消息丢失</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%9C%A8%E7%94%9F%E4%BA%A7%E8%80%85%E4%B8%AD%E4%B8%A2%E5%A4%B1"><span class="nav-number">14.0.1.</span> <span class="nav-text">数据在生产者中丢失</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%9C%A8RabbitMQ%E4%B8%AD%E4%B8%A2%E5%A4%B1"><span class="nav-number">14.0.2.</span> <span class="nav-text">数据在RabbitMQ中丢失</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%9C%A8%E6%B6%88%E8%B4%B9%E8%80%85%E4%B8%AD%E4%B8%A2%E5%A4%B1"><span class="nav-number">14.0.3.</span> <span class="nav-text">数据在消费者中丢失</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RabbitMQ%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E6%B6%88%E6%81%AF%E9%A1%BA%E5%BA%8F%E6%89%A7%E8%A1%8C"><span class="nav-number">15.</span> <span class="nav-text">RabbitMQ如何保证消息顺序执行</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%87%BA%E7%8E%B0%E9%A1%BA%E5%BA%8F%E9%94%99%E4%B9%B1%E7%9A%84%E5%9C%BA%E6%99%AF"><span class="nav-number">15.0.1.</span> <span class="nav-text">出现顺序错乱的场景</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BF%9D%E8%AF%81%E6%96%B9%E6%A1%88"><span class="nav-number">15.0.2.</span> <span class="nav-text">保证方案</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%A6%82%E4%BD%95%E5%88%86%E5%8F%91"><span class="nav-number">16.</span> <span class="nav-text">消息如何分发</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RabbitMQ%E4%B8%AD%E7%9A%84broker%E5%92%8Ccluster%E6%8C%87%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">17.</span> <span class="nav-text">RabbitMQ中的broker和cluster指什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%83%E6%95%B0%E6%8D%AE%E5%88%86%E4%B8%BA%E5%93%AA%E4%BA%9B%E7%B1%BB%E5%9E%8B%EF%BC%9F%E5%8C%85%E6%8B%AC%E5%93%AA%E4%BA%9B%E5%86%85%E5%AE%B9%EF%BC%9F%E4%B8%8Ecluster%E7%9B%B8%E5%85%B3%E7%9A%84%E5%85%83%E6%95%B0%E6%8D%AE%E6%9C%89%E5%93%AA%E4%BA%9B%EF%BC%9F%E5%A6%82%E4%BD%95%E4%BF%9D%E5%AD%98%EF%BC%9F%E5%9C%A8cluster%E6%98%AF%E5%A6%82%E4%BD%95%E5%88%86%E5%B8%83%E7%9A%84"><span class="nav-number">18.</span> <span class="nav-text">元数据分为哪些类型？包括哪些内容？与cluster相关的元数据有哪些？如何保存？在cluster是如何分布的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RAM-node%E5%92%8Cdisk-node%E5%8C%BA%E5%88%AB"><span class="nav-number">19.</span> <span class="nav-text">RAM node和disk node区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RabbitMQ%E4%B8%8A%E7%9A%84%E4%B8%80%E4%B8%AAqueue%E4%B8%AD%E5%AD%98%E6%94%BE%E7%9A%84message%E6%98%AF%E5%90%A6%E6%9C%89%E6%95%B0%E9%87%8F%E9%99%90%E5%88%B6"><span class="nav-number">20.</span> <span class="nav-text">RabbitMQ上的一个queue中存放的message是否有数量限制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#channel%E3%80%81exchange%E5%92%8Cqueue%E6%98%AF%E9%80%BB%E8%BE%91%E6%A6%82%E5%BF%B5%E8%BF%98%E6%98%AF%E8%BF%9B%E7%A8%8B%E5%AE%9E%E4%BD%93%EF%BC%9F%E8%B5%B7%E4%BB%80%E4%B9%88%E4%BD%9C%E7%94%A8%EF%BC%9F"><span class="nav-number">21.</span> <span class="nav-text">channel、exchange和queue是逻辑概念还是进程实体？起什么作用？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#vhost%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E4%BB%80%E4%B9%88%E4%BD%9C%E7%94%A8"><span class="nav-number">22.</span> <span class="nav-text">vhost是什么？什么作用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%A8%E5%8D%95node%E7%B3%BB%E7%BB%9F%E5%92%8C%E5%A4%9Anode%E6%9E%84%E6%88%90%E7%9A%84cluster%E7%B3%BB%E7%BB%9F%E4%B8%AD%E5%A3%B0%E6%98%8Equeue%E3%80%81exchange%EF%BC%8C%E4%BB%A5%E5%8F%8A%E8%BF%9B%E8%A1%8Cbinding%E4%BC%9A%E6%9C%89%E4%BB%80%E4%B9%88%E4%B8%8D%E5%90%8C%EF%BC%9F"><span class="nav-number">23.</span> <span class="nav-text">在单node系统和多node构成的cluster系统中声明queue、exchange，以及进行binding会有什么不同？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%BF%9E%E6%8E%A5%E5%88%B0cluster%E4%B8%AD%E7%9A%84%E4%BB%BB%E6%84%8Fnode%E6%98%AF%E5%90%A6%E9%83%BD%E8%83%BD%E5%B7%A5%E4%BD%9C%EF%BC%9F"><span class="nav-number">24.</span> <span class="nav-text">客户端连接到cluster中的任意node是否都能工作？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8B%A5cluster%E6%8B%A5%E6%9C%89%E6%9F%90%E4%B8%AAqueue%E7%9A%84owner-node%E5%A4%B1%E6%95%88%E4%BA%86%EF%BC%8C%E4%B8%94%E8%AF%A5queue%E5%A3%B0%E6%98%8E%E4%B8%BAdurable%E5%B1%9E%E6%80%A7%EF%BC%8C%E8%83%BD%E5%A4%9F%E6%88%90%E5%8A%9F%E4%BB%8E%E5%85%B6%E4%BB%96node%E9%87%8D%E6%96%B0%E5%A3%B0%E6%98%8E%E8%AF%A5node%EF%BC%9F"><span class="nav-number">25.</span> <span class="nav-text">若cluster拥有某个queue的owner node失效了，且该queue声明为durable属性，能够成功从其他node重新声明该node？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cluster-%E4%B8%AD-node-%E7%9A%84%E5%A4%B1%E6%95%88%E4%BC%9A%E5%AF%B9-consumer-%E4%BA%A7%E7%94%9F%E4%BB%80%E4%B9%88%E5%BD%B1%E5%93%8D%EF%BC%9F%E8%8B%A5%E6%98%AF%E5%9C%A8-cluster-%E4%B8%AD%E5%88%9B%E5%BB%BA%E4%BA%86mirrored-queue-%EF%BC%8C%E8%BF%99%E6%97%B6-node-%E5%A4%B1%E6%95%88%E4%BC%9A%E5%AF%B9-consumer-%E4%BA%A7%E7%94%9F%E4%BB%80%E4%B9%88%E5%BD%B1%E5%93%8D%EF%BC%9F"><span class="nav-number">26.</span> <span class="nav-text">cluster 中 node 的失效会对 consumer 产生什么影响？若是在 cluster 中创建了mirrored queue ，这时 node 失效会对 consumer 产生什么影响？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%83%BD%E5%A4%9F%E5%9C%A8%E5%9C%B0%E7%90%86%E4%B8%8A%E5%88%86%E5%BC%80%E7%9A%84%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83%E4%BD%BF%E7%94%A8-RabbitMQ-cluster-%E4%B9%88%EF%BC%9F"><span class="nav-number">27.</span> <span class="nav-text">能够在地理上分开的不同数据中心使用 RabbitMQ cluster 么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88heavy-RPC%E5%9C%BA%E6%99%AF%E4%B8%8B%E4%B8%8D%E5%BB%BA%E8%AE%AE%E4%BD%BF%E7%94%A8disk-node"><span class="nav-number">28.</span> <span class="nav-text">为什么heavy RPC场景下不建议使用disk node</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%91%E4%B8%8D%E5%AD%98%E5%9C%A8%E7%9A%84exchange%E5%8F%91publish%E6%B6%88%E6%81%AF%E4%BC%9A%E5%8F%91%E7%94%9F%E4%BB%80%E4%B9%88%EF%BC%9F%E5%90%91%E4%B8%8D%E5%AD%98%E5%9C%A8%E7%9A%84queue%E6%89%A7%E8%A1%8Cconsume%E5%8A%A8%E4%BD%9C%E4%BC%9A%E5%8F%91%E7%94%9F%E4%BB%80%E4%B9%88"><span class="nav-number">29.</span> <span class="nav-text">向不存在的exchange发publish消息会发生什么？向不存在的queue执行consume动作会发生什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#routing-key-%E5%92%8C-binding-key-%E7%9A%84%E6%9C%80%E5%A4%A7%E9%95%BF%E5%BA%A6%E6%98%AF%E5%A4%9A%E5%B0%91%EF%BC%9F"><span class="nav-number">30.</span> <span class="nav-text">routing_key 和 binding_key 的最大长度是多少？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RabbitMQ-%E5%85%81%E8%AE%B8%E5%8F%91%E9%80%81%E7%9A%84-message-%E6%9C%80%E5%A4%A7%E5%8F%AF%E8%BE%BE%E5%A4%9A%E5%A4%A7%EF%BC%9F"><span class="nav-number">31.</span> <span class="nav-text">RabbitMQ 允许发送的 message 最大可达多大？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%E4%B8%8B-producer-%E4%B8%8D%E4%B8%BB%E5%8A%A8%E5%88%9B%E5%BB%BA-queue-%E6%98%AF%E5%AE%89%E5%85%A8%E7%9A%84%EF%BC%9F"><span class="nav-number">32.</span> <span class="nav-text">什么情况下 producer 不主动创建 queue 是安全的？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%80%9Cdead-letter%E2%80%9Dqueue-%E7%9A%84%E7%94%A8%E9%80%94%EF%BC%9F"><span class="nav-number">33.</span> <span class="nav-text">“dead letter”queue 的用途？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%AF%B4%E4%BF%9D%E8%AF%81-message-%E8%A2%AB%E5%8F%AF%E9%9D%A0%E6%8C%81%E4%B9%85%E5%8C%96%E7%9A%84%E6%9D%A1%E4%BB%B6%E6%98%AF-queue-%E5%92%8C-exchange-%E5%85%B7%E6%9C%89durable-%E5%B1%9E%E6%80%A7%EF%BC%8C%E5%90%8C%E6%97%B6-message-%E5%85%B7%E6%9C%89-persistent-%E5%B1%9E%E6%80%A7%E6%89%8D%E8%A1%8C%EF%BC%9F"><span class="nav-number">34.</span> <span class="nav-text">为什么说保证 message 被可靠持久化的条件是 queue 和 exchange 具有durable 属性，同时 message 具有 persistent 属性才行？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%E4%B8%8B%E4%BC%9A%E5%87%BA%E7%8E%B0-blackholed-%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="nav-number">35.</span> <span class="nav-text">什么情况下会出现 blackholed 问题？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E9%98%B2%E6%AD%A2%E5%87%BA%E7%8E%B0-blackholed-%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="nav-number">36.</span> <span class="nav-text">如何防止出现 blackholed 问题？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Consumer-Cancellation-Notification-%E6%9C%BA%E5%88%B6%E7%94%A8%E4%BA%8E%E4%BB%80%E4%B9%88%E5%9C%BA%E6%99%AF%EF%BC%9F"><span class="nav-number">37.</span> <span class="nav-text">Consumer Cancellation Notification 机制用于什么场景？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Basic-Reject-%E7%9A%84%E7%94%A8%E6%B3%95%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">38.</span> <span class="nav-text">Basic.Reject 的用法是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E5%BA%94%E8%AF%A5%E5%AF%B9%E6%89%80%E6%9C%89%E7%9A%84-message-%E9%83%BD%E4%BD%BF%E7%94%A8%E6%8C%81%E4%B9%85%E5%8C%96%E6%9C%BA%E5%88%B6%EF%BC%9F"><span class="nav-number">39.</span> <span class="nav-text">为什么不应该对所有的 message 都使用持久化机制？</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Jiahang Gu</p>
+  <div class="site-description" itemprop="description">认真学习，享受生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">51</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JiahangGu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JiahangGu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/fengzhizi76506" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;fengzhizi76506" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jiahang Gu</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>
