@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="实验前阅读Chapter44.2  从用户空间陷入陷入的过程是uservec-&gt;usertrap，返回的时候是usertrapret-&gt;userret，都在kernel&#x2F;trap.c和trampoline.S stap指向的用户页表不会映射到内核，并且stack pointer可能包含不合法或恶意值">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MIT6S081-Lab4-trap">
+<meta property="og:url" content="http://example.com/2022/05/16/MIT6S081-Lab4-trap/index.html">
+<meta property="og:site_name" content="菜汤里的咸鱼要翻身">
+<meta property="og:description" content="实验前阅读Chapter44.2  从用户空间陷入陷入的过程是uservec-&gt;usertrap，返回的时候是usertrapret-&gt;userret，都在kernel&#x2F;trap.c和trampoline.S stap指向的用户页表不会映射到内核，并且stack pointer可能包含不合法或恶意值">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-05-16T15:41:33.000Z">
+<meta property="article:modified_time" content="2022-05-16T15:44:26.914Z">
+<meta property="article:author" content="Jiahang Gu">
+<meta property="article:tag" content="MIT6.S081">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2022/05/16/MIT6S081-Lab4-trap/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>MIT6S081-Lab4-trap | 菜汤里的咸鱼要翻身</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">菜汤里的咸鱼要翻身</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/16/MIT6S081-Lab4-trap/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MIT6S081-Lab4-trap
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-05-16 23:41:33 / 修改时间：23:44:26" itemprop="dateCreated datePublished" datetime="2022-05-16T23:41:33+08:00">2022-05-16</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/labs-notes/" itemprop="url" rel="index"><span itemprop="name">实验笔记</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="实验前阅读"><a href="#实验前阅读" class="headerlink" title="实验前阅读"></a>实验前阅读</h3><h4 id="Chapter4"><a href="#Chapter4" class="headerlink" title="Chapter4"></a>Chapter4</h4><h5 id="4-2-从用户空间陷入"><a href="#4-2-从用户空间陷入" class="headerlink" title="4.2  从用户空间陷入"></a>4.2  从用户空间陷入</h5><p>陷入的过程是uservec-&gt;usertrap，返回的时候是usertrapret-&gt;userret，都在kernel/trap.c和trampoline.S</p>
+<p>stap指向的用户页表不会映射到内核，并且stack pointer可能包含不合法或恶意值</p>
+<p>用户页表必须包含到uservec的映射，以及stvec指向的指令寄存器。然后uservec切换stap到内核页表，并且在内核页表映射和用户页表一样的地址。</p>
+<p>XV6使用trampoline页，包含uservec，并且将该页映射到在内核页表和每一个用户页表的相同虚拟地址，TRAMPOLINE。</p>
+<p>uservec首先使用csrrw指令将交换a0寄存器和sscratch寄存器的值。从而保存用户a0寄存器的值。此时uservec可以使用a0寄存器。<br>内核先设置sscratch指向trapframe，来保存所有用户寄存器，并且uservec需要trapframe被映射到用户地址空间。创建进程时，会为进程的trapgrame分配一个页，并总被映射在用户虚拟地址TRAPFRAME处。用户进程的p-&gt;trapframe指向该页。<br>trapframe包含指向当前进程核心栈、cpu的hartid、usertrap地址以及内核页表的指针。uservec取回这些值，切换satp到内核页表，然后调用usertrap。</p>
+<p>usertrap任务是发现trap原因，解决并返回。首先改变stvec让陷入可以被kernelvec解决，然后保存sepc防止被覆盖。然后处理trap。</p>
+<p>返回用户地址的第一步是调用usertrapret，设置控制寄存器为回复用户空间做准备。改变stvec指向uservec，准备trapframe中uservec依赖的信息，设置sepc为用户pc。最后usertrapret调用trampoline页上的userret</p>
+<p>userret回复a0寄存器，切换satp为进程的用户页表。</p>
+<p>代码部分都在课程总结</p>
+<h3 id="Labs4-1-RISC-V-assembly"><a href="#Labs4-1-RISC-V-assembly" class="headerlink" title="Labs4-1 RISC-V assembly"></a>Labs4-1 RISC-V assembly</h3><h5 id="Q1"><a href="#Q1" class="headerlink" title="Q1"></a>Q1</h5><p>Which registers contain arguments to functions? For example, which register holds 13 in main’s call to printf?</p>
+<h5 id="Q2"><a href="#Q2" class="headerlink" title="Q2"></a>Q2</h5><p>Where is the call to function f in the assembly code for main? Where is the call to g? (Hint: the compiler may inline functions.)</p>
+<h5 id="Q3"><a href="#Q3" class="headerlink" title="Q3"></a>Q3</h5><p>At what address is the function printf located?</p>
+<h5 id="Q4"><a href="#Q4" class="headerlink" title="Q4"></a>Q4</h5><p>What value is in the register ra just after the jalr to printf in main?</p>
+<h5 id="Q5"><a href="#Q5" class="headerlink" title="Q5"></a>Q5</h5><p>Run the following code.</p>
+<pre><code>unsigned int i = 0x00646c72;
+printf(&quot;H%x Wo%s&quot;, 57616, &amp;i);
+  
+</code></pre>
+<p>What is the output? Here’s an ASCII table that maps bytes to characters.<br>The output depends on that fact that the RISC-V is little-endian. If the RISC-V were instead big-endian what would you set i to in order to yield the same output? Would you need to change 57616 to a different value?</p>
+<p>Here’s a description of little- and big-endian and a more whimsical description.</p>
+<h5 id="Q6"><a href="#Q6" class="headerlink" title="Q6"></a>Q6</h5><p>In the following code, what is going to be printed after ‘y=’? (note: the answer is not a specific value.) Why does this happen?</p>
+<pre><code>printf(&quot;x=%d y=%d&quot;, 3);
+</code></pre>
+<p>汇编完全看不懂，暂时跳过</p>
+<h3 id="labs4-2-Backtrace"><a href="#labs4-2-Backtrace" class="headerlink" title="labs4-2 Backtrace"></a>labs4-2 Backtrace</h3><p>在kernel/printf.c中实现backtrace。打印出错点上的栈中的函数调用，就是看出错的时候那些函数调用发生过。在sys_sleep中添加该函数的调用，并且执行bttest<br>每个stack frame都有个帧指针保留调用者的帧指针地址，backtrace应该使用这些指针遍历栈，并且打印每个栈帧中保存的return address<br>提示：</p>
+<ol>
+<li><p>kernel/defs.h中添加backtrace原型声明</p>
+</li>
+<li><p>gcc编译器将当前执行中函数的帧指针保存在s0寄存器，在kernel/riscv.h添加，然后在backtrace中读取当前帧指针</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="keyword">inline</span> uint64</span><br><span class="line"><span class="title function_">r_fp</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  uint64 x;</span><br><span class="line">  <span class="keyword">asm</span> <span class="title function_">volatile</span><span class="params">(<span class="string">&quot;mv %0, s0&quot;</span> : <span class="string">&quot;=r&quot;</span> (x) )</span>;</span><br><span class="line">  <span class="keyword">return</span> x;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>return address在栈帧的帧指针的固定位置-8.保存的帧指针在固定位置-16</p>
+</li>
+<li><p>每个栈分配page对齐的地址，可以使用 PGROUNDDOWN(fp) and PGROUNDUP(fp)，帮助结束循环</p>
+</li>
+</ol>
+<p>fp指向当前栈帧的开始地址，sp指向当前栈帧的结束地址。fs &gt; sp<br>所以fp-8是return address，fp-16是previous address，指向上一层栈帧的fp地址</p>
+<p>以call.asm为例</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">int g(int x) &#123;</span><br><span class="line">   0:	1141                  addi  sp,sp,-16  // 扩张调用栈，得到一个 16 字节的栈帧</span><br><span class="line">   2:	e422                  sd    s0,8(sp)   // 将返回地址存到栈帧的第一个 8 字节中，注意是将s0寄存器的内容放到[sp+8,sp+16]的位置。s0寄存器存的是当前栈的栈帧地址，所以此时[sp+8,sp+16]的内容就是返回到上一层栈的指针，也就是previous frame的指针，sd指令是将寄存器内容拿出来放到内存。</span><br><span class="line">   4:	0800                  addi  s0,sp,16   // 将栈帧的fp存到s0。所以这里s0保存的就是新开辟的栈空间的fp，也就是新的栈帧开始地址，符合s0保存当前栈帧指针的要求</span><br><span class="line">  return x+3;</span><br><span class="line">&#125;</span><br><span class="line">   6:	250d                  addiw a0,a0,3    // x + 3</span><br><span class="line">   8:	6422                  ld    s0,8(sp)   // 从栈帧读出返回地址，ld是将内存读入到寄存器，此时s0就到了上个栈帧</span><br><span class="line">   a:	0141                  addi  sp,sp,16   // 回收新开辟的栈帧</span><br><span class="line">   c:	8082                  ret              // 返回</span><br></pre></td></tr></table></figure>
+
+<p>addi $1,$2,100 意思是$1 = $2 + 100</p>
+<p>方案：</p>
+<ol>
+<li>backtrace中得到当前帧指针fp，从s0拿，得到对应栈帧</li>
+<li>打印栈帧保存的return address（fp-8），然后，然后回退到上一层，就是fp-16.直到回到栈开始的地方，也就是fp == PGROUNDUP(fp)。因为只有fp是页表地址对齐的，其他栈帧大小不固定。</li>
+</ol>
+<p>注意，fp是个地址，所以fp-16也是内存地址，但是并不是上一个栈帧的地址，所以还需要去这个地址的内存里把真正的地址取出来，即fp = * (fp - 16)。而fp-16的类型对应的是uint64，所以还需要通过 (uint64 *)(fp-16)强转成地址指针，然后通过 *取。</p>
+<h3 id="labs4-3-Alarm"><a href="#labs4-3-Alarm" class="headerlink" title="labs4-3 Alarm"></a>labs4-3 Alarm</h3><p>xv6添加一个特性，进程使用cpu时周期性告警。实现一种原始形式的用户级中断、故障处理程序。<br>添加一个新的系统调用，sigalarm(interval, handler)。如果调用了sigalarm(n, fn)，则每隔n个cpu ticks，内核调用handler程序。当handler返回时，程序要回到离开的地方。如果调用sigalarm(0, 0)，内核应该停止生成周期告警<br>在user/alarmtest.c，添加到makefile，直到添加了sigalarm和sigreturn才会编译成功</p>
+<p>让实现一种故障处理程序，所以应该是在陷入中断后执行的。查看usertrap函数，发现定义了一个which_dev，并且在==2的时候注释此时释放了cpu，理解起来应该是当进程释放了n次cpu之后，执行alarm。所以需要</p>
+<ol>
+<li>alarm有个计时器，interval，，每释放一次就–。</li>
+<li>还需要一个fn记录传入的函数地址，trap之后执行。</li>
+<li>此外还需要一个标志记录是不是0,0的时候就结束告警。</li>
+<li>还有一个trapframe用来恢复当前的用户进程。</li>
+<li>看test2有一个测试是否重入的，还需要一个变量记录，是否正在执行alarm，防止重入。</li>
+</ol>
+<p>声明在struct proc结构中</p>
+<p>sigalarm的时候，就设置当前进程的interval和handler，并初始化相应的值。</p>
+<p>在usertrap释放cpu时，判断是否到达计时周期，如果到了并且不是正在执行，将当前进程的trapframe拷贝到alarm的trapframe做备份方便恢复，然后将handler拷贝到p-&gt;trapframe-&gt;epc，下次执行。</p>
+<p>所以sigalarm设置除了back_trapframe的其他属性。<br>sigreturn从back_trapframe恢复进程的trapframe。</p>
+<p>在创建进程和销毁进程的时候也要对alarm相关的变量做操作。</p>
+<p>注意C语言对函数的拷贝和复制。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/MIT6-S081/" rel="tag"># MIT6.S081</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/05/16/MIT6S081-Lab3-pagetables/" rel="prev" title="MIT6S081-Lab3-pagetables">
+      <i class="fa fa-chevron-left"></i> MIT6S081-Lab3-pagetables
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/05/16/MIT6S081-Lab5-lazyalloc/" rel="next" title="MIT6S081-Lab5-lazyalloc">
+      MIT6S081-Lab5-lazyalloc <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E5%89%8D%E9%98%85%E8%AF%BB"><span class="nav-number">1.</span> <span class="nav-text">实验前阅读</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Chapter4"><span class="nav-number">1.1.</span> <span class="nav-text">Chapter4</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#4-2-%E4%BB%8E%E7%94%A8%E6%88%B7%E7%A9%BA%E9%97%B4%E9%99%B7%E5%85%A5"><span class="nav-number">1.1.1.</span> <span class="nav-text">4.2  从用户空间陷入</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Labs4-1-RISC-V-assembly"><span class="nav-number">2.</span> <span class="nav-text">Labs4-1 RISC-V assembly</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Q1"><span class="nav-number">2.0.1.</span> <span class="nav-text">Q1</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Q2"><span class="nav-number">2.0.2.</span> <span class="nav-text">Q2</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Q3"><span class="nav-number">2.0.3.</span> <span class="nav-text">Q3</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Q4"><span class="nav-number">2.0.4.</span> <span class="nav-text">Q4</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Q5"><span class="nav-number">2.0.5.</span> <span class="nav-text">Q5</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Q6"><span class="nav-number">2.0.6.</span> <span class="nav-text">Q6</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#labs4-2-Backtrace"><span class="nav-number">3.</span> <span class="nav-text">labs4-2 Backtrace</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#labs4-3-Alarm"><span class="nav-number">4.</span> <span class="nav-text">labs4-3 Alarm</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Jiahang Gu</p>
+  <div class="site-description" itemprop="description">认真学习，享受生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">58</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JiahangGu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JiahangGu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/fengzhizi76506" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;fengzhizi76506" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jiahang Gu</span>
+
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div> -->
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

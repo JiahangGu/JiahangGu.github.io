@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="实验前阅读4.3 调用系统调用如何进入内核态并调用系统调用：用户代码将exec的参数放在a0和a1寄存器中，并且把系统调用编号放到a7中。syscalls定义了编号到函数的映射，得到函数指针。然后ecall陷入内核，并执行uservec、usertrap，最终执行syscall（这里得到映射）。然后调用sys_exec函数。执行成功后，将结果保存到p-&gt;trapframe-&gt;a0，这是">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MIT6S081-Lab2-syscall">
+<meta property="og:url" content="http://example.com/2022/05/16/MIT6S081-Lab2-syscall/index.html">
+<meta property="og:site_name" content="菜汤里的咸鱼要翻身">
+<meta property="og:description" content="实验前阅读4.3 调用系统调用如何进入内核态并调用系统调用：用户代码将exec的参数放在a0和a1寄存器中，并且把系统调用编号放到a7中。syscalls定义了编号到函数的映射，得到函数指针。然后ecall陷入内核，并执行uservec、usertrap，最终执行syscall（这里得到映射）。然后调用sys_exec函数。执行成功后，将结果保存到p-&gt;trapframe-&gt;a0，这是">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-05-16T15:40:21.000Z">
+<meta property="article:modified_time" content="2022-05-16T15:43:03.360Z">
+<meta property="article:author" content="Jiahang Gu">
+<meta property="article:tag" content="MIT6.S081">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2022/05/16/MIT6S081-Lab2-syscall/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>MIT6S081-Lab2-syscall | 菜汤里的咸鱼要翻身</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">菜汤里的咸鱼要翻身</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/16/MIT6S081-Lab2-syscall/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MIT6S081-Lab2-syscall
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-05-16 23:40:21 / 修改时间：23:43:03" itemprop="dateCreated datePublished" datetime="2022-05-16T23:40:21+08:00">2022-05-16</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/labs-notes/" itemprop="url" rel="index"><span itemprop="name">实验笔记</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="实验前阅读"><a href="#实验前阅读" class="headerlink" title="实验前阅读"></a>实验前阅读</h3><h5 id="4-3-调用系统调用"><a href="#4-3-调用系统调用" class="headerlink" title="4.3 调用系统调用"></a>4.3 调用系统调用</h5><p>如何进入内核态并调用系统调用：<br>用户代码将exec的参数放在a0和a1寄存器中，并且把系统调用编号放到a7中。syscalls定义了编号到函数的映射，得到函数指针。然后ecall陷入内核，并执行uservec、usertrap，最终执行syscall（这里得到映射）。然后调用sys_exec函数。执行成功后，将结果保存到p-&gt;trapframe-&gt;a0，这是RISC-V设定保存到a0，然后用户空间调用exec()的地方会返回结果。</p>
+<h5 id="4-4-系统调用参数"><a href="#4-4-系统调用参数" class="headerlink" title="4.4 系统调用参数"></a>4.4 系统调用参数</h5><p>RISC-V把参数放在寄存器中实现传递。内核陷入代码会保存用户寄存器到当前进程的陷入帧中，这样内核可以找到。argint, argaddr和argfd分别从陷入帧中得到系统调用的参数，作为整数、指针或文件描述符，都是通过argraw实现（kernel/syscall.c:35)。</p>
+<p>有些会传递指针，例如exec传递指针数组。内核需要有能力识别指针是否非法或恶意，并保证读到的是正确的页表映射，因为内核和用户态的页表映射关系不同。</p>
+<p>内核使用copyinstr(kernel/vm.c:406)，从用户态的页表pagetable的地址srcva处拷贝最多max个字节到dst地址。函数内使用walkaddr遍历页表决定srcva对应的物理地址。内核将所有物理RAM地址映射到同样的内核态虚拟地址，所以copyinstr可以直接从pa0拷贝到dst。walkaddr(kernel/vm.c:95)检查用户提供的虚拟地址是不是该用户进程的地址空间，所以用户无法用假地址欺骗内核，从而引发恶意后果。<br>同理，copyout类似的，从内核将数据拷贝到用户态地址。</p>
+<h3 id="code"><a href="#code" class="headerlink" title="code"></a>code</h3><p>user/user.h, usys.pl<br>kernel/syscall.h, syscall.c<br>kernel/proc.h, proc.c</p>
+<h3 id="System-call-tracing"><a href="#System-call-tracing" class="headerlink" title="System call tracing"></a>System call tracing</h3><p>在Makefile中将$U/_trace加到UPROGS</p>
+<p>按照提示在对应的user/user.h, user/usys.pl以及kernel/syscall.h中均添加关于trace()的声明，编译成功</p>
+<p>第三步在kernel/sysproc.c中实现sys_trace，但没懂其中要领，这个是怎么调用到这里的。首先看一个样例，sys_kill。kill的用法是kill pid，但给定样例的写法</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">uint64</span><br><span class="line"><span class="title function_">sys_kill</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> pid;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span>(argint(<span class="number">0</span>, &amp;pid) &lt; <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">  <span class="keyword">return</span> kill(pid);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>参数类型为void，然后声明了pid，并使用argint的方式得到目标pid。推测sys_trace也是类似的方式，即argint获取对应的mask，且mask要通过proc结构体传递，即保存到当前进程的状态中。查看proc结构体不包含mask，添加。并且在得到mask后通过myproc()得到当前进程状态，参考sys_getpid()，返回当前进程的pid。</p>
+<p>第四步修改fork将mask传递给子进程。查看fork()函数，发现是通过创建一个新的描述子进程的描述符，然后将寄存器内容，文件描述符，pid等复制到子进程描述符。因此在这里复制mask到子进程即可。在fork中，无论子进程描述符正确创建，都需要release(&amp;np-&gt;lock);释放锁，以及设置parent和进程状态时各自需要加锁，不明白用途。<br>设置parent需要wait_lock，按照注释解释，用来确定正在waiting的父进程不会丢失，并且使用时确保遵守内存模型。但np-&gt;lock应该是避免并行操作，没看出并行访问子进程的地方。</p>
+<p>最后修改syscall()，可以看到他的工作方式为得到当前进程描述符，然后得到a7寄存器的值判断对应的系统调用指令，即切换到内核态时会将待执行的系统调用编号保存到特定寄存器里，RISC-V这么设计。然后如果合法，调用对应的系统调用，即sys_xx()，并将最终的执行结果保存到a0寄存器中。所以在这里得到执行结果后，应该根据当前进程的mask判断执行的num对应的系统调用是否为希望监控的指令。然后输出对应的信息。注意p-&gt;name看注释说是进程的名称，不是当前执行系统调用的名称，需要参考syscalls重新定义sys_name保存。</p>
+<p>修改完编译报错</p>
+<ol>
+<li>user.h中声明的trace返回类型为int</li>
+<li>sys_trace没有声明，需要在syscall.c中声明extern uint64 sys_trace(void);</li>
+</ol>
+<p>对于系统调用的执行，首先将待执行的指标编号写入a7寄存器中，然后调用ecall。进而执行syscall()，取出对应编号并解析对应的指令执行，执行完成后将结果存入a0寄存器。</p>
+<h3 id="Sysinfo"><a href="#Sysinfo" class="headerlink" title="Sysinfo"></a>Sysinfo</h3><p>启动配置：</p>
+<ol>
+<li>添加的函数名为sysinfo，所以需要现在user.h添加声明int sysinfo(struct sysinfo *);</li>
+<li>usys.pl中注册sysinfo</li>
+<li>syscall.h和syscall.c添加系统调用的声明，注册调用编号，以及声明系统调用extern uint64 sys_sysinfo(void); 这里有个之前错误理解的点，lab要求添加的函数是sysinfo，所以系统调用对应的是sys_sysinfo，自带的sys和系统调用无关。</li>
+<li>最后在sysproc.c中添加uint64 sys_sysinfo(void)的声明即可编译通过</li>
+</ol>
+<p>实验要求：sysinfo收集当前系统资源信息，存入到sysinfo结构体中。freemem指向剩余内存的字节数，nproc指向state!=UNUSED的进程个数。、<br>参考kernel/sysfile.c:sys_fstat()和file.c:filestat()查看如何使用copyout()，即如何将数据拷贝到用户态。<br>在kernel/kalloc.c添加搜集可用内存的函数，kernel/proc.c中添加收集进程的个数的函数</p>
+<p>没看懂这里的内存使用方式，参考<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/332243456">知乎讲解</a></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">run</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">run</span> *<span class="title">next</span>;</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">spinlock</span> <span class="title">lock</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">run</span> *<span class="title">freelist</span>;</span></span><br><span class="line">&#125; kmem;</span><br></pre></td></tr></table></figure>
+<p>这里定义了指向可用内存空间的链表，</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span></span><br><span class="line"><span class="title function_">freerange</span><span class="params">(<span class="type">void</span> *pa_start, <span class="type">void</span> *pa_end)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">char</span> *p;</span><br><span class="line">  p = (<span class="type">char</span>*)PGROUNDUP((uint64)pa_start);</span><br><span class="line">  <span class="keyword">for</span>(; p + PGSIZE &lt;= (<span class="type">char</span>*)pa_end; p += PGSIZE)</span><br><span class="line">    kfree(p);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在初始化时，传入的start和end分别是定义的char end[]数组起始指针和PHYSTOP物理地址。从遍历的方式可以看出，每个链表大小为PGSIZE，应该是一个page。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span></span><br><span class="line"><span class="title function_">kfree</span><span class="params">(<span class="type">void</span> *pa)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">run</span> *<span class="title">r</span>;</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span>(((uint64)pa % PGSIZE) != <span class="number">0</span> || (<span class="type">char</span>*)pa &lt; end || (uint64)pa &gt;= PHYSTOP)</span><br><span class="line">    panic(<span class="string">&quot;kfree&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Fill with junk to catch dangling refs.</span></span><br><span class="line">  <span class="built_in">memset</span>(pa, <span class="number">1</span>, PGSIZE);</span><br><span class="line"></span><br><span class="line">  r = (<span class="keyword">struct</span> run*)pa;</span><br><span class="line"></span><br><span class="line">  acquire(&amp;kmem.lock);</span><br><span class="line">  r-&gt;next = kmem.freelist;</span><br><span class="line">  kmem.freelist = r;</span><br><span class="line">  release(&amp;kmem.lock);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>释放内存时，首先判断地址范围合法并且设置标志位。然后得到当前地址空间指针r，设置next为freelist，并且让freelist指向当前地址。所以freelist始终指向当前内存中第一个空闲的page。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *</span><br><span class="line"><span class="title function_">kalloc</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">run</span> *<span class="title">r</span>;</span></span><br><span class="line"></span><br><span class="line">  acquire(&amp;kmem.lock);</span><br><span class="line">  r = kmem.freelist;</span><br><span class="line">  <span class="keyword">if</span>(r)</span><br><span class="line">    kmem.freelist = r-&gt;next;</span><br><span class="line">  release(&amp;kmem.lock);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span>(r)</span><br><span class="line">    <span class="built_in">memset</span>((<span class="type">char</span>*)r, <span class="number">5</span>, PGSIZE); <span class="comment">// fill with junk</span></span><br><span class="line">  <span class="keyword">return</span> (<span class="type">void</span>*)r;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>分配时，也是先得到当前的空闲page，并移动空闲指针到next。</p>
+<p>所以应该从freelist开始遍历，直到为空，则整个遍历的page个数*PGSIZE就是空闲内存。<br>实现完毕后，在kernel/defs.h中添加新增函数的声明（这个要是不看解析，完全不知道）</p>
+<p>最后在syscall.c里实现sys_sysinfo。声明sysinfo结构体，然后赋值为此前实现的函数，最后拷贝到用户态。<br>注意需要用到sysinfo结构体，导入sysinfo.h</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">uint64</span><br><span class="line"><span class="title function_">sys_sysinfo</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">proc</span> *<span class="title">p</span> =</span> myproc();</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sysinfo</span> <span class="title">info</span>;</span></span><br><span class="line">  uint64 addr;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (argaddr(<span class="number">0</span>, &amp;addr) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  info.freemem = kfreemem();</span><br><span class="line">  info.nproc = collect_process();</span><br><span class="line">  <span class="keyword">if</span> (copyout(p-&gt;pagetable, addr, (<span class="type">char</span> *)&amp;info, <span class="keyword">sizeof</span>(info)) &lt; <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)<br>copyout将内核地址src开始的大小为len的数据拷贝到用户进程pagetable指向的虚拟地址dstva。pagetable和dstva唯一确定当前用户态的内存地址。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/MIT6-S081/" rel="tag"># MIT6.S081</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/05/16/MIT6S081-Lab1-util/" rel="prev" title="MIT6S081-Lab1-util">
+      <i class="fa fa-chevron-left"></i> MIT6S081-Lab1-util
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/05/16/MIT6S081-Lab3-pagetables/" rel="next" title="MIT6S081-Lab3-pagetables">
+      MIT6S081-Lab3-pagetables <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E5%89%8D%E9%98%85%E8%AF%BB"><span class="nav-number">1.</span> <span class="nav-text">实验前阅读</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#4-3-%E8%B0%83%E7%94%A8%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="nav-number">1.0.1.</span> <span class="nav-text">4.3 调用系统调用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-4-%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E5%8F%82%E6%95%B0"><span class="nav-number">1.0.2.</span> <span class="nav-text">4.4 系统调用参数</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#code"><span class="nav-number">2.</span> <span class="nav-text">code</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#System-call-tracing"><span class="nav-number">3.</span> <span class="nav-text">System call tracing</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Sysinfo"><span class="nav-number">4.</span> <span class="nav-text">Sysinfo</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Jiahang Gu</p>
+  <div class="site-description" itemprop="description">认真学习，享受生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">58</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JiahangGu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JiahangGu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/fengzhizi76506" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;fengzhizi76506" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jiahang Gu</span>
+
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div> -->
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>

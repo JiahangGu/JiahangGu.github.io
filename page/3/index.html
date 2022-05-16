@@ -167,6 +167,751 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/21/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">消息队列总结</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-21 12:18:12 / 修改时间：13:00:41" itemprop="dateCreated datePublished" datetime="2022-02-21T12:18:12+08:00">2022-02-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="为什么使用MQ及其优缺点"><a href="#为什么使用MQ及其优缺点" class="headerlink" title="为什么使用MQ及其优缺点"></a>为什么使用MQ及其优缺点</h3><p>优点</p>
+<ol>
+<li>异步处理：相比传统的串行、并行方式，提高系统吞吐量。系统接收请求后写入到MQ继续自己的操作，而不用等其余相关系统的回应</li>
+<li>应用解耦：系统间通过消息通信，不关系其他系统的处理。可以方便地改变系统拓扑结构，降低维护和运维成本</li>
+<li>流量削峰：可以通过消息队列长度控制请求量，缓解短时间内的高并发请求，减少高峰期服务器的瞬时压力</li>
+<li>日志处理：解决大量日志传输</li>
+<li>消息通讯：MQ内置高效的通信机制，可以实现点对点消息队列、聊天室等</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>系统可用性降低，加入了新的模块就会引入新的风险</li>
+<li>系统复杂度很高，MQ的一致性问题、消息重复消费、消息可靠性传输等问题需要考虑</li>
+<li>一致性问题：各节点可能出现故障导致的数据不一致问题</li>
+</ol>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/02/21/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E6%80%BB%E7%BB%93/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/%E6%95%B0%E6%8D%AE%E5%BA%93%E9%9D%A2%E8%AF%95%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/21/%E6%95%B0%E6%8D%AE%E5%BA%93%E9%9D%A2%E8%AF%95%E9%A2%98/" class="post-title-link" itemprop="url">数据库面试题</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-21 12:18:01 / 修改时间：13:00:20" itemprop="dateCreated datePublished" datetime="2022-02-21T12:18:01+08:00">2022-02-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>12k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>11 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/babylovewei/article/details/106711013">数据库面试题</a></p>
+<h3 id="高频面试题"><a href="#高频面试题" class="headerlink" title="高频面试题"></a>高频面试题</h3><ol>
+<li>怎么判断sql语句的性能，怎么分析，explain使用的时候需要关注的点是什么</li>
+<li>介绍下InnoDB的索引实现，B+树叶子结点是单向链表还是双向链表</li>
+<li>了解慢查询吗（不了解）<br> 慢查询就是查询时可能查询数据涉及到的数据量或表较多导致查询速度慢的情况。常用的优化方式<ol>
+<li>可以使用explain对语句进行分析，并重点查看type, rows, keys字段查看查询类型、查询涉及到的数据行数以及使用的索引，并以此确定优化的方向。例如涉及到的rows远大于目标数据行，则可以通过优化查询语句减少中间数据行的数量提高效率。也可以通过keys字段查看使用索引是否正确，可以新增或修改索引。</li>
+<li>修改数据库表结构，将使用频率低的表拆分出来，也可以添加中间表代替联合查询提高效率</li>
+<li>将一个大的查询分解为多个小查询</li>
+</ol>
+</li>
+<li>数据库的隔离级别</li>
+<li>MVCC了解吗</li>
+<li>乐观锁和悲观锁</li>
+<li>InnoDB的索引方式和特点</li>
+<li>什么情况下索引不可用</li>
+<li>MySQL的聚簇索引和非聚簇索引的区别</li>
+<li>MySQL如何实现主从复制</li>
+<li>binlog、redo、undo有什么作用</li>
+<li>做过索引优化吗？</li>
+<li>数据库为什么使用B+树而不是B树<br>1）B树只适合随机检索，而B+树同时支持随机检索和顺序检索<br>2）B+树空间利用率更高，可减少IO次数，磁盘读写代价更低，B+树非叶子结点只保存关键字，一次性读入到内存更多的关键字，减少了IO次数，而IO读写次数是影响检索效率的最大因素<br>3）B+树查询效率更稳定。B树可能在非叶子结点结束，等价于二分查找，而B+树都需要走一条从根节点到叶子结点的路，所有查询路径长度相同，导致每一个关键字的查询效率相当<br>4）B树提高磁盘性能的同时没有解决元素遍历效率低下的问题，B+树叶子结点通过指针连在一起，优化了基于范围的查询<br>5）增删文件时B+树效率更高，叶子结点包含所有关键字，并以有序链表结构存储，可以提高增删效率</li>
+<li>大表数据查询怎么优化<br>1）优化schema、sql语句+索引<br>2）加缓存，缓解数据库压力，memcached，redis<br>3）主从复制，读写分离，主库负责写和高性能读，从库读<br>4）垂直拆分，划分为分布式系统<br>5）水平切分，选择合理的分配范围和分布算法</li>
+<li>为什么尽量设定一个主键<br>主键确保数据行在整个表的唯一性，在删查改操作可能加速并确保操作数据范围安全。<br>推荐使用自增id，因为主键索引作为聚簇索引存在，B+树非叶子结点存储了关键字，叶子结点存储了主键索引和全部的数据，如果自增只需向后排列，否则可能存在较多的数据插入和移动，导致产生很多的内存碎片，造成插入性能的下降<br>如果没有主键，InnoDB会选择一个唯一键生成聚簇索引，如果没有唯一键会生成隐式主键</li>
+<li>存储用户密码散列使用什么字段<br>密码散列、身份证号等定长字符串使用char，可以节省空间且提高检索效率</li>
+<li>MySQL数据库cpu飙升如何处理<br>1）先使用top查看是否是mysqld导致<br>2）如果是，使用show processlist查看session情况，找出消耗高的sql，观察耗费高的原因：执行计划是否准确，索引是否确实，数据库是否太大<br>3）如果存在问题，kill掉并优化对应sql语句<br>4）也可能是突然之间大量session连入，考虑使用缓存，或限制连接个数</li>
+</ol>
+<h3 id="Cyc高频面试题"><a href="#Cyc高频面试题" class="headerlink" title="Cyc高频面试题"></a>Cyc高频面试题</h3><p>*表示重要程度，题目摘抄自<a target="_blank" rel="noopener" href="https://github.com/liguigui/CyC2018-CS-Notes">Cyc2018</a>，答案为自己的理解</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/02/21/%E6%95%B0%E6%8D%AE%E5%BA%93%E9%9D%A2%E8%AF%95%E9%A2%98/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/%E6%95%B0%E6%8D%AE%E5%BA%93%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/21/%E6%95%B0%E6%8D%AE%E5%BA%93%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">数据库总结</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-21 12:17:53 / 修改时间：12:59:48" itemprop="dateCreated datePublished" datetime="2022-02-21T12:17:53+08:00">2022-02-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>12k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>11 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>本文是根据<a target="_blank" rel="noopener" href="https://github.com/liguigui/CyC2018-CS-Notes">Cyc2018</a>总结的基础知识整理而来，在基础知识的基础上更多偏向实际面试问题，以及一些深入的问题思考</p>
+<h3 id="基础语法"><a href="#基础语法" class="headerlink" title="基础语法"></a>基础语法</h3><ol>
+<li><p>创建数据库并使用</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CREATE DATABASE test;</span><br><span class="line">USE test;</span><br></pre></td></tr></table></figure></li>
+<li><p>创建表</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE mytable (</span><br><span class="line">    id INT NOT NULL AUTO_INCREMENT,</span><br><span class="line">    col1 INT NOT NULL DEFAULT 1,</span><br><span class="line">    col2 VARCHAR(255) NULL,</span><br><span class="line">    col3 DATE NULL,</span><br><span class="line">    PRIMARY KEY(`id`)</span><br><span class="line">);</span><br></pre></td></tr></table></figure></li>
+<li><p>修改表<br>添加列</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ALTER TABLE mytable ADD col CHAR(20);</span><br></pre></td></tr></table></figure>
+<p>删除列</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ALTER TABLE mytable DROP COLUMN col;</span><br></pre></td></tr></table></figure>
+<p>删除表</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DROP TABLE mytable;</span><br></pre></td></tr></table></figure></li>
+<li><p>插入<br>普通插入</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">INSERT INTO mytable(col1, col2) VALUES(val1, val2);</span><br></pre></td></tr></table></figure>
+<p>插入检索出的数据</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">INSERT INTO mytable(col1, col2) SELECT col1, col2 FROM mytable2;</span><br></pre></td></tr></table></figure>
+<p>将一个表的内容插入到一个新表</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE newtable AS SELECT * FROM mytable;</span><br></pre></td></tr></table></figure></li>
+<li><p>更新</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">UPDATE mytable SET col = val WHERE id = 1;</span><br></pre></td></tr></table></figure></li>
+<li><p>删除</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DELETE FROM mytable WHERE id = 1;</span><br><span class="line">TRUNCATE TABLE mytable;</span><br></pre></td></tr></table></figure></li>
+<li><p>查询<br>DISTINCT，相同值只会出现一次，所有列都相同才算相同</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT DISTINCT col1, col2 FROM mytable;</span><br></pre></td></tr></table></figure>
+<p>LIMIT, 限制返回的行数，第一个参数为起始行，默认为0，第二个参数是返回的总行数</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM mytable LIMIT 5;</span><br></pre></td></tr></table></figure></li>
+<li><p>排序<br>ORDER BY ASC升序（默认），DESC降序，可以按照多个列排序，并且每个列指定不同的排序方式</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM mytable ORDER BY col1 DESC, col2 ASC;</span><br></pre></td></tr></table></figure></li>
+<li><p>过滤<br>WHERE子句可以筛选数据，降低数据传输的开销，NULL和0、空字符串都不同。AND和OR连接多个过滤条件，优先处理AND。</p>
+</li>
+<li><p>通配符<br>%匹配&gt;=0个字符，_匹配一个字符，[]匹配集合内的字符， [^]不匹配集合内的字符，LIKE进行通配符匹配</p>
+</li>
+<li><p>计算字段<br>AS取别名，CONCAT()连接两个字段，TRIM()去除首尾空格。</p>
+</li>
+<li><p>函数<br>汇总: AVG(), COUNT(), MAX(), MIN(), SUM()<br>文本处理: LEFT(), RIGHT(), LOWER(), UPPER(), LTRIM(), RTRIM(), LENGTH(), SOUNDEX()转为语音值<br>日期和时间处理: ADDDATE(), ADDTIME(), CURDATE(), CURTIME(), DATE(), DATEDIFF(), DATE_ADD(), DATE_FORMAT(), DAY(), DAYOFWEEK(), HOUR(), MINUTE(), MONTH(), NOW(), SECOND(), TIME(), YEAR()<br>数值处理: SIN(), COS(), TAN(), ABS(), SQRT(), MOD(), EXP(), PI(), RAND()</p>
+</li>
+<li><p>分组<br>将具有相同的数据值的行放在同一组中，可以对同一分组数据使用汇总函数处理，并且自动按照该字段排序</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT col, COUNT(*) AS num FROM mytable GROUP BY col;</span><br></pre></td></tr></table></figure>
+<p>GROUP BY自动按照该字段排序，也可以按汇总字段排序</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT col, COUNT(*) AS num FROM mytable GROUP BY col ORDER BY num;</span><br></pre></td></tr></table></figure>
+<p>WHERE过滤行，HAVING过滤分组，行过滤优先</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT col, COUNT(*) AS num FROM mytable WHERE col &gt; 2 GROUP BY col HAVING num &gt;= 2;</span><br></pre></td></tr></table></figure>
+<p>规定：</p>
+</li>
+<li><p>GROUP BY出现在WHERE子句之后，ORDER BY子句之前</p>
+</li>
+<li><p>除了汇总字段外，SELECT语句中的每一字段都必须在GROUP BY子句中给出</p>
+</li>
+<li><p>NULL的行单独分为一组</p>
+</li>
+<li><p>大多数SQL实现不支持GROUP BY列具有可变长度的数据类型</p>
+</li>
+<li><p>子查询<br>子查询中只能返回一个字段的数据，可以将子查询的结果作为WHERE语句的过滤条件</p>
+</li>
+<li><p>连接<br>连接用于连接多个表，使用JOIN关键字，条件语句用ON。连接可以替换子查询并且效率一般更快<br>内连接，关键字INNER JOIN，JOIN默认为内连接<br>自连接：连接的表是自身<br>自然连接：NATURAL JOIN自动连接所有同名列，而内连接需要提供连接的列<br>外连接：LEFT OUTER JOIN左外连接寻找符合条件的连接，如果JOIN的左侧表存在没有关联的行，保留左侧表并复制右侧表相关字段为NULL</p>
+</li>
+<li><p>组合查询<br>UNION组合两个查询，每个查询包含相同列、表达式和聚集函数。默认去除相同行，要保留相同行使用UNION ALL，ORDER BY子句必须位于语句最后</p>
+</li>
+</ol>
+<h3 id="ACID-的作用以及实现原理"><a href="#ACID-的作用以及实现原理" class="headerlink" title="ACID 的作用以及实现原理"></a>ACID 的作用以及实现原理</h3><ol>
+<li>原子性，Atomicity：事务被视为不可分割的最小单位，事务的所有操作要么全部提交成功，要么全部失败回滚。回滚可以用回滚日志实现，回滚日志记录着事务所执行的修改操作，在回滚时反向执行这些修改操作</li>
+<li>一致性, Consistency: 数据库在事务执行前后都保持一致性状态。在一致性状态下，所有事务对一个数据的读取结果都是相同的。</li>
+<li>隔离性, Isolation: 一个事务所做的修改在最终提交之前，对其他事务是不可见的。</li>
+<li>持久性, Durability: 一旦事务提交，则其所作的修改将会永远保存到数据库中。即使系统发生崩溃，事务执行的结果也不能丢失。可以使用重做日志保证持久性</li>
+</ol>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/02/21/%E6%95%B0%E6%8D%AE%E5%BA%93%E6%80%BB%E7%BB%93/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/21/%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF/" class="post-title-link" itemprop="url">高频面试题解题思路</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-21 12:16:54 / 修改时间：13:26:02" itemprop="dateCreated datePublished" datetime="2022-02-21T12:16:54+08:00">2022-02-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>36k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>33 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="codetop高频题思路"><a href="#codetop高频题思路" class="headerlink" title="codetop高频题思路"></a>codetop高频题思路</h3><ol>
+<li>206.反转链表<br>输入: 1-&gt;2-&gt;3-&gt;4-&gt;5-&gt;NULL<br>输出: 5-&gt;4-&gt;3-&gt;2-&gt;1-&gt;NULL</li>
+</ol>
+<p><strong>关键点：需要一个prev结点记录前驱结点，修改指向关系后更新prev和cur结点</strong></p>
+<ol start="2">
+<li>215.数组中的第K个最大元素<br>在未排序的数组中找到第 k 个最大的元素<br>输入: [3,2,1,5,6,4] 和 k = 2<br>输出: 5</li>
+</ol>
+<p><strong>关键点：快排思想更新数组为前k-1个元素均大于第k个最大元素，时间复杂度O(N)。或者使用最小堆维护，时间复杂度O(Nlgk)。</strong></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/02/21/%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/%E6%A6%82%E7%8E%87%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/21/%E6%A6%82%E7%8E%87%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">概率问题</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-21 12:14:52 / 修改时间：12:16:32" itemprop="dateCreated datePublished" datetime="2022-02-21T12:14:52+08:00">2022-02-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="洗牌算法"><a href="#洗牌算法" class="headerlink" title="洗牌算法"></a>洗牌算法</h3><p>给定一个数组，对数组进行洗牌，使得每个排列出现的概率都相等<br>比如1,2,3,4,5则要做到5!种排列的出现概率一样<br>第一种做法：将数组作为一个箱子，每次从中取出一个球，并不放回。则每个位置的所有球概率均为1/5，4/5 * 1/4, 4/5 * 3/4 * 1/3等等，均为1/5.<br>第二种做法：另一种是通过swap的方式，比如每次取出两个不同的数字，做交换。但这样有可能出现重复的交换产生无效操作。可以固定交换遍历的顺序，比如从n到1，在要交换n的时候，从[1, n]中选择一个位置，则所有数字出现在第n位概率为1/n，然后交换第n-1位，此时他没被交换到第n位，概率为n-1/n，此时从[1, n-1]中选择一位交换，则出现在第n-1为的概率为n-1/n*1/n-1=1/n，同理，所有数字出现在所有位置的概率均为1/n，为随机洗牌<br>实现代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">for (int i = list.size(); i &gt; 0; i--) &#123;</span><br><span class="line">    int k = new Random().nextInt(i);</span><br><span class="line">    swap(ans, i - 1, k);</span><br><span class="line">&#125;</span><br><span class="line">return ans;</span><br></pre></td></tr></table></figure>
+
+<h3 id="蓄水池抽样"><a href="#蓄水池抽样" class="headerlink" title="蓄水池抽样"></a>蓄水池抽样</h3><p>问题：当内存无法加载数据的时候，如何从包含未知大小的数据流中随机选取k个数据，并保证每个数据被抽到的概率相等</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/02/21/%E6%A6%82%E7%8E%87%E9%97%AE%E9%A2%98/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/%E5%88%86%E5%B8%83%E5%BC%8F%E6%9E%B6%E6%9E%84%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/21/%E5%88%86%E5%B8%83%E5%BC%8F%E6%9E%B6%E6%9E%84%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">分布式架构总结</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-21 12:13:55 / 修改时间：12:14:28" itemprop="dateCreated datePublished" datetime="2022-02-21T12:13:55+08:00">2022-02-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>本文参考自<a target="_blank" rel="noopener" href="https://thinkwon.blog.csdn.net/article/details/105870730">博客</a></p>
+<h3 id="静态代理、JDK动态代理和CGLIB动态代理"><a href="#静态代理、JDK动态代理和CGLIB动态代理" class="headerlink" title="静态代理、JDK动态代理和CGLIB动态代理"></a>静态代理、JDK动态代理和CGLIB动态代理</h3><h5 id="静态代理"><a href="#静态代理" class="headerlink" title="静态代理"></a>静态代理</h5><p>在程序运行之前，提前写好被代理方法的代理类，编译后运行。在程序运行前，class已经存在<br>定义接口</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public interface Target &#123;</span><br><span class="line">    public String execute();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/02/21/%E5%88%86%E5%B8%83%E5%BC%8F%E6%9E%B6%E6%9E%84%E6%80%BB%E7%BB%93/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E9%9D%A2%E8%AF%95%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/21/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E9%9D%A2%E8%AF%95%E9%A2%98/" class="post-title-link" itemprop="url">操作系统面试题</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-21 12:13:10 / 修改时间：12:13:32" itemprop="dateCreated datePublished" datetime="2022-02-21T12:13:10+08:00">2022-02-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/interview/" itemprop="url" rel="index"><span itemprop="name">面经</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>10k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>9 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>*表示重要程度，题目摘抄自<a target="_blank" rel="noopener" href="https://github.com/liguigui/CyC2018-CS-Notes">Cyc2018</a>，答案为自己的理解</p>
+<h4 id="进程和线程的本质区别，以及各自的使用场景"><a href="#进程和线程的本质区别，以及各自的使用场景" class="headerlink" title="*** 进程和线程的本质区别，以及各自的使用场景"></a>*** 进程和线程的本质区别，以及各自的使用场景</h4><p>区别：</p>
+<ol>
+<li>资源：进程是资源分配的基本单位，但线程不拥有资源，线程可以访问隶属进程的资源</li>
+<li>调度：线程是独立调度的基本单位，在同一进程中，线程的切换不会引起进程切换，从一个进程中的线程切换到另一个进程中的线程时，会引起进程切换</li>
+<li>系统开销：创建或撤销进程时，系统要分配或回收资源，开销远大于创建或撤销线程时的开销。进程切换时需要保存当前执行进程的环境并设置新调度进程的环境，而切换线程时只需保存和设置少量寄存器，开销很小</li>
+<li>通信：线程间可以通过直接读写同一进程中的数据进行通信，而进程通信需要借助IPC</li>
+</ol>
+<p>使用场景：<br>多线程相比于多进程占用内存少、CPU利用率高，创建销毁切换都较简单，速度快，同步复杂。<br>多进程相比于多线程共享数据复杂，需要进程间通信，但同步简单。<br>进程之间互不影响，但一个线程挂掉将导致整个进程挂掉。<br>多进程适合多核、多机分布，多线程适合多核分布。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/02/21/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E9%9D%A2%E8%AF%95%E9%A2%98/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/21/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E6%80%BB%E7%BB%93/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -460,670 +1205,6 @@ map: <figure class="highlight java"><table><tr><td class="gutter"><pre><span cla
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/19/MIT6824-Raft%E7%BB%86%E8%8A%82%E6%95%B4%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Jiahang Gu">
-      <meta itemprop="description" content="认真学习，享受生活">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/02/19/MIT6824-Raft%E7%BB%86%E8%8A%82%E6%95%B4%E7%90%86/" class="post-title-link" itemprop="url">MIT6824-Raft细节整理</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-02-19 17:59:48 / 修改时间：18:10:16" itemprop="dateCreated datePublished" datetime="2022-02-19T17:59:48+08:00">2022-02-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/labs-notes/" itemprop="url" rel="index"><span itemprop="name">实验笔记</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>2.7k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>在大概完成lab后，再读一遍论文，记录下一些实现细节，以及当时不明白的、不确定的部分。希望能在后续再看时，能更完整得理解。</p>
-<p><img src="/images/mit6824/paper-desc.png" alt="交互图"></p>
-<p>状态机：客户端请求server，服务器将请求以log形式记录并按照特定的顺序复制到集群中，在大多数集群复制完成后，提交到应用程序状态机响应请求或更新数据，最后返回给客户端。</p>
-<p>服务器的状态：</p>
-<p>持久存在的：</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/02/19/MIT6824-Raft%E7%BB%86%E8%8A%82%E6%95%B4%E7%90%86/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/19/MIT6824-Labs%E6%95%B4%E4%BD%93%E6%80%BB%E7%BB%93/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Jiahang Gu">
-      <meta itemprop="description" content="认真学习，享受生活">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/02/19/MIT6824-Labs%E6%95%B4%E4%BD%93%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">MIT6824-Labs整体总结</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-02-19 17:59:31 / 修改时间：18:10:09" itemprop="dateCreated datePublished" datetime="2022-02-19T17:59:31+08:00">2022-02-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/labs-notes/" itemprop="url" rel="index"><span itemprop="name">实验笔记</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>739</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>收获：</p>
-<ol>
-<li>写好测试真的是非常有必要，在每次大幅度修改后，均可以通过测试来找出对此前代码的功能正确性的影响部分。</li>
-<li>多并发编程需要关注的点太多。总体来说，并发编程的经验相对之前几乎为0来说，有了很明显的提升吧。日后再实现并发编程功能，在开始会有一些需要重点关注的问题的轮廓，在具体实现会注意并发的竞态问题。<ol>
-<li>需要为多线程同时访问的数据加锁</li>
-<li>要考虑加锁的范围，在存在较长等待时间的情况下应该复制一个临时数据出来，并在其上操作，避免加锁时间过久导致</li>
-<li>在某段加锁的代码中，后续需要使用公有数据，但不可以加锁，同样复制一个临时数据</li>
-<li>调试无法通过单点实现，需要尽可能增加详细的日志输出，通过日志梳理表现不正确的行为，进而确定具体存在的逻辑问题</li>
-</ol>
-</li>
-<li>raft部分实现细节很多，往往某一个细节存在纰漏就会导致整个系统出问题，应该尽可能确定raft论文中的细节。</li>
-<li>快照是用来帮助应用程序恢复状态的，在raft中只需要记录处理的log，当程序挂掉后，可以加载快照数据到内存，并根据log对内存数据更新，从而恢复到崩溃之前的状态。快照数据通过raft复制到所有的服务器上，并且对log压缩。</li>
-<li>最后是对项目的整体架构的学习。在最初实现时，会用一个函数代替某些想要做到的功能，然后取实现函数，而不是在一个代码段中堆积。其次在实现后，会主动封装重用的代码块，避免复制粘贴。但自己写的函数往往没有测试，依赖于lab中提供的测试。</li>
-<li>对golang的使用更加熟悉，例如并发，通道等。-race参数非常好用啊。</li>
-</ol>
-<p>不足：</p>
-<ol>
-<li>并发存在的bug较难解决和复现，尤其是lab4，还有一定概率运行失败。留待以后换一种心境再实现一遍。</li>
-<li>raft的细节太多，初始查文章资料的时候不知道重点在哪，对于一些用处也没完全理解。对于实际的运行逻辑和处理细节考虑的不够周到。</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/19/MIT6824-Lab4%E6%80%BB%E7%BB%93/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Jiahang Gu">
-      <meta itemprop="description" content="认真学习，享受生活">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/02/19/MIT6824-Lab4%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">MIT6824-Lab4总结</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-02-19 17:58:08 / 修改时间：18:10:00" itemprop="dateCreated datePublished" datetime="2022-02-19T17:58:08+08:00">2022-02-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/labs-notes/" itemprop="url" rel="index"><span itemprop="name">实验笔记</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>6.6k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>6 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>加油</p>
-<p>任务描述</p>
-<ol>
-<li>建一个分片的k-v存储系统。提高吞吐量</li>
-<li>存储的两个重要成分：<ol>
-<li>复制组的集合，每个复制组负责所有分片的一个子集，使用raft复制组内的分片数据</li>
-<li>分配控制器，决定每个复制组应该管理哪些分片（配置），配置改变时要保存历史记录。客户端查询控制器找到key对用的复制组，复制组查询控制器找到应该负责哪些分片。控制器也应该用raft复制</li>
-</ol>
-</li>
-<li>本实验主要难点是解决配置，因为配置会在将分片分配给组时变化。单个组内的所有成员必须统一配置变化和查询的顺序。</li>
-<li>总体架构类似于Flat Datacenter Storage, BigTable, Spanner, FAWN, Apache HBase, Rosebud, Spinnaker，都是一个配置服务和一组复制组的集合</li>
-</ol>
-<h3 id="Task1"><a href="#Task1" class="headerlink" title="Task1"></a>Task1</h3><p>控制器管理者很多版本的配置，当配置改变时，控制器建一个新的。客户端和服务器可以查询特定版本的配置。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/02/19/MIT6824-Lab4%E6%80%BB%E7%BB%93/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/19/MIT6824-Lab3%E6%80%BB%E7%BB%93/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Jiahang Gu">
-      <meta itemprop="description" content="认真学习，享受生活">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/02/19/MIT6824-Lab3%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">MIT6824-Lab3总结</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-02-19 17:58:00 / 修改时间：18:09:53" itemprop="dateCreated datePublished" datetime="2022-02-19T17:58:00+08:00">2022-02-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/labs-notes/" itemprop="url" rel="index"><span itemprop="name">实验笔记</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>3.7k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>3 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>尝试着写下</p>
-<p>目标：建立一个容错的kv存储服务。service应该在大多数服务器存活的时候继续服务。</p>
-<p>service的三个服务：put(k, v)放数据，append(key, arg)追加，如果key不存在则等于put。get(k)查询。</p>
-<p>客户端需要和Clerk通信，clerk管理者和server的交互RPC</p>
-<h3 id="task1"><a href="#task1" class="headerlink" title="task1"></a>task1</h3>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/02/19/MIT6824-Lab3%E6%80%BB%E7%BB%93/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/19/MIT6824-Lab2%E6%80%BB%E7%BB%93/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Jiahang Gu">
-      <meta itemprop="description" content="认真学习，享受生活">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/02/19/MIT6824-Lab2%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">MIT6824-Lab2总结</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-02-19 17:57:47 / 修改时间：18:09:43" itemprop="dateCreated datePublished" datetime="2022-02-19T17:57:47+08:00">2022-02-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/labs-notes/" itemprop="url" rel="index"><span itemprop="name">实验笔记</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>9.4k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>9 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="Lab2"><a href="#Lab2" class="headerlink" title="Lab2"></a>Lab2</h2><h3 id="前置内容"><a href="#前置内容" class="headerlink" title="前置内容"></a>前置内容</h3><p>golang学的不够精细，尤其是对channel的理解。</p>
-<p>在raft实现中，需要设置定时器，在超时后发起选举，思维还局限于其他语言的实现。例如<br>定义一个flag，初始置为false，当收到心跳后置为true，在ticker中的for里首先sleep超时时长，然后判断flag是否被修改，如果没有则超时，重新发起一次选举，如果有则重置为false</p>
-<p>但是在golang中，可以通过定时器和通道完成这项任务</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/02/19/MIT6824-Lab2%E6%80%BB%E7%BB%93/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/19/MIT6824-Lab1%E6%80%BB%E7%BB%93/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Jiahang Gu">
-      <meta itemprop="description" content="认真学习，享受生活">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/02/19/MIT6824-Lab1%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">MIT6824-Lab1总结</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-02-19 17:57:29 / 修改时间：18:08:45" itemprop="dateCreated datePublished" datetime="2022-02-19T17:57:29+08:00">2022-02-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/labs-notes/" itemprop="url" rel="index"><span itemprop="name">实验笔记</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>4.2k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>4 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="Mit-6-824作业1笔记"><a href="#Mit-6-824作业1笔记" class="headerlink" title="Mit 6.824作业1笔记"></a>Mit 6.824作业1笔记</h2><p>启动docker</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -it -v D:/learning/mit6824:/home golang /bin/bash</span><br></pre></td></tr></table></figure>
-
-<p>go设置代理</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">go <span class="built_in">env</span> -w GO111MODULE=on</span><br><span class="line">go <span class="built_in">env</span> -w GOPROXY=https://goproxy.io,direct</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/02/19/MIT6824-Lab1%E6%80%BB%E7%BB%93/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/18/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D-%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Jiahang Gu">
-      <meta itemprop="description" content="认真学习，享受生活">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/02/18/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D-%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0/" class="post-title-link" itemprop="url">人月神话-持续更新</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-02-18 23:25:28 / 修改时间：23:27:09" itemprop="dateCreated datePublished" datetime="2022-02-18T23:25:28+08:00">2022-02-18</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/ReadingNotes/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>522</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="第一遍"><a href="#第一遍" class="headerlink" title="第一遍"></a>第一遍</h2><p>整本书读下来，有很多经典的结论，但结合我目前的项目经历，真正让我觉得对自己帮助最大的两句话是：<br><strong>将做事方式调整到追求完美是学习编程的最困难部分。</strong></p>
-<p><strong>人们通常期望项目在接近结束时，软件项目能收敛得快一些，然而，情况却是越接近完成，收敛得越慢。</strong></p>
-<p>也是我自主学习中遇到的困难。一是在目标大概完成（比如题目通过，项目可以正常运行等）后得到了较强的自我认同感和满足感，进而不再继续尝试优化和改进，并逐渐觉得这样的方式也无可厚非。二是在做项目时，由于开发过程不规范，即在完成后实现测试，编写测试用例时未能真正的考虑全面case，会希望能够尽快完成自己设定的目标，但目标不一定合理。</p>
-<p>实习完的这段时间，有对自己技能和态度的一些反思，进而进一步考虑如何更好的完善职业技能。有一定的进步，希望在后续的时间能做到更好。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/02/18/%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D-%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1193,7 +1274,7 @@ map: <figure class="highlight java"><table><tr><td class="gutter"><pre><span cla
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">51</span>
+          <span class="site-state-item-count">58</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1206,7 +1287,7 @@ map: <figure class="highlight java"><table><tr><td class="gutter"><pre><span cla
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">21</span>
+        <span class="site-state-item-count">22</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

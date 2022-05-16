@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="实验前阅读Chapter3页表隔离不同进程的地址空间，并且复用多个进程在一个物理地址上。 3.1 页式硬件页式硬件使用高位的27位去页表索引找到PTE，然后根据找到的44位PPN加上低12位组成物理地址。再来看这张图三个9位的索引的真实用法是，9位刚好凑成512个地址，每个对应页表中的一个PTE，最初通过satp寄存器确定顶层页表的地址，通过9位查找对应的512个目录项的索引位置，找到对应PTE后">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MIT6S081-Lab3-pagetables">
+<meta property="og:url" content="http://example.com/2022/05/16/MIT6S081-Lab3-pagetables/index.html">
+<meta property="og:site_name" content="菜汤里的咸鱼要翻身">
+<meta property="og:description" content="实验前阅读Chapter3页表隔离不同进程的地址空间，并且复用多个进程在一个物理地址上。 3.1 页式硬件页式硬件使用高位的27位去页表索引找到PTE，然后根据找到的44位PPN加上低12位组成物理地址。再来看这张图三个9位的索引的真实用法是，9位刚好凑成512个地址，每个对应页表中的一个PTE，最初通过satp寄存器确定顶层页表的地址，通过9位查找对应的512个目录项的索引位置，找到对应PTE后">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/Mit6S081/course3/lab3_va2pa.png">
+<meta property="og:image" content="http://example.com/images/Mit6S081/course3/stack.png">
+<meta property="article:published_time" content="2022-05-16T15:40:38.000Z">
+<meta property="article:modified_time" content="2022-05-16T15:44:16.358Z">
+<meta property="article:author" content="Jiahang Gu">
+<meta property="article:tag" content="MIT6.S081">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/Mit6S081/course3/lab3_va2pa.png">
+
+<link rel="canonical" href="http://example.com/2022/05/16/MIT6S081-Lab3-pagetables/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>MIT6S081-Lab3-pagetables | 菜汤里的咸鱼要翻身</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">菜汤里的咸鱼要翻身</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/16/MIT6S081-Lab3-pagetables/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Jiahang Gu">
+      <meta itemprop="description" content="认真学习，享受生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜汤里的咸鱼要翻身">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MIT6S081-Lab3-pagetables
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-05-16 23:40:38 / 修改时间：23:44:16" itemprop="dateCreated datePublished" datetime="2022-05-16T23:40:38+08:00">2022-05-16</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/labs-notes/" itemprop="url" rel="index"><span itemprop="name">实验笔记</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="实验前阅读"><a href="#实验前阅读" class="headerlink" title="实验前阅读"></a>实验前阅读</h3><h4 id="Chapter3"><a href="#Chapter3" class="headerlink" title="Chapter3"></a>Chapter3</h4><p>页表隔离不同进程的地址空间，并且复用多个进程在一个物理地址上。</p>
+<h5 id="3-1-页式硬件"><a href="#3-1-页式硬件" class="headerlink" title="3.1 页式硬件"></a>3.1 页式硬件</h5><p>页式硬件使用高位的27位去页表索引找到PTE，然后根据找到的44位PPN加上低12位组成物理地址。<br>再来看这张图<img src="/images/Mit6S081/course3/lab3_va2pa.png" alt="地址转换"><br>三个9位的索引的真实用法是，9位刚好凑成512个地址，每个对应页表中的一个PTE，最初通过satp寄存器确定顶层页表的地址，通过9位查找对应的512个目录项的索引位置，找到对应PTE后解读PTE中存储的44位PPN，剩下位置补0，作为下一级页表的物理地址，含义和satp中保存的地址类似。然后是中间的9位，同样在该级页表中索引对应的PTE，并得到最后一个页表的物理地址，并使用第三个9位索引到PTE，最终得到的PPN加上虚拟地址最后12位偏移位置凑成真正的物理地址。Flags则表示该PTE是否可读、写、执行等。12位偏移地址也是由页的大小为4KB决定。</p>
+<p>如果三个PTE中的任意一个没给出，硬件会报页错误异常，让内核处理。<br>CPU每个核都有一个satp寄存器。</p>
+<h5 id="内核地址空间"><a href="#内核地址空间" class="headerlink" title="内核地址空间"></a>内核地址空间</h5><p>xv6为每个用户进程维护一个页表，解释用户地址空间，并且维护一个内核的页表解释内核的地址。 kernel/memlayout.h解释了xv6内核内存的分布。<br>物理地址中0x80000000开始是物理内存，至少到0x86400000(PHYSTOP)，再高位就是预留的地址，可以再加内存。0x8000之下的就是硬件地址，比如IO等。<br>内存和上述硬件地址都是通过虚拟地址和物理地址恒等映射的方法，这样的好处是可以简化内核读写物理内存。比如fork调用后直接返回对应地址的物理地址，方便拷贝父进程的内存到子进程。<br>两种不是恒等映射的内核虚拟地址：</p>
+<ol>
+<li>The trampoline page。没理解</li>
+<li>内核栈空间。每个进程有自己的栈，下跟一个没有映射的守护页，守护页的PTE为invalid，所以栈溢出的时候会报错。否则栈溢出可能会写到其他内存位置。</li>
+</ol>
+<h5 id="代码，创建地址空间"><a href="#代码，创建地址空间" class="headerlink" title="代码，创建地址空间"></a>代码，创建地址空间</h5><p>kerbel/vm.c:1<br>pagetable_t结果，指向顶级页表的地址。walk()为一个虚拟地址找对应的PTE。mappages，写入新的PTE。kvm开头的函数操作内核页表，uvm操作用户页表，其他的两者都有。copyout和copyin分别将数据拷贝到用户态和内核。<br>启动流程：kvminit创建内核页表，在此之前的地址都是恒等映射到物理地址。kvminit分配一个页保存顶级页表的物理地址，然后调用kvmmap分配内核需要的指令、地址。直到PHYSTOP。<br>mappages为每个虚拟地址写入物理地址到页表。每个虚拟地址，使用walk找到地址的PTE，并设置flag。<br>kvminithart函数加载内核页表，将顶级页表的物理地址写入satp。写入之后CPU的后续操作都会翻译虚拟地址。<br>procinit为每个进程分配内核栈，同时保留守护页。<br>每个CPU核会在TLB中缓存PTE，所以每次切换页表时，必须更新TLB。sfence.vma刷新TLB，会在每次重新加载satp后执行。</p>
+<h5 id="3-4-物理地址分配"><a href="#3-4-物理地址分配" class="headerlink" title="3.4 物理地址分配"></a>3.4 物理地址分配</h5><p>内核要分配和回收页表、用户内存、内核栈以及管道缓存。通过保存一个链表记录空闲页。分配就从链表中移除页，回收就再加入。</p>
+<h5 id="3-5-代码，物理内存分配"><a href="#3-5-代码，物理内存分配" class="headerlink" title="3.5 代码，物理内存分配"></a>3.5 代码，物理内存分配</h5><p>kalloc.c。kmem定义了一个可用物理内存页的链表。每个节点是结构体run。kinit初始化分配器，遍历每个页，使用freerange设置每个页的状态，然后添加到kmem链表中。PGROUNDUP用于修正地址，确保每个页大小都是4094字节。<br>kfree通过设置内存的每个字节为1表示内存被释放。</p>
+<h5 id="3-6-进程地址空间"><a href="#3-6-进程地址空间" class="headerlink" title="3.6 进程地址空间"></a>3.6 进程地址空间</h5><p>每个进程有自己的页表，切换进程时也要切换页表（程序上下文之一）。进程要求内存时，xv6使用 kalloc分配物理页，然后添加PTE指向该页，并设置flag。<br>使用页表的特性：</p>
+<ol>
+<li>每个进程有自己独立的内存</li>
+<li>每个进程虚拟地址连续且从0开始，但物理地址可能不连续</li>
+<li>内核在用户地址空间使用跳板代码将页映射，所以单页物理内存可以在所有用户空间出现。</li>
+</ol>
+<p>用户地址空间包括栈空间地址如图<img src="/images/Mit6S081/course3/stack.png" alt="栈空间"><br>stack、heap，trapframe应该是之前的用于控制陷入到内核的数据传递，比如执行内核函数的结果，以及对应内核的编号等。<br>栈空间则首先是参数，以及一个指向参数地址的矩阵。</p>
+<h5 id="3-7-sbrk"><a href="#3-7-sbrk" class="headerlink" title="3.7 sbrk"></a>3.7 sbrk</h5><p>是一个调整内存的系统调用，定义在kernel/proc.c的growproc函数，通过kalloc和kfree实现。</p>
+<h3 id="Lab3-1-print-page-table"><a href="#Lab3-1-print-page-table" class="headerlink" title="Lab3-1 print page table"></a>Lab3-1 print page table</h3><p>pagetable_t类型定义<br>typedef uint64 pte_t;<br>typedef uint64 *pagetable_t; // 512 PTEs</p>
+<p>参考freewalk的遍历方式，遍历pagetable的PTE，然后判断是否valid，如果是打印并进入下一层页表。注意pte和pa都是地址，定义如上</p>
+<h3 id="lab3-2-kernel-page-table-per-process"><a href="#lab3-2-kernel-page-table-per-process" class="headerlink" title="lab3-2 kernel page table per process"></a>lab3-2 kernel page table per process</h3><p>xv6包含为每个用户进程映射内存的页表，但是不包含在内核，所以需要为用户态的系统调用转换指针时，需要先翻译到物理地址。这两个部分目标是让内核直接解引用用户指针。<br>第一个任务是让每个进程有自己的内核页表的拷贝。修改struct proc得到一个内核页表，以及修改调度器在切换进程的时候切换内核页表。每个进程的内核应标应该直接指向全局的内核页表。<br>提示：</p>
+<ol>
+<li>实现一个新版kvminit，使得他建立一个新的页表而不是修改kernel_pagetable。allocproc调用</li>
+<li>确保每个进程的内核页表有到进程内核栈的映射。procinit安装所有进程，你需要移动一些函数到allocproc</li>
+<li>修改scheduler()，加载进程的内核页表到satp，可以参考kvminithart，然后在w_satp后调用sfence_vma。</li>
+<li>scheduler在没有进程时使用kernel_pagetable</li>
+<li>在freeproc中释放进程内核页表</li>
+<li>你需要一种方式，只释放页表，但不同时释放对应的物理内存页</li>
+<li>可能要修改或添加函数在k/vm.c和proc.c</li>
+<li>缺失页会导致输出sepc=0x00000000XXXXXXXX，可以在k/kernel.asm查看</li>
+</ol>
+<p>最大定义了64个进程</p>
+<p>个人理解的流程：</p>
+<ol>
+<li>struct proc添加一个内核页表的属性</li>
+<li>allocproc由userinit调用，分配用户进程。需要在allocproc中，找到可用的进程之后，将内核页表复制给分配的用户进程。kvminit复制内核并返回</li>
+<li>procinit目前的做法是main入口调用，导致一启动就为所有的进程分配了映射到内核栈的页。在这里应该映射到进程的内核页表，所以将分配内核栈的功能移动到allocproc中，只有在分配了用户进程才初始化</li>
+<li>scheduler在切换进程前，应该把进程的内核页表加载到satp寄存器，同样使用kvminithart的函数内功能，修改kernel_pagetable为该进程的内核页表。</li>
+<li>scheduler在没有进程时使用kernel_pagetable，应该是指在发现可运行进程的循环外没有找到可执行进程时，将kernel_pagetable重新放入satp。</li>
+<li>进程结束时，freeproc要释放进程的内核页表，但是并不释放物理内存</li>
+</ol>
+<p>涉及到的函数</p>
+<ol>
+<li>kvminit，分配一个全局内核页表，并使用kvmmap为全局内核页表构建映射。按照新的要求，kvminit应该建立新表，并且在调用kvmmap的时候应该以新表作为参数。</li>
+<li>kvmmap，默认使用全局内核页表作为参数，将va和pa写入到全局内核页表。同理，接受页表为参数，而不是修改全局内核页表。</li>
+<li>procinit，如上分析，应该将映射内核栈的部分添加到allocproc，并且kvmmap修改新的页表。kvminithart不应该调用，因为默认写全局内核页表，但需要写的是进程的内核页表</li>
+<li>allocproc，在分配p之后，为p建立新的内核页表，并在此添加到用户的栈的映射</li>
+<li>scheduler，在找到可运行的进程后，将进程的内核页表移动到satp寄存器。如果没有找到，则将全局内核页表移动到satp寄存器。</li>
+<li>freeproc，释放内核栈，释放进程的内核页表，但是不释放物理内存。</li>
+<li>kvmpa，将kernel_pagetable修改成当前进程的内核页表。（总之就是所有默认使用kernel_pagetable的都替换）</li>
+<li>freewalk，用于递归释放页表的页，所有叶子映射都必须已被删除。但这里要求释放页表，所以即使次级页表在也要释放，应该遍历的时候判断页表可用就移除，如果页表设置为R|W|X则表示下面还有次级页表，需要递归调用。注意和原始功能的区别。</li>
+</ol>
+<p>问题：</p>
+<ol>
+<li>一直报错error: field ‘lock’ has incomplete type，查bing说是未定义结构体内容的只能使用引用或者指针。发现是vm.c里spinlock.h在proc.h之后，导致先解析proc.h，而proc.h中又使用了这个结构体声明了变量。</li>
+</ol>
+<h3 id="lab3-3-simplify"><a href="#lab3-3-simplify" class="headerlink" title="lab3-3 simplify"></a>lab3-3 simplify</h3><p>copyin通过用户指针读内存，但需要通过walk转换成物理地址。你要添加用户到每个进程的内核页表的映射，让copyin直接使用用户指针。<br>任务：使用copyin_new替换copyin，然后为copyin添加一个映射表。<br>解释：这么做是因为用户的虚拟地址范围不会覆盖内核的虚拟地址。用户va从0开始，而内核从更高的地址开始。但用户进程的最大地址必须要小于内核的开始地址。这个地址定义为PLIC。</p>
+<p>提示：</p>
+<ol>
+<li>使用copyin_new替换copyin。成功后同样做到copystr</li>
+<li>每次内核切换进程的用户映射时，同样的方法改变进程的内核页表。比如fork，exec和sbrk</li>
+<li>在userinit使用的第一个用户页表也要做</li>
+<li>思考用户地址的PTE应该是什么权限</li>
+<li>PLIC限制。</li>
+</ol>
+<p>涉及的函数</p>
+<ol>
+<li>copyin_new(pagetable_t pagetable, char *dst, uint64 srcva, uint64 len)，从用户拷贝到内核，从srcva指定的虚拟地址</li>
+<li>copyin，也是从用户拷贝到内核，但是没有做映射，需要用walkaddr找到srcva对应的pa才能拷贝。copyin_new由于存在进程的内核页表映射， 可以直接使用。但是现在还没有加这个映射</li>
+<li>fork, exec, sbrk都是创建进程，需要在这里添加映射。</li>
+<li>关键是要有一个映射的函数，实现进程的用户页表到内核页表的映射。没太懂这个具体要实现什么，看了解析才明白，是要将整个用户页表的所有物理地址映射到内核页表的所有对应的物理地址中。即对于每一个记录在用户页表中的虚拟地址，找到对应的物理地址，并放在内核页表的PTE-&gt;物理地址的映射中，也就是修改内核页表的第三级页表的PTE项，改成用户第三级页表的PTE项，这样只要知道用户va就可以查到对应的物理地址，无需walk查找。并且PTE要设置flag为User态不可用。</li>
+</ol>
+<p>注意：proc结构体定义中，sz属性是定义了进程的内存大小，单位字节。用来比较是否超出PLIC。<br>第二个，sbrk的函数实现是growproc，用来增加或减少n个字节的用户内存</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/MIT6-S081/" rel="tag"># MIT6.S081</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/05/16/MIT6S081-Lab2-syscall/" rel="prev" title="MIT6S081-Lab2-syscall">
+      <i class="fa fa-chevron-left"></i> MIT6S081-Lab2-syscall
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/05/16/MIT6S081-Lab4-trap/" rel="next" title="MIT6S081-Lab4-trap">
+      MIT6S081-Lab4-trap <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E5%89%8D%E9%98%85%E8%AF%BB"><span class="nav-number">1.</span> <span class="nav-text">实验前阅读</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Chapter3"><span class="nav-number">1.1.</span> <span class="nav-text">Chapter3</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#3-1-%E9%A1%B5%E5%BC%8F%E7%A1%AC%E4%BB%B6"><span class="nav-number">1.1.1.</span> <span class="nav-text">3.1 页式硬件</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%86%85%E6%A0%B8%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4"><span class="nav-number">1.1.2.</span> <span class="nav-text">内核地址空间</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%EF%BC%8C%E5%88%9B%E5%BB%BA%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4"><span class="nav-number">1.1.3.</span> <span class="nav-text">代码，创建地址空间</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-4-%E7%89%A9%E7%90%86%E5%9C%B0%E5%9D%80%E5%88%86%E9%85%8D"><span class="nav-number">1.1.4.</span> <span class="nav-text">3.4 物理地址分配</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-5-%E4%BB%A3%E7%A0%81%EF%BC%8C%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D"><span class="nav-number">1.1.5.</span> <span class="nav-text">3.5 代码，物理内存分配</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-6-%E8%BF%9B%E7%A8%8B%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4"><span class="nav-number">1.1.6.</span> <span class="nav-text">3.6 进程地址空间</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-7-sbrk"><span class="nav-number">1.1.7.</span> <span class="nav-text">3.7 sbrk</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Lab3-1-print-page-table"><span class="nav-number">2.</span> <span class="nav-text">Lab3-1 print page table</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lab3-2-kernel-page-table-per-process"><span class="nav-number">3.</span> <span class="nav-text">lab3-2 kernel page table per process</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lab3-3-simplify"><span class="nav-number">4.</span> <span class="nav-text">lab3-3 simplify</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Jiahang Gu</p>
+  <div class="site-description" itemprop="description">认真学习，享受生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">58</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JiahangGu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JiahangGu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/fengzhizi76506" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;fengzhizi76506" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jiahang Gu</span>
+
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div> -->
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+  
+</body>
+</html>
